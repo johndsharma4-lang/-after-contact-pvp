@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "after-contact-phone-pvp",
-  "main": "src/index.js",
+  "name": "after-contact-pvp",
+  "main": "index.js",
   "compatibility_date": "2026-08-14",
   "durable_objects": {
     "bindings": [
@@ -11,10 +11,12 @@
       }
     ]
   },
-  "exports": {
-    "MyDurableObject": {
-      "type": "durable-object",
-      "storage": "sqlite"
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "MyDurableObject"
+      ]
     }
-  }
+  ]
 }
