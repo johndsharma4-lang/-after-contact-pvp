@@ -1,0 +1,7 @@
+{
+  "name": "after-contact-phone-pvp",
+  "private": true,
+  "version": "0.19.1",
+  "scripts": {"deploy": "wrangler deploy"},
+  "devDependencies": {"wrangler": "^4.34.0"}
+}
