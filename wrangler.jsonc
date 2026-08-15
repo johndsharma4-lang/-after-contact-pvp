@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "after-contact-pvp",
+  "name": "aftercontact-pvp",
   "main": "index.js",
   "compatibility_date": "2026-08-14",
   "durable_objects": {
