@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="mobile-web-app-capable" content="yes"/>
-<title>After Contact — 3D Lab v0.31.7 Patch 2 Earth L1 + Full Verification</title>
+<title>After Contact — 3D Lab v0.31.8 Patch 2 Earth L1 + Full Verification</title>
 <style>
 :root{color-scheme:dark;--cyan:#74d9ff;--gold:#f0c65a;--green:#79f0ac;--panel:rgba(3,13,25,.88)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:none}
@@ -620,11 +620,11 @@ html.gameView #stageShell{
 #status{bottom:12px!important;font-size:clamp(6px,.72vw,8px)!important;padding:4px 8px!important;background:rgba(3,13,25,.58)!important;border-color:rgba(120,190,255,.14)!important;opacity:.72}
 
 
-/* v0.31.7 HUD hierarchy: turn announcement settles instead of dominating combat. */
+/* v0.31.8 HUD hierarchy: turn announcement settles instead of dominating combat. */
 #status.turnAnnounce{opacity:1!important;transform:translateX(-50%) scale(1.10);transition:transform .22s ease,opacity .25s ease}
 #status.turnSettled{opacity:.68!important;transform:translateX(-50%) scale(.92);transition:transform .28s ease,opacity .28s ease}
 
-/* v0.31.7 ONE-TIME STORY INTRO */
+/* v0.31.8 ONE-TIME STORY INTRO */
 #storyIntro{position:fixed;inset:0;z-index:5000;background:#000;display:none;overflow:hidden;color:#fff;font-family:Arial,Helvetica,sans-serif}
 #storyIntro.show{display:block}
 #storyStarfield{position:absolute;inset:0;background:
@@ -642,7 +642,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 #storyContinue{position:absolute;left:50%;bottom:3.5%;transform:translateX(-50%);border:1px solid rgba(255,255,255,.42);background:rgba(5,8,12,.78);color:#fff;padding:12px 20px;border-radius:999px;font-weight:900;letter-spacing:.14em;display:none}
 #storyComic.show #storyContinue{display:block}
 #storyIntro .storyHint{position:absolute;top:4%;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.24em;color:#96a1aa;font-weight:900}
-/* v0.31.7 MOBILE BATTLE CLEANUP */
+/* v0.31.8 MOBILE BATTLE CLEANUP */
 @media (orientation:landscape) and (max-height:520px){
   #movePad{left:max(6px,env(safe-area-inset-left))!important;bottom:max(5px,env(safe-area-inset-bottom))!important;transform:scale(.82)!important;transform-origin:left bottom!important}
   #status{bottom:52px!important;max-width:58%!important;font-size:8px!important;padding:5px 9px!important}
@@ -650,6 +650,16 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
   #rangeBadge{top:40px!important;transform:translateX(-50%) scale(.86)!important}
   .hud{padding:6px 10px!important}
   .lab{top:5px!important;transform:translateX(-50%) scale(.88)!important}
+}
+
+/* v0.31.8 UNDERWATER VOLUME INTEGRATION */
+#stageShell:has(canvas)::after{
+  content:"";
+  position:absolute;inset:0;z-index:3;
+  pointer-events:none;
+  background:radial-gradient(circle at 28% 42%,rgba(38,150,158,.055),transparent 32%),
+             linear-gradient(90deg,rgba(3,55,67,.08) 0%,rgba(3,55,67,.035) 36%,transparent 58%);
+  mix-blend-mode:screen;
 }
 </style>
 </head>
@@ -694,7 +704,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <button id="moveDown" aria-label="Move down">▼</button>
 </div>
   <div class="hud"><div class="side"><div class="name" id="leftFactionName">AURELIAN ACCORD</div><div class="sub" id="leftFactionSub">SOLAR LANCER • PENETRATION TEST</div></div><div class="side right"><div class="name" id="rightFactionName">EARTH COMMAND</div><div class="sub" id="rightFactionSub">BOMBARDIER • FORTRESS LV.1</div></div></div>
-  <div class="lab">3D LAB • MOBILE PVP TEST • v0.31.7</div>
+  <div class="lab">3D LAB • MOBILE PVP TEST • v0.31.8</div>
   <div id="structureHud"><div class="structureSide"><div class="structureLabel" id="leftStructureLabel">VESSEL STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="leftStructureFill"></div></div></div><div class="structureSide right"><div class="structureLabel" id="rightStructureLabel">FORTRESS STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="rightStructureFill"></div></div></div></div>
   <div id="rangeBadge">RANGE 885m</div>
   <svg id="aimSvg" viewBox="0 0 1280 720" preserveAspectRatio="none"><path id="aimPath"/><circle id="aimDot" r="4"/><circle id="muzzleDot" r="6"/></svg>
@@ -706,13 +716,13 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
   <div id="damageMonitor"><div class="dmgTitle">TARGET DAMAGE</div><div class="dmgRow"><span class="dmgLabel">TARGET</span><span class="dmgValue" id="targetRoom">—</span></div><div class="dmgRow"><span class="dmgLabel">ARMOR</span><span class="dmgValue" id="targetArmor">—</span></div><div class="dmgRow"><span class="dmgLabel">BREACH</span><span class="dmgValue" id="targetBreach">—</span></div><div class="dmgRow"><span class="dmgLabel">WARRIOR</span><span class="dmgValue" id="targetUnit">HIDDEN</span></div></div>
   <div id="damageFlash"></div>
   <button id="ownerDbgBtn" type="button">DEBUG</button>
-  <div id="ownerDbgPanel" aria-hidden="true"><div class="dbgHead"><span>MATCH RECORDER • v0.31.7</span><button id="ownerDbgClose" type="button">✕</button></div><div class="dbgHint">Records automatically. Copy/share works on iPhone and Android. If the browser blocks clipboard access, use SELECT ALL LOG.</div><div id="ownerDbgText">DEBUG READY</div><textarea id="ownerDbgSelect" readonly aria-label="Selectable debug log"></textarea><div id="ownerDbgNotice" aria-live="polite"></div><div class="dbgActions"><button id="ownerDbgCopy" class="wide" type="button">COPY MATCH LOG</button><button id="ownerDbgRefresh" type="button">REFRESH SNAPSHOT</button><button id="ownerDbgShare" type="button">SHARE</button><button id="ownerDbgSelectAll" class="wide" type="button">SELECT ALL LOG</button><button id="ownerDbgClear" class="wide" type="button">CLEAR LOG</button></div></div>
+  <div id="ownerDbgPanel" aria-hidden="true"><div class="dbgHead"><span>MATCH RECORDER • v0.31.8</span><button id="ownerDbgClose" type="button">✕</button></div><div class="dbgHint">Records automatically. Copy/share works on iPhone and Android. If the browser blocks clipboard access, use SELECT ALL LOG.</div><div id="ownerDbgText">DEBUG READY</div><textarea id="ownerDbgSelect" readonly aria-label="Selectable debug log"></textarea><div id="ownerDbgNotice" aria-live="polite"></div><div class="dbgActions"><button id="ownerDbgCopy" class="wide" type="button">COPY MATCH LOG</button><button id="ownerDbgRefresh" type="button">REFRESH SNAPSHOT</button><button id="ownerDbgShare" type="button">SHARE</button><button id="ownerDbgSelectAll" class="wide" type="button">SELECT ALL LOG</button><button id="ownerDbgClear" class="wide" type="button">CLEAR LOG</button></div></div>
 
 
   <div id="mpOverlay" aria-live="polite">
     <div class="mpCard">
       <div class="mpKicker">AFTER CONTACT • DEVELOPMENT MULTIPLAYER</div>
-      <div class="mpTitle">PRIVATE PVP TEST • v0.31.7</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
+      <div class="mpTitle">PRIVATE PVP TEST • v0.31.8</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
       <div class="mpText">Host a private test match and invite one person. Both players choose their own faction and starter warrior before deployment. This is a development room, not public matchmaking.</div>
       <div class="mpActions"><button class="mpBtn primary" id="mpHostBtn">HOST TEST MATCH</button><button class="mpBtn" id="mpSoloBtn">SOLO LAB</button><button class="mpBtn" id="musicToggleBtn" type="button">MUSIC ON</button></div>
       <div class="mpJoin"><input id="mpCodeInput" maxlength="6" inputmode="text" autocomplete="off" placeholder="ROOM CODE"><button class="mpBtn" id="mpJoinBtn">JOIN</button></div>
@@ -820,7 +830,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.module.js';
 
 const shell=document.getElementById('stageShell'), mount=document.getElementById('stage'), statusEl=document.getElementById('status');
-// v0.31.7 OPTIONAL AV LAYER — isolated from combat state.
+// v0.31.8 OPTIONAL AV LAYER — isolated from combat state.
 // TEST ONLY: compact excerpts embedded from the two user-supplied Pixabay MP3s.
 const AFTER_CONTACT_MUSIC={
   menu:{src:'/resident-evil.mp3',label:'RESIDENT EVIL • PRIVATE TEST'},
@@ -866,7 +876,7 @@ document.addEventListener('pointerdown',unlockGameAudio,{once:true,passive:true,
 
 updateMusicToggle();
 
-// v0.31.7 ONE-TIME STORY GATE
+// v0.31.8 ONE-TIME STORY GATE
 const STORY_VERSION='1.0';
 const storyIntro=document.getElementById('storyIntro'),storyComic=document.getElementById('storyComic'),storyContinue=document.getElementById('storyContinue');
 let storyActive=false,storyTimer=null;
@@ -903,7 +913,7 @@ function hapticFire(){gameHaptic(22,'FIRE')}
 function hapticHit(){gameHaptic([34,24,52],'HIT')}
 function hapticHeavy(){gameHaptic([55,28,78],'HEAVY HIT')}
 
-// v0.31.7 COMBAT MIX — music ducks under weapon transients.
+// v0.31.8 COMBAT MIX — music ducks under weapon transients.
 let musicDuckTimer=null;
 function duckMusic(strength=.42,holdMs=260){
   if(!musicEnabled||!musicUnlocked)return;
@@ -912,7 +922,7 @@ function duckMusic(strength=.42,holdMs=260){
   a.volume=Math.min(a.volume,target);clearTimeout(musicDuckTimer);
   musicDuckTimer=setTimeout(()=>{if(!musicEnabled||a.paused)return;const start=a.volume,steps=8;let i=0;const tm=setInterval(()=>{i++;a.volume=start+(normal-start)*(i/steps);if(i>=steps)clearInterval(tm)},35)},holdMs);
 }
-// v0.31.7 PROCEDURAL COMBAT AUDIO — no external SFX assets required.
+// v0.31.8 PROCEDURAL COMBAT AUDIO — no external SFX assets required.
 let combatAudioCtx=null,lastImpactSfxAt=0;
 function unlockCombatAudio(){
   try{
@@ -1143,7 +1153,7 @@ function ownerDebugReport(){
   const rendererInfo=(()=>{try{return `webgl=${renderer.getContext().isContextLost()?'LOST':'OK'} draw=${renderer.info.render.calls} tris=${renderer.info.render.triangles}`}catch{return 'webgl=unknown'}})();
   const ctl=debugControlState(),serverLocal=mpFactionState?.[localSide]||null,wsAge=mpLastWsMessage?Math.max(0,Date.now()-mpLastWsMessage):0;const debugWarnings=[];const dupStarts=diagLines.filter(x=>x.includes('DUPLICATE START SOURCE')).length;if(dupStarts)debugWarnings.push(`DUPLICATE_STARTS:${dupStarts}`);const staleSolarInit=diagLines.filter(x=>x.includes('LEGACY SOLAR INIT')).length;if(staleSolarInit)debugWarnings.push(`LEGACY_SOLAR_INIT:${staleSolarInit}`);const invalidShots=diagLines.filter(x=>x.includes('INVALID SHOT')||x.includes('FIRE BLOCK')).length;if(invalidShots)debugWarnings.push(`INPUT_BLOCKS:${invalidShots}`);
   const invariantIssues=[];if(gameFlowPhase==='battle'&&!battleStarted&&!matchEnded)invariantIssues.push('FLOW_BATTLE_FALSE');if(factionForWorldSide('aurelian')==='earth'&&Math.abs(aure.position.y-EARTH_GROUND_Y)>.01)invariantIssues.push('P1_EARTH_AIRBORNE');if(factionForWorldSide('earth')==='earth'&&Math.abs(earth.position.y-EARTH_GROUND_Y)>.01)invariantIssues.push('P2_EARTH_AIRBORNE');if(factionForWorldSide('aurelian')==='lizard'&&(aure.position.y<REPTILIAN_MIN_DEPTH_Y-.01||aure.position.y>REPTILIAN_MAX_DEPTH_Y+.01))invariantIssues.push('P1_REPTILIAN_OUT_OF_WATER');if(factionForWorldSide('earth')==='lizard'&&(earth.position.y<REPTILIAN_MIN_DEPTH_Y-.01||earth.position.y>REPTILIAN_MAX_DEPTH_Y+.01))invariantIssues.push('P2_REPTILIAN_OUT_OF_WATER');if(battleStarted&&!matchEnded&&((!multiplayer&&soloTurn==='aurelian')||(multiplayer&&currentTurn===localSide))&&!localBattleWarrior())invariantIssues.push('LOCAL_WARRIOR_MISSING');if(!battleStarted&&effects.length)invariantIssues.push(`STALE_EFFECTS_${effects.length}`);if(multiplayer&&battleStarted&&currentTurn===localSide&&selected!==localBattleWarrior())invariantIssues.push('LOCAL_SELECTION_MISMATCH');const invariant=invariantIssues.length?`FAILED:${invariantIssues.join('|')}`:'OK';
-  return [`AFTER CONTACT MATCH RECORDER v0.31.7`,`build=2026-08-20_01-58PM_PT`,`captured=${new Date().toISOString()}`,`mode=${multiplayer?'MULTIPLAYER':'SOLO'} battle=${battleStarted} ended=${matchEnded} invariant=${invariant}`,`room=${mpCode||'-'} slot=${multiplayer?(localSide==='aurelian'?'P1/HOST':'P2/GUEST'):'SOLO'} worldSide=${localSide} localFaction=${factionForSide(localSide)} connected=${mpConnected?'Y':'N'} both=${mpBothConnected?'Y':'N'} handshake=${mpHandshakePhase} turn=${multiplayer?currentTurn:soloTurn} round=${multiplayer?mpRound:soloRound}`,`socket=${debugSocketState()} wsAgeMs=${wsAge} reconnectAttempts=${mpReconnectAttempts||0} recoveryBusy=${mpRecoveryBusy?'Y':'N'}`,`warnings=${debugWarnings.length?debugWarnings.join('|'):'NONE'}`,`artLevel=L1 firstContactDamage=Y exteriorRooms=HIDDEN privateXray=${xrayOpen?'OPEN':'CLOSED'} enemyXrayReveal=N tacticalAim=${tacticalAimView?'Y':'N'}`,`visualIsolation=${allWarriors.filter(w=>!w.active&&((w.sprite&&w.sprite.visible)||(w.marker&&w.marker.visible)||(w.hpBack&&w.hpBack.visible)||(w.hpFill&&w.hpFill.visible))).length===0&&aWarriors.length===1&&eWarriors.length===1?'OK':'GHOST'} models=L${aWarriors.length}/R${eWarriors.length}`,`flowPhase=${gameFlowPhase} selectedFaction=${selectedFaction} selectedWarrior=${selectedWarriorType}`,`serverLocal=${serverLocal?`${serverLocal.faction}/${serverLocal.warrior}`:'-'} selectedObject=${ctl.selectedKey} localBattleWarrior=${ctl.localKey} selectedMatchesLocal=${ctl.match?'Y':'N'} mine=${ctl.mine?'Y':'N'} canFire=${ctl.canFire?'Y':'N'}`,`movementRemaining=${moveRemaining} shots=${shots} aiming=${aiming?'Y':'N'} actionLock=${solarActionLock?'SOLAR':barrageActionLock?'HE9':'NONE'} range=${Math.round(currentCombatRange()*15)}m worldY=L${aure.position.y.toFixed(2)} R${earth.position.y.toFixed(2)}`,`camera=P2_SAFE_DAMPED_MOTION pos=${camera.position.x.toFixed(1)},${camera.position.y.toFixed(1)},${camera.position.z.toFixed(1)} focus=${cameraLookTarget.x.toFixed(1)},${cameraLookTarget.y.toFixed(1)} battlefield=X±105/Y58 safeFrame=Y impactShake=SCREENSPACE lighting=P2_READABLE motion=VISUAL_SPRING weaponVfx=P2_OVERHAUL aimTruth=V0309 liveSolarAnchor=Y vfxWatchdog=8s musicFramework=READY haptics=CAPABILITY_GATED music=STATIC_ASSETS_ARTIST_APPROVED_PRIVATE_TEST introStory=MANDATORY_ONCE reptilianBiome=OCEAN_V3_V2 diveBounds=6-27.5 acidAim=DIRECT+ARC musicUnlock=CAPTURE combatSfx=LOUD+DUCKED_FIRE+IMPACT`,`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX} stages=L${structureDamageStage('aurelian')}/R${structureDamageStage('earth')}`,`left=${factionForSide('aurelian')} / ${wf(aWarriors[0])} route=${warriorTypeForSide('aurelian')}/${WEAPONS[warriorTypeForSide('aurelian')]?.kind||'?'}`,`right=${factionForSide('earth')} / ${wf(eWarriors[0])} route=${warriorTypeForSide('earth')}/${WEAPONS[warriorTypeForSide('earth')]?.kind||'?'}`,`deploymentUI=${deployment.map(x=>Number.isInteger(x)?x+1:'-').join(',')} battleRooms=L${Number.isInteger(aWarriors?.[0]?.roomIndex)?aWarriors[0].roomIndex+1:'-'} R${Number.isInteger(eWarriors?.[0]?.roomIndex)?eWarriors[0].roomIndex+1:'-'}`,`LEFT ROOMS ${roomState(aRooms)}`,`RIGHT ROOMS ${roomState(eRooms)}`,`renderer=${rendererInfo}`,`status=${statusEl?.textContent||''}`,`--- EVENT LOG ---
+  return [`AFTER CONTACT MATCH RECORDER v0.31.8`,`build=2026-08-20_01-58PM_PT`,`captured=${new Date().toISOString()}`,`mode=${multiplayer?'MULTIPLAYER':'SOLO'} battle=${battleStarted} ended=${matchEnded} invariant=${invariant}`,`room=${mpCode||'-'} slot=${multiplayer?(localSide==='aurelian'?'P1/HOST':'P2/GUEST'):'SOLO'} worldSide=${localSide} localFaction=${factionForSide(localSide)} connected=${mpConnected?'Y':'N'} both=${mpBothConnected?'Y':'N'} handshake=${mpHandshakePhase} turn=${multiplayer?currentTurn:soloTurn} round=${multiplayer?mpRound:soloRound}`,`socket=${debugSocketState()} wsAgeMs=${wsAge} reconnectAttempts=${mpReconnectAttempts||0} recoveryBusy=${mpRecoveryBusy?'Y':'N'}`,`warnings=${debugWarnings.length?debugWarnings.join('|'):'NONE'}`,`artLevel=L1 firstContactDamage=Y exteriorRooms=HIDDEN privateXray=${xrayOpen?'OPEN':'CLOSED'} enemyXrayReveal=N tacticalAim=${tacticalAimView?'Y':'N'}`,`visualIsolation=${allWarriors.filter(w=>!w.active&&((w.sprite&&w.sprite.visible)||(w.marker&&w.marker.visible)||(w.hpBack&&w.hpBack.visible)||(w.hpFill&&w.hpFill.visible))).length===0&&aWarriors.length===1&&eWarriors.length===1?'OK':'GHOST'} models=L${aWarriors.length}/R${eWarriors.length}`,`flowPhase=${gameFlowPhase} selectedFaction=${selectedFaction} selectedWarrior=${selectedWarriorType}`,`serverLocal=${serverLocal?`${serverLocal.faction}/${serverLocal.warrior}`:'-'} selectedObject=${ctl.selectedKey} localBattleWarrior=${ctl.localKey} selectedMatchesLocal=${ctl.match?'Y':'N'} mine=${ctl.mine?'Y':'N'} canFire=${ctl.canFire?'Y':'N'}`,`movementRemaining=${moveRemaining} shots=${shots} aiming=${aiming?'Y':'N'} actionLock=${solarActionLock?'SOLAR':barrageActionLock?'HE9':'NONE'} range=${Math.round(currentCombatRange()*15)}m worldY=L${aure.position.y.toFixed(2)} R${earth.position.y.toFixed(2)}`,`camera=P2_SAFE_DAMPED_MOTION pos=${camera.position.x.toFixed(1)},${camera.position.y.toFixed(1)},${camera.position.z.toFixed(1)} focus=${cameraLookTarget.x.toFixed(1)},${cameraLookTarget.y.toFixed(1)} battlefield=X±105/Y58 safeFrame=Y impactShake=SCREENSPACE lighting=P2_READABLE motion=VISUAL_SPRING weaponVfx=P2_OVERHAUL aimTruth=V0309 liveSolarAnchor=Y vfxWatchdog=8s musicFramework=READY haptics=CAPABILITY_GATED music=STATIC_ASSETS_ARTIST_APPROVED_PRIVATE_TEST introStory=MANDATORY_ONCE reptilianBiome=OCEAN_V3_V2 diveBounds=6-27.5 acidAim=DIRECT+ARC musicUnlock=CAPTURE combatSfx=LOUD+DUCKED_FIRE+IMPACT`,`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX} stages=L${structureDamageStage('aurelian')}/R${structureDamageStage('earth')}`,`left=${factionForSide('aurelian')} / ${wf(aWarriors[0])} route=${warriorTypeForSide('aurelian')}/${WEAPONS[warriorTypeForSide('aurelian')]?.kind||'?'}`,`right=${factionForSide('earth')} / ${wf(eWarriors[0])} route=${warriorTypeForSide('earth')}/${WEAPONS[warriorTypeForSide('earth')]?.kind||'?'}`,`deploymentUI=${deployment.map(x=>Number.isInteger(x)?x+1:'-').join(',')} battleRooms=L${Number.isInteger(aWarriors?.[0]?.roomIndex)?aWarriors[0].roomIndex+1:'-'} R${Number.isInteger(eWarriors?.[0]?.roomIndex)?eWarriors[0].roomIndex+1:'-'}`,`LEFT ROOMS ${roomState(aRooms)}`,`RIGHT ROOMS ${roomState(eRooms)}`,`renderer=${rendererInfo}`,`status=${statusEl?.textContent||''}`,`--- EVENT LOG ---
 ${diagLines?.join?.('\n')||'no diagnostics'}`].join('\n');
 }
 function debugButtonAllowed(){return true}
@@ -1894,7 +1904,7 @@ const terrainGeo=new THREE.PlaneGeometry(290,105,110,42);terrainGeo.rotateX(-Mat
 function box(w,h,d,color,metal=.4,rough=.45){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color,metalness:metal,roughness:rough}));m.castShadow=true;m.receiveShadow=true;return m}
 function glowSphere(r,color,intensity=4){return new THREE.Mesh(new THREE.SphereGeometry(r,18,12),new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:intensity,roughness:.22}))}
 
-// v0.31.7 REPTILIAN OCEAN BIOME — layered underwater volume; no visible rectangular aquarium slab.
+// v0.31.8 REPTILIAN OCEAN BIOME — layered underwater volume; no visible rectangular aquarium slab.
 const REPTILIAN_WATER_SURFACE_Y=30.0,REPTILIAN_MIN_DEPTH_Y=6.0,REPTILIAN_MAX_DEPTH_Y=27.5;
 const reptilianBiomeState={aurelian:null,earth:null};
 function buildReptilianOceanBiome(side){
@@ -1903,12 +1913,39 @@ function buildReptilianOceanBiome(side){
   // OCEAN V3: oversized enclosing water volume removes the stage/platform silhouette.
   const oceanDome=new THREE.Mesh(new THREE.SphereGeometry(150,32,18),new THREE.MeshBasicMaterial({color:0x062e38,transparent:true,opacity:.34,side:THREE.BackSide,depthWrite:false}));
   oceanDome.scale.set(1.25,.58,.78);oceanDome.position.set(centerX,20,0);g.add(oceanDome);
+  // v0.31.8 TRUE WATER VOLUME: a faint front veil + side volume means the submarine is physically inside water,
+  // rather than visually pasted in front of an ocean background.
+  const frontWater=new THREE.Mesh(
+    new THREE.PlaneGeometry(132,72),
+    new THREE.MeshBasicMaterial({color:0x0d6c79,transparent:true,opacity:.075,depthWrite:false,side:THREE.DoubleSide,blending:THREE.NormalBlending})
+  );
+  frontWater.position.set(centerX,17,34);frontWater.renderOrder=18;g.add(frontWater);
+  const upperWater=new THREE.Mesh(
+    new THREE.PlaneGeometry(132,40),
+    new THREE.MeshBasicMaterial({color:0x2c99a3,transparent:true,opacity:.055,depthWrite:false,side:THREE.DoubleSide})
+  );
+  upperWater.rotation.x=-Math.PI/2;upperWater.position.set(centerX,REPTILIAN_WATER_SURFACE_Y-1.4,1);upperWater.renderOrder=17;g.add(upperWater);
   const deepWall=new THREE.Mesh(new THREE.PlaneGeometry(170,86),new THREE.MeshBasicMaterial({color:0x031d29,transparent:true,opacity:.62,depthWrite:false,side:THREE.DoubleSide}));
   deepWall.position.set(centerX,20,-56);g.add(deepWall);
   const shafts=[];for(let i=0;i<8;i++){const s=new THREE.Mesh(new THREE.ConeGeometry(4.5+(i%3)*2,54,10,1,true),new THREE.MeshBasicMaterial({color:0x8bd9cf,transparent:true,opacity:.025+(i%3)*.008,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));s.position.set(centerX-48+i*14,27,-8+(i%2)*9);s.rotation.z=(i%2?1:-1)*.08;g.add(s);shafts.push({mesh:s,phase:i*.77})}
   const geo=new THREE.PlaneGeometry(118,86,36,24);geo.rotateX(-Math.PI/2);const pos=geo.attributes.position;
-  for(let i=0;i<pos.count;i++){const x=pos.getX(i),z=pos.getZ(i),slope=dir*x*.075,ridge=Math.sin(x*.12)*.7+Math.cos(z*.16)*.55+Math.sin((x+z)*.08)*.35;pos.setY(i,-5.8+slope+ridge)}geo.computeVertexNormals();
+  for(let i=0;i<pos.count;i++){
+    const x=pos.getX(i),z=pos.getZ(i);
+    const towardLand=Math.max(0,dir*x+18);
+    const shelfRise=Math.pow(towardLand/76,1.7)*14.5;
+    const trench=-Math.max(0,-dir*x-18)*.045;
+    const ridge=Math.sin(x*.12)*.7+Math.cos(z*.16)*.55+Math.sin((x+z)*.08)*.35;
+    pos.setY(i,-8.2+shelfRise+trench+ridge);
+  }geo.computeVertexNormals();
   const seabed=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:0x0d302f,roughness:1,metalness:0}));seabed.position.set(centerX,0,2);seabed.receiveShadow=true;g.add(seabed);
+  const divideSlope=new THREE.Mesh(
+    new THREE.PlaneGeometry(46,44,16,12),
+    new THREE.MeshStandardMaterial({color:0x28483e,roughness:1,metalness:0,side:THREE.DoubleSide})
+  );
+  divideSlope.rotation.x=-Math.PI/2;
+  divideSlope.rotation.z=dir*.34;
+  divideSlope.position.set(centerX+dir*48,4.6,3);
+  divideSlope.receiveShadow=true;g.add(divideSlope);
   const waterMat=new THREE.MeshPhysicalMaterial({color:0x237e88,transparent:true,opacity:.035,roughness:.52,depthWrite:false,side:THREE.DoubleSide,transmission:.16});
   const water=new THREE.Mesh(new THREE.PlaneGeometry(128,92),waterMat);water.rotation.x=-Math.PI/2;water.position.set(centerX,REPTILIAN_WATER_SURFACE_Y,2);water.renderOrder=2;g.add(water);
   // Soft underwater fog curtains hide the hard edge and sell depth rather than a glass box.
@@ -1917,8 +1954,12 @@ function buildReptilianOceanBiome(side){
   const kelp=[],kelpMatA=new THREE.MeshStandardMaterial({color:0x185c42,roughness:.95}),kelpMatB=new THREE.MeshStandardMaterial({color:0x3d8652,roughness:.92});
   for(let i=0;i<48;i++){const h=3.2+(i%8)*.72,x=centerX-52+(i*15.7)%104,z=-35+(i*19.9)%72,floor=-5.8+dir*(x-centerX)*.075+Math.sin((x-centerX)*.12)*.7+Math.cos(z*.16)*.55;const stalk=new THREE.Mesh(new THREE.CylinderGeometry(.10,.18,h,5),i%2?kelpMatA:kelpMatB);stalk.position.set(x,floor+h*.5,z);stalk.rotation.z=(i%5-2)*.04;g.add(stalk);const leaf=new THREE.Mesh(new THREE.ConeGeometry(.36+(i%4)*.08,1.5+(i%3)*.32,5),i%2?kelpMatB:kelpMatA);leaf.position.set(x,stalk.position.y+h*.44,z);leaf.rotation.z=(i%2?1:-1)*.25;g.add(leaf);kelp.push({stalk,leaf,phase:i*.63,baseRot:stalk.rotation.z,leafBase:leaf.rotation.z})}
   for(let i=0;i<28;i++){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(.55+(i%6)*.31,0),new THREE.MeshStandardMaterial({color:i%3?0x234b43:0x315a49,roughness:1}));const x=centerX-53+(i*21.3)%106,z=-36+(i*25.1)%74,floor=-5.5+dir*(x-centerX)*.075;r.position.set(x,floor,z);r.scale.set(1.2,.55+(i%3)*.16,1);r.rotation.set(i*.17,i*.31,i*.11);g.add(r)}
-  const bubbleGeo=new THREE.BufferGeometry(),pts=[];for(let i=0;i<240;i++)pts.push(centerX-56+Math.random()*112,1+Math.random()*27,-38+Math.random()*78);bubbleGeo.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));const bubbles=new THREE.Points(bubbleGeo,new THREE.PointsMaterial({color:0xa8e8df,size:.13,transparent:true,opacity:.23,depthWrite:false}));g.add(bubbles);
-  scene.add(g);reptilianBiomeState[side]={group:g,water,oceanDome,deepWall,depthVeil,marineSnow,shafts,curtains,caustics,kelp,bubbles,bubbleBase:bubbleGeo.attributes.position.array.slice()};return g;
+  const bubbleGeo=new THREE.BufferGeometry(),pts=[];for(let i=0;i<280;i++)pts.push(centerX-56+Math.random()*112,1+Math.random()*27,-38+Math.random()*78);bubbleGeo.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));const bubbles=new THREE.Points(bubbleGeo,new THREE.PointsMaterial({color:0xa8e8df,size:.13,transparent:true,opacity:.23,depthWrite:false}));g.add(bubbles);
+  const fgGeo=new THREE.BufferGeometry(),fgPts=[];for(let i=0;i<190;i++)fgPts.push(centerX-54+Math.random()*108,1+Math.random()*27,18+Math.random()*20);
+  fgGeo.setAttribute('position',new THREE.Float32BufferAttribute(fgPts,3));
+  const foregroundParticles=new THREE.Points(fgGeo,new THREE.PointsMaterial({color:0xc8f2ee,size:.085,transparent:true,opacity:.19,depthWrite:false}));
+  foregroundParticles.renderOrder=19;g.add(foregroundParticles);
+  scene.add(g);reptilianBiomeState[side]={group:g,water,oceanDome,frontWater,upperWater,deepWall,depthVeil,marineSnow,foregroundParticles,divideSlope,shafts,curtains,caustics,kelp,bubbles,bubbleBase:bubbleGeo.attributes.position.array.slice()};return g;
 }
 buildReptilianOceanBiome('aurelian');buildReptilianOceanBiome('earth');
 function updateReptilianBiomeVisibility(lf=factionForWorldSide('aurelian'),rf=factionForWorldSide('earth')){reptilianBiomeState.aurelian.group.visible=lf==='lizard';reptilianBiomeState.earth.group.visible=rf==='lizard'}
@@ -3001,7 +3042,7 @@ function stagePointToRoomWorld(stagePt,room){
 }
 function nearestRoomToStagePoint(rooms,stagePt){let best=0,bestD=Infinity;for(let i=0;i<rooms.length;i++){const c=worldToStage(rooms[i].hitPlane.getWorldPosition(new THREE.Vector3())),d=Math.hypot(c.x-stagePt.x,c.y-stagePt.y);if(d<bestD){bestD=d;best=i}}return best}
 function nearestDamageableRoomToStagePoint(rooms,stagePt){let best=-1,bestD=Infinity;for(let i=0;i<rooms.length;i++){if(rooms[i].armor<=0)continue;const c=worldToStage(rooms[i].hitPlane.getWorldPosition(new THREE.Vector3())),d=Math.hypot(c.x-stagePt.x,c.y-stagePt.y);if(d<bestD){bestD=d;best=i}}return best>=0?best:nearestRoomToStagePoint(rooms,stagePt)}
-// v0.31.7 AIM TRUTH: direct visible pointer placement wins before projected beam-line fallback.
+// v0.31.8 AIM TRUTH: direct visible pointer placement wins before projected beam-line fallback.
 function directVisibleAimHit(attacker,pt){
   const rooms=opposingRooms(attacker).userData.rooms,warriors=opposing(attacker),candidates=[];
   for(let i=0;i<rooms.length;i++){
@@ -3355,7 +3396,7 @@ rematchBtn.addEventListener('pointerup',rematchSameDeployment,{passive:false});r
 redeployBtn.addEventListener('pointerup',returnToDeployment,{passive:false});redeployBtn.addEventListener('click',returnToDeployment,{passive:false});
 quitBtn.addEventListener('pointerup',quitMatch,{passive:false});quitBtn.addEventListener('click',quitMatch,{passive:false});
 
-// v0.31.7 isolated end-match navigation — intentionally does not alter startup/Solo flow.
+// v0.31.8 isolated end-match navigation — intentionally does not alter startup/Solo flow.
 const endFactionBtn=document.getElementById('factionSelectBtn');
 function endMatchFactionSelect(e){
   if(e)stopNative(e);
@@ -3395,7 +3436,7 @@ function syncRoomStructuralDamage(room){
   if(service){service.visible=breach<66;service.rotation.z=(room.local.x>=0?1:-1)*r*.18}
   braces.forEach((b,i)=>{b.visible=breach<(i<2?62:88)});
 }
-// v0.31.7 L1 combat readability: persistent exterior damage is derived ONLY from authoritative room breach.
+// v0.31.8 L1 combat readability: persistent exterior damage is derived ONLY from authoritative room breach.
 function syncExteriorBattleScar(room){
   if(!room?.hitPlane)return;
   const breach=Math.max(0,Math.min(100,room.breach||0));
