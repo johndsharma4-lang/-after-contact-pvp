@@ -654,7 +654,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 
 /* OCEAN 0.0: no full-stage ocean wash; water is confined to the Reptilian biome. */
 </style>
-<meta name="after-contact-build" content="OCEAN 0.0 • REV3 ROUTED SOLO + CLIFF OCEAN"/>
+<meta name="after-contact-build" content="OCEAN 0.0 • REV4 DIRECT SOLO + CLIFF OCEAN"/>
 
 <style id="ocean01-world-contrast">
 /* OCEAN 0.1 — neutral battlefield presentation.
@@ -681,7 +681,7 @@ canvas{filter:contrast(1.12) saturate(1.07) brightness(1.02)}
 </style>
 
 
-<style id="ocean00-rev3-solo-route">
+<style id="ocean00-rev4-solo-route">
 #mpSoloBtn{
   pointer-events:auto!important;
   position:relative!important;
@@ -691,6 +691,18 @@ canvas{filter:contrast(1.12) saturate(1.07) brightness(1.02)}
   touch-action:manipulation!important;
 }
 #mpOverlay .mpActions{position:relative;z-index:100001}
+</style>
+
+
+<style id="ocean00-rev4-solo">
+#mpSoloBtn{
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+  position:relative!important;
+  z-index:100010!important;
+  min-height:52px!important;
+}
+#mpSoloBtn:active{transform:scale(.96)!important;filter:brightness(1.3)!important}
 </style>
 
 </head>
@@ -753,9 +765,9 @@ canvas{filter:contrast(1.12) saturate(1.07) brightness(1.02)}
   <div id="mpOverlay" aria-live="polite">
     <div class="mpCard">
       <div class="mpKicker">AFTER CONTACT • DEVELOPMENT MULTIPLAYER</div>
-      <div class="mpTitle">PRIVATE PVP TEST • OCEAN 0.0 REV3</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
+      <div class="mpTitle">PRIVATE PVP TEST • OCEAN 0.0 REV4</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
       <div class="mpText">Host a private test match and invite one person. Both players choose their own faction and starter warrior before deployment. This is a development room, not public matchmaking.</div>
-      <div class="mpActions"><button class="mpBtn primary" id="mpHostBtn">HOST TEST MATCH</button><a class="mpBtn" id="mpSoloBtn" href="?solo=1" role="button" style="display:grid;place-items:center;text-decoration:none">SOLO LAB</a><button class="mpBtn" id="musicToggleBtn" type="button">MUSIC ON</button></div>
+      <div class="mpActions"><button class="mpBtn primary" id="mpHostBtn">HOST TEST MATCH</button><button class="mpBtn" id="mpSoloBtn" type="button" onclick="return window.__AC_SOLO_NOW ? window.__AC_SOLO_NOW(event) : false;" ontouchend="return window.__AC_SOLO_NOW ? window.__AC_SOLO_NOW(event) : false;">SOLO LAB</button><button class="mpBtn" id="musicToggleBtn" type="button">MUSIC ON</button></div>
       <div class="mpJoin"><input id="mpCodeInput" maxlength="6" inputmode="text" autocomplete="off" placeholder="ROOM CODE"><button class="mpBtn" id="mpJoinBtn">JOIN</button></div>
       <div class="mpLobby" id="mpLobby"><div class="mpCodeRow"><div class="mpCode" id="mpRoomCode">------</div><button class="mpBtn mpCopyCode" id="mpCopyCodeBtn" style="display:none">COPY CODE</button></div><a class="mpLink mpHiddenInviteLink" id="mpInviteLink" href="#" target="_blank" rel="noopener"></a><button class="mpBtn mpShareOnly" id="mpShareBtn">SHARE INVITE</button><div class="mpSide" id="mpSideLabel">SIDE —</div><div class="mpStatus" id="mpStatus">WAITING…</div><div class="mpActions" style="margin-top:10px"><button class="mpBtn" id="mpLeaveBtn">CANCEL</button></div></div>
     </div>
@@ -1206,7 +1218,7 @@ function ownerDebugReport(){
   const rendererInfo=(()=>{try{return `webgl=${renderer.getContext().isContextLost()?'LOST':'OK'} draw=${renderer.info.render.calls} tris=${renderer.info.render.triangles}`}catch{return 'webgl=unknown'}})();
   const ctl=debugControlState(),serverLocal=mpFactionState?.[localSide]||null,wsAge=mpLastWsMessage?Math.max(0,Date.now()-mpLastWsMessage):0;const debugWarnings=[];const dupStarts=diagLines.filter(x=>x.includes('DUPLICATE START SOURCE')).length;if(dupStarts)debugWarnings.push(`DUPLICATE_STARTS:${dupStarts}`);const staleSolarInit=diagLines.filter(x=>x.includes('LEGACY SOLAR INIT')).length;if(staleSolarInit)debugWarnings.push(`LEGACY_SOLAR_INIT:${staleSolarInit}`);const invalidShots=diagLines.filter(x=>x.includes('INVALID SHOT')||x.includes('FIRE BLOCK')).length;if(invalidShots)debugWarnings.push(`INPUT_BLOCKS:${invalidShots}`);
   const invariantIssues=[];if(gameFlowPhase==='battle'&&!battleStarted&&!matchEnded)invariantIssues.push('FLOW_BATTLE_FALSE');if(factionForWorldSide('aurelian')==='earth'&&Math.abs(aure.position.y-EARTH_GROUND_Y)>.01)invariantIssues.push('P1_EARTH_AIRBORNE');if(factionForWorldSide('earth')==='earth'&&Math.abs(earth.position.y-EARTH_GROUND_Y)>.01)invariantIssues.push('P2_EARTH_AIRBORNE');if(factionForWorldSide('aurelian')==='lizard'&&(aure.position.y<REPTILIAN_MIN_DEPTH_Y-.01||aure.position.y>REPTILIAN_MAX_DEPTH_Y+.01))invariantIssues.push('P1_REPTILIAN_OUT_OF_WATER');if(factionForWorldSide('earth')==='lizard'&&(earth.position.y<REPTILIAN_MIN_DEPTH_Y-.01||earth.position.y>REPTILIAN_MAX_DEPTH_Y+.01))invariantIssues.push('P2_REPTILIAN_OUT_OF_WATER');if(battleStarted&&!matchEnded&&((!multiplayer&&soloTurn==='aurelian')||(multiplayer&&currentTurn===localSide))&&!localBattleWarrior())invariantIssues.push('LOCAL_WARRIOR_MISSING');if(!battleStarted&&effects.length)invariantIssues.push(`STALE_EFFECTS_${effects.length}`);if(multiplayer&&battleStarted&&currentTurn===localSide&&selected!==localBattleWarrior())invariantIssues.push('LOCAL_SELECTION_MISMATCH');const invariant=invariantIssues.length?`FAILED:${invariantIssues.join('|')}`:'OK';
-  return [`AFTER CONTACT MATCH RECORDER v0.31.8`,`build=2026-08-20_01-58PM_PT`,`captured=${new Date().toISOString()}`,`mode=${multiplayer?'MULTIPLAYER':'SOLO'} battle=${battleStarted} ended=${matchEnded} invariant=${invariant}`,`room=${mpCode||'-'} slot=${multiplayer?(localSide==='aurelian'?'P1/HOST':'P2/GUEST'):'SOLO'} worldSide=${localSide} localFaction=${factionForSide(localSide)} connected=${mpConnected?'Y':'N'} both=${mpBothConnected?'Y':'N'} handshake=${mpHandshakePhase} turn=${multiplayer?currentTurn:soloTurn} round=${multiplayer?mpRound:soloRound}`,`socket=${debugSocketState()} wsAgeMs=${wsAge} reconnectAttempts=${mpReconnectAttempts||0} recoveryBusy=${mpRecoveryBusy?'Y':'N'}`,`warnings=${debugWarnings.length?debugWarnings.join('|'):'NONE'}`,`artLevel=L1 firstContactDamage=Y exteriorRooms=HIDDEN privateXray=${xrayOpen?'OPEN':'CLOSED'} enemyXrayReveal=N tacticalAim=${tacticalAimView?'Y':'N'}`,`visualIsolation=${allWarriors.filter(w=>!w.active&&((w.sprite&&w.sprite.visible)||(w.marker&&w.marker.visible)||(w.hpBack&&w.hpBack.visible)||(w.hpFill&&w.hpFill.visible))).length===0&&aWarriors.length===1&&eWarriors.length===1?'OK':'GHOST'} models=L${aWarriors.length}/R${eWarriors.length}`,`flowPhase=${gameFlowPhase} selectedFaction=${selectedFaction} selectedWarrior=${selectedWarriorType}`,`serverLocal=${serverLocal?`${serverLocal.faction}/${serverLocal.warrior}`:'-'} selectedObject=${ctl.selectedKey} localBattleWarrior=${ctl.localKey} selectedMatchesLocal=${ctl.match?'Y':'N'} mine=${ctl.mine?'Y':'N'} canFire=${ctl.canFire?'Y':'N'}`,`movementRemaining=${moveRemaining} shots=${shots} aiming=${aiming?'Y':'N'} actionLock=${solarActionLock?'SOLAR':barrageActionLock?'HE9':'NONE'} range=${Math.round(currentCombatRange()*15)}m worldY=L${aure.position.y.toFixed(2)} R${earth.position.y.toFixed(2)}`,`camera=P2_SAFE_DAMPED_MOTION pos=${camera.position.x.toFixed(1)},${camera.position.y.toFixed(1)},${camera.position.z.toFixed(1)} focus=${cameraLookTarget.x.toFixed(1)},${cameraLookTarget.y.toFixed(1)} battlefield=X±105/Y58 safeFrame=Y impactShake=SCREENSPACE lighting=P2_READABLE motion=VISUAL_SPRING weaponVfx=P2_OVERHAUL aimTruth=V0309 liveSolarAnchor=Y vfxWatchdog=8s musicFramework=READY haptics=CAPABILITY_GATED music=STATIC_ASSETS_ARTIST_APPROVED_PRIVATE_TEST introStory=MANDATORY_ONCE reptilianBiome=OCEAN_0_0_REV3_CLIFF_WAVES diveBounds=6-27.5 acidAim=OCEAN00_ALIGNED_LONG_GUIDE musicUnlock=CAPTURE combatSfx=LOUD+DUCKED_FIRE+IMPACT`,`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX} stages=L${structureDamageStage('aurelian')}/R${structureDamageStage('earth')}`,`left=${factionForSide('aurelian')} / ${wf(aWarriors[0])} route=${warriorTypeForSide('aurelian')}/${WEAPONS[warriorTypeForSide('aurelian')]?.kind||'?'}`,`right=${factionForSide('earth')} / ${wf(eWarriors[0])} route=${warriorTypeForSide('earth')}/${WEAPONS[warriorTypeForSide('earth')]?.kind||'?'}`,`deploymentUI=${deployment.map(x=>Number.isInteger(x)?x+1:'-').join(',')} battleRooms=L${Number.isInteger(aWarriors?.[0]?.roomIndex)?aWarriors[0].roomIndex+1:'-'} R${Number.isInteger(eWarriors?.[0]?.roomIndex)?eWarriors[0].roomIndex+1:'-'}`,`LEFT ROOMS ${roomState(aRooms)}`,`RIGHT ROOMS ${roomState(eRooms)}`,`renderer=${rendererInfo}`,`status=${statusEl?.textContent||''}`,`--- EVENT LOG ---
+  return [`AFTER CONTACT MATCH RECORDER v0.31.8`,`build=2026-08-20_01-58PM_PT`,`captured=${new Date().toISOString()}`,`mode=${multiplayer?'MULTIPLAYER':'SOLO'} battle=${battleStarted} ended=${matchEnded} invariant=${invariant}`,`room=${mpCode||'-'} slot=${multiplayer?(localSide==='aurelian'?'P1/HOST':'P2/GUEST'):'SOLO'} worldSide=${localSide} localFaction=${factionForSide(localSide)} connected=${mpConnected?'Y':'N'} both=${mpBothConnected?'Y':'N'} handshake=${mpHandshakePhase} turn=${multiplayer?currentTurn:soloTurn} round=${multiplayer?mpRound:soloRound}`,`socket=${debugSocketState()} wsAgeMs=${wsAge} reconnectAttempts=${mpReconnectAttempts||0} recoveryBusy=${mpRecoveryBusy?'Y':'N'}`,`warnings=${debugWarnings.length?debugWarnings.join('|'):'NONE'}`,`artLevel=L1 firstContactDamage=Y exteriorRooms=HIDDEN privateXray=${xrayOpen?'OPEN':'CLOSED'} enemyXrayReveal=N tacticalAim=${tacticalAimView?'Y':'N'}`,`visualIsolation=${allWarriors.filter(w=>!w.active&&((w.sprite&&w.sprite.visible)||(w.marker&&w.marker.visible)||(w.hpBack&&w.hpBack.visible)||(w.hpFill&&w.hpFill.visible))).length===0&&aWarriors.length===1&&eWarriors.length===1?'OK':'GHOST'} models=L${aWarriors.length}/R${eWarriors.length}`,`flowPhase=${gameFlowPhase} selectedFaction=${selectedFaction} selectedWarrior=${selectedWarriorType}`,`serverLocal=${serverLocal?`${serverLocal.faction}/${serverLocal.warrior}`:'-'} selectedObject=${ctl.selectedKey} localBattleWarrior=${ctl.localKey} selectedMatchesLocal=${ctl.match?'Y':'N'} mine=${ctl.mine?'Y':'N'} canFire=${ctl.canFire?'Y':'N'}`,`movementRemaining=${moveRemaining} shots=${shots} aiming=${aiming?'Y':'N'} actionLock=${solarActionLock?'SOLAR':barrageActionLock?'HE9':'NONE'} range=${Math.round(currentCombatRange()*15)}m worldY=L${aure.position.y.toFixed(2)} R${earth.position.y.toFixed(2)}`,`camera=P2_SAFE_DAMPED_MOTION pos=${camera.position.x.toFixed(1)},${camera.position.y.toFixed(1)},${camera.position.z.toFixed(1)} focus=${cameraLookTarget.x.toFixed(1)},${cameraLookTarget.y.toFixed(1)} battlefield=X±105/Y58 safeFrame=Y impactShake=SCREENSPACE lighting=P2_READABLE motion=VISUAL_SPRING weaponVfx=P2_OVERHAUL aimTruth=V0309 liveSolarAnchor=Y vfxWatchdog=8s musicFramework=READY haptics=CAPABILITY_GATED music=STATIC_ASSETS_ARTIST_APPROVED_PRIVATE_TEST introStory=MANDATORY_ONCE reptilianBiome=OCEAN_0_0_REV4_CLIFF_WAVES diveBounds=6-27.5 acidAim=OCEAN00_ALIGNED_LONG_GUIDE musicUnlock=CAPTURE combatSfx=LOUD+DUCKED_FIRE+IMPACT`,`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX} stages=L${structureDamageStage('aurelian')}/R${structureDamageStage('earth')}`,`left=${factionForSide('aurelian')} / ${wf(aWarriors[0])} route=${warriorTypeForSide('aurelian')}/${WEAPONS[warriorTypeForSide('aurelian')]?.kind||'?'}`,`right=${factionForSide('earth')} / ${wf(eWarriors[0])} route=${warriorTypeForSide('earth')}/${WEAPONS[warriorTypeForSide('earth')]?.kind||'?'}`,`deploymentUI=${deployment.map(x=>Number.isInteger(x)?x+1:'-').join(',')} battleRooms=L${Number.isInteger(aWarriors?.[0]?.roomIndex)?aWarriors[0].roomIndex+1:'-'} R${Number.isInteger(eWarriors?.[0]?.roomIndex)?eWarriors[0].roomIndex+1:'-'}`,`LEFT ROOMS ${roomState(aRooms)}`,`RIGHT ROOMS ${roomState(eRooms)}`,`renderer=${rendererInfo}`,`status=${statusEl?.textContent||''}`,`--- EVENT LOG ---
 ${diagLines?.join?.('\n')||'no diagnostics'}`].join('\n');
 }
 function debugButtonAllowed(){return true}
@@ -1795,6 +1807,51 @@ function enterSoloLab(e){
     setTimeout(()=>{soloEntryBusy=false},220);
   }
 }
+// OCEAN 0.0 REV4 — direct Solo entry.
+// Exposed on window so the button's inline click/touch handlers bypass all other event-routing layers.
+window.__AC_SOLO_NOW=function(e){
+  try{
+    if(e?.cancelable)e.preventDefault();
+    e?.stopPropagation?.();
+    // Immediate visible transition before any reset work.
+    mpOverlay.classList.add('hidden');
+    factionOverlay.classList.add('show');
+    factionOverlay.setAttribute('aria-hidden','false');
+
+    selectedFaction='aurelian';
+    selectedWarriorType=FACTION_STARTERS[selectedFaction];
+    multiplayer=false;localSide='aurelian';gameFlowPhase='faction';
+
+    // Normal Solo reset.
+    soloEntryBusy=false;
+    enterSoloLab(null);
+
+    // Reassert destination in case cleanup changed overlays.
+    mpOverlay.classList.add('hidden');
+    factionOverlay.classList.add('show');
+    factionOverlay.setAttribute('aria-hidden','false');
+
+    const rotate=document.getElementById('rotate');
+    if(rotate)rotate.style.display='none';
+    diag?.('SOLO DIRECT','REV4 OPEN');
+    return false;
+  }catch(err){
+    try{
+      mpOverlay.classList.add('hidden');
+      factionOverlay.classList.add('show');
+      factionOverlay.setAttribute('aria-hidden','false');
+      const bs=document.getElementById('bootState');
+      if(bs){bs.textContent='SOLO FALLBACK OPEN';bs.style.color='#79f0ac'}
+    }catch{}
+    console.error('REV4 solo direct failed',err);
+    return false;
+  }
+};
+
+// Also bind the same function programmatically after module initialization.
+mpSoloBtn.onclick=window.__AC_SOLO_NOW;
+mpSoloBtn.addEventListener('pointerup',window.__AC_SOLO_NOW,{passive:false});
+
 
 // OCEAN 0.0 REV3 — SOLO LAB uses a real URL route (?solo=1).
 // This avoids iOS/Safari swallowing the old synthetic button gesture.
@@ -4110,40 +4167,7 @@ if(impactOffset)camera.position.sub(impactOffset);
 
 try{if(bootState){bootState.textContent='SYSTEM READY • SOLO + PVP';bootState.style.color='#8fffc1'}}catch(err){}
 
-// OCEAN 0.0 REV3 — browser-native Solo route boot.
-function enterSoloFromRoute(){
-  try{
-    selectedFaction='aurelian';
-    selectedWarriorType=FACTION_STARTERS[selectedFaction];
-    // Show destination first so any later cleanup error cannot leave the user on Home.
-    forceSoloFactionScreen();
-    try{unlockGameAudio()}catch(err){diag?.('SOLO AUDIO ROUTE',String(err?.message||err))}
-    // Perform required Solo reset without depending on a touch event.
-    multiplayer=false;localSide='aurelian';gameFlowPhase='faction';
-    mpPlayStarted=false;mpPlayReady=false;mpConnected=false;mpBothConnected=false;
-    try{if(mpReconnectTimer){clearTimeout(mpReconnectTimer);mpReconnectTimer=null}}catch{}
-    try{mpSocketGeneration++}catch{}
-    try{stopDeployReadyRetry()}catch{}
-    try{stopRoomStatePolling()}catch{}
-    try{mpSocket?.close(1000,'solo route')}catch{}
-    mpSocket=null;mpToken='';mpCode='';mpDeployLocked=false;mpDeployReadyAck=false;
-    try{deployment.fill(null)}catch{}
-    battleStarted=false;matchEnded=false;battleLaunchGuard=false;
-    forceSoloFactionScreen();
-    try{history.replaceState({},'',OWNER_DEBUG?`${location.pathname}?ownerdebug=1`:location.pathname)}catch{}
-    try{syncAcMobileViewport()}catch{}
-    // Do NOT cover faction selection with the portrait rotate gate.
-    const rotate=document.getElementById('rotate');if(rotate)rotate.style.display='none';
-    diag?.('SOLO ROUTE','faction screen open');
-  }catch(err){
-    try{mpOverlay.classList.add('hidden');factionOverlay.classList.add('show');factionOverlay.setAttribute('aria-hidden','false')}catch{}
-    console.error('Solo route boot failed',err);
-  }
-}
-if(new URLSearchParams(location.search).get('solo')==='1'){
-  // Page navigation itself is the user gesture; enter after module initialization.
-  setTimeout(enterSoloFromRoute,40);
-}
+
 
 </script>
 
