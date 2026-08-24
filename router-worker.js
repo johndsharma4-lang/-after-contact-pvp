@@ -17,7 +17,7 @@ function documentHeaders(response) {
 
 class StoryPresentationInjector {
   element(element) {
-    element.append('<script src="/story-presentation.js?v=20260824-2"></script>', { html: true });
+    element.append('<script src="/story-presentation.js?v=20260824-4"></script>', { html: true });
   }
 }
 
@@ -25,7 +25,6 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // Force the game document to be served as HTML instead of a download.
     if (isDocumentRequest(request, url)) {
       const indexUrl = new URL('/index.html', url);
       const assetRequest = new Request(indexUrl.toString(), {
