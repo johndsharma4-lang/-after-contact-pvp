@@ -146,9 +146,12 @@
     if(continueButton){continueButton.style.removeProperty('display');continueButton.click();}
   }
 
-  if(nextButton){nextButton.addEventListener('click',handleNext,true);nextButton.addEventListener('pointerup',handleNext,true);}
+  if(nextButton){
+    nextButton.addEventListener('pointerup',handleNext,true);
+    nextButton.addEventListener('click',e=>{if(e.detail===0)handleNext(e)},true);
+  }
   startMenu.addEventListener('pointerup',handleStartMenuTap,true);
-  startMenu.addEventListener('click',handleStartMenuTap,true);
+  startMenu.addEventListener('click',e=>{if(e.detail===0)handleStartMenuTap(e)},true);
 
   const introObserver=new MutationObserver(()=>{
     syncGlobalOrientation();
