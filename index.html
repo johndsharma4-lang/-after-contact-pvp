@@ -2685,7 +2685,30 @@ const WEAPONS={
 };
 function makeCrewSilhouetteTexture(){const c=document.createElement('canvas');c.width=64;c.height=112;const x=c.getContext('2d');x.clearRect(0,0,64,112);x.fillStyle='#fff';x.beginPath();x.arc(32,17,13,0,Math.PI*2);x.fill();x.beginPath();x.moveTo(18,36);x.quadraticCurveTo(32,29,46,36);x.lineTo(54,76);x.lineTo(42,76);x.lineTo(39,108);x.lineTo(25,108);x.lineTo(22,76);x.lineTo(10,76);x.closePath();x.fill();const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;return t}
 const crewSilhouetteTexture=makeCrewSilhouetteTexture();
-function makeWarriors(side,roomGroup,roomIndices,texture,weaponKey,options={}){const out=[];for(let i=0;i<roomIndices.length;i++){const roomIndex=roomIndices[i],room=roomGroup.userData.rooms[roomIndex],role=options.role||'captain',assignedColor=options.assignedColors?.[i]??(side==='aurelian'?0xf0c65a:0x74d9ff);const markerMat=new THREE.MeshBasicMaterial({color:assignedColor,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide});const marker=new THREE.Mesh(new THREE.PlaneGeometry(3.25,4.85),markerMat);marker.position.copy(room.local).add(new THREE.Vector3(0,-.05,-.95));if(side==='aurelian')marker.rotation.y=Math.PI;roomGroup.add(marker);const mat=new THREE.SpriteMaterial({map:texture,color:role==='shadow'?0x25313d:0xffffff,transparent:true,opacity:role==='shadow'?.86:1,depthTest:true,depthWrite:false});const spr=new THREE.Sprite(mat);spr.scale.set(role==='shadow'?2.18:2.5,role==='shadow'?3.78:4.2,1);spr.position.copy(room.local).add(new THREE.Vector3(0,-.1,-.75));roomGroup.add(spr);const xrayGlowMat=new THREE.SpriteMaterial({map:crewSilhouetteTexture,color:assignedColor,transparent:true,opacity:.26,depthTest:false,depthWrite:false,blending:THREE.AdditiveBlending});const xrayGlow=role==='shadow'?new THREE.Sprite(xrayGlowMat):null;if(xrayGlow){xrayGlow.scale.set(1.48,2.60,1);xrayGlow.position.copy(room.local).add(new THREE.Vector3(0,-.14,.50));xrayGlow.renderOrder=81;xrayGlow.visible=false;roomGroup.add(xrayGlow)}const hpBack=box(2.75,.22,.16,0x08111b,.05,.9);hpBack.position.copy(room.local).add(new THREE.Vector3(0,1.78,-.64));roomGroup.add(hpBack);const hpFill=box(2.55,.12,.18,0x74dfff,.05,.65);hpFill.position.copy(room.local).add(new THREE.Vector3(0,1.78,-.53));roomGroup.add(hpFill);const healthBaseMat=new THREE.SpriteMaterial({map:crewSilhouetteTexture,color:0x071019,transparent:true,opacity:.72,depthTest:false,depthWrite:false});const healthBase=new THREE.Sprite(healthBaseMat);healthBase.scale.set(1.22,2.14,1);healthBase.position.copy(room.local).add(new THREE.Vector3(0,-.14,.56));healthBase.renderOrder=82;roomGroup.add(healthBase);const healthFillMat=new THREE.SpriteMaterial({map:crewSilhouetteTexture,color:assignedColor,transparent:true,opacity:.92,depthTest:false,depthWrite:false,blending:THREE.AdditiveBlending});const healthFill=new THREE.Sprite(healthFillMat);healthFill.scale.set(1.22,2.14,1);healthFill.position.copy(healthBase.position);healthFill.renderOrder=83;roomGroup.add(healthFill);healthBase.visible=false;healthFill.visible=false;const w={side,index:i,sprite:spr,marker,markerMat,xrayGlow,hpBack,hpFill,healthBase,healthFill,healthHeight:2.14,roomIndex,hp:100,maxHp:100,aa:60,maxAa:60,aaLevel:1,weaponKey,roomGroup,role,isCaptain:role==='captain',passive:role==='shadow',canAttack:role==='captain',active:true,assignedColor,displayName:role==='shadow'?`SHADOW ${i+1}`:null,captainPenaltyApplied:false};marker.userData.warrior=w;out.push(w)}return out}
+function makeWarriors(side,roomGroup,roomIndices,texture,weaponKey,options={}){
+  const out=[];
+  for(let i=0;i<roomIndices.length;i++){
+    const roomIndex=roomIndices[i],room=roomGroup.userData.rooms[roomIndex],role=options.role||'captain',isCaptain=role==='captain',assignedColor=options.assignedColors?.[i]??(side==='aurelian'?0xf0c65a:0x74d9ff);
+    const markerMat=new THREE.MeshBasicMaterial({color:assignedColor,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide});
+    const marker=new THREE.Mesh(new THREE.PlaneGeometry(3.25,4.85),markerMat);marker.position.copy(room.local).add(new THREE.Vector3(0,-.05,-.95));if(side==='aurelian')marker.rotation.y=Math.PI;roomGroup.add(marker);
+    const mat=new THREE.SpriteMaterial({map:texture,color:role==='shadow'?0x25313d:0xffffff,transparent:true,opacity:role==='shadow'?.86:1,depthTest:true,depthWrite:false});
+    const spr=new THREE.Sprite(mat);spr.scale.set(role==='shadow'?2.18:2.5,role==='shadow'?3.78:4.2,1);spr.position.copy(room.local).add(new THREE.Vector3(0,-.1,-.75));roomGroup.add(spr);
+    const xrayGlowMat=new THREE.SpriteMaterial({map:crewSilhouetteTexture,color:assignedColor,transparent:true,opacity:isCaptain?.62:.26,depthTest:false,depthWrite:false,blending:THREE.AdditiveBlending});
+    const xrayGlow=new THREE.Sprite(xrayGlowMat);xrayGlow.scale.set(isCaptain?2.08:1.48,isCaptain?3.64:2.60,1);xrayGlow.position.copy(room.local).add(new THREE.Vector3(0,-.14,.50));xrayGlow.renderOrder=81;xrayGlow.visible=false;roomGroup.add(xrayGlow);
+    const captainBeaconMat=isCaptain?new THREE.MeshBasicMaterial({color:assignedColor,transparent:true,opacity:.74,depthTest:false,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}):null;
+    const captainBeacon=isCaptain?new THREE.Mesh(new THREE.RingGeometry(1.38,1.58,6),captainBeaconMat):null;
+    if(captainBeacon){captainBeacon.position.copy(room.local).add(new THREE.Vector3(0,-.10,.46));captainBeacon.rotation.z=Math.PI/6;captainBeacon.renderOrder=80;captainBeacon.visible=false;roomGroup.add(captainBeacon)}
+    const hpBack=box(2.75,.22,.16,0x08111b,.05,.9);hpBack.position.copy(room.local).add(new THREE.Vector3(0,1.78,-.64));roomGroup.add(hpBack);
+    const hpFill=box(2.55,.12,.18,0x74dfff,.05,.65);hpFill.position.copy(room.local).add(new THREE.Vector3(0,1.78,-.53));roomGroup.add(hpFill);
+    const healthBaseMat=new THREE.SpriteMaterial({map:crewSilhouetteTexture,color:0x071019,transparent:true,opacity:.72,depthTest:false,depthWrite:false});
+    const healthBase=new THREE.Sprite(healthBaseMat);healthBase.scale.set(1.22,2.14,1);healthBase.position.copy(room.local).add(new THREE.Vector3(0,-.14,.56));healthBase.renderOrder=82;roomGroup.add(healthBase);
+    const healthFillMat=new THREE.SpriteMaterial({map:crewSilhouetteTexture,color:assignedColor,transparent:true,opacity:.92,depthTest:false,depthWrite:false,blending:THREE.AdditiveBlending});
+    const healthFill=new THREE.Sprite(healthFillMat);healthFill.scale.set(1.22,2.14,1);healthFill.position.copy(healthBase.position);healthFill.renderOrder=83;roomGroup.add(healthFill);healthBase.visible=false;healthFill.visible=false;
+    const w={side,index:i,sprite:spr,marker,markerMat,xrayGlow,captainBeacon,hpBack,hpFill,healthBase,healthFill,healthHeight:2.14,roomIndex,hp:100,maxHp:100,aa:60,maxAa:60,aaLevel:1,weaponKey,roomGroup,role,isCaptain,passive:role==='shadow',canAttack:isCaptain,active:true,assignedColor,displayName:role==='shadow'?`SHADOW ${i+1}`:null,captainPenaltyApplied:false};
+    marker.userData.warrior=w;out.push(w)
+  }
+  return out
+}
 // Captains remain the only selectable/firing warriors. Eight passive shadow occupants fill the other
 // compartments and can take AA/HP damage, but they never receive movement, weapon, or turn control.
 const SHADOW_CREW_COLORS=[0x60d9ff,0x7cff9b,0xffd45f,0xc489ff,0xff8c68,0x56e0c5,0xff83c8,0xe8f1ff];
@@ -2704,6 +2727,7 @@ function setWarriorRoom(w,roomIndex){
   w.marker.rotation.y=w.side==='aurelian'?Math.PI:0;
   w.sprite.position.copy(room.local).add(new THREE.Vector3(0,-.1,-.75));
   if(w.xrayGlow)w.xrayGlow.position.copy(room.local).add(new THREE.Vector3(0,-.14,.50));
+  if(w.captainBeacon)w.captainBeacon.position.copy(room.local).add(new THREE.Vector3(0,-.10,.46));
   w.hpBack.position.copy(room.local).add(new THREE.Vector3(0,1.78,-.64));
   w.hpFill.position.copy(room.local).add(new THREE.Vector3(0,1.78,-.53));
   if(w.healthBase)w.healthBase.position.copy(room.local).add(new THREE.Vector3(0,-.14,.56));
@@ -2720,13 +2744,13 @@ function arrangePassiveCrew(side){
 function factionCrewColor(side){return({earth:0x4ebdff,aurelian:0xffd65a,lizard:0x69e88b,gray:0xa96cff})[factionForWorldSide(side)]||0x74d9ff}
 function syncCrewIdentityColors(){
   for(const w of [...aWarriors,...eWarriors])w.assignedColor=factionCrewColor(w.side);
-  for(const w of allWarriors){if(w.healthFill?.material)w.healthFill.material.color.setHex(w.assignedColor);if(w.xrayGlow?.material)w.xrayGlow.material.color.setHex(w.assignedColor)}
+  for(const w of allWarriors){if(w.healthFill?.material)w.healthFill.material.color.setHex(w.assignedColor);if(w.xrayGlow?.material)w.xrayGlow.material.color.setHex(w.assignedColor);if(w.captainBeacon?.material)w.captainBeacon.material.color.setHex(w.assignedColor)}
 }
 function setWarriorObjectsVisible(w,visible){
   if(!w)return false;
   const on=!!visible;
   for(const obj of [w.sprite,w.marker,w.hpBack,w.hpFill])if(obj)obj.visible=on;
-  if(!on){if(w.xrayGlow)w.xrayGlow.visible=false;if(w.healthBase)w.healthBase.visible=false;if(w.healthFill)w.healthFill.visible=false}
+  if(!on){if(w.xrayGlow)w.xrayGlow.visible=false;if(w.captainBeacon)w.captainBeacon.visible=false;if(w.healthBase)w.healthBase.visible=false;if(w.healthFill)w.healthFill.visible=false}
   if(w.hpEl)w.hpEl.style.display=on?'':'none';
   return true;
 }
@@ -3738,14 +3762,17 @@ function refreshPrivateXrayVisuals(){
     v.shell.material.opacity=.04+b*.035;v.cavity.material.opacity=.065+b*.035;v.edge.material.opacity=pulse-b*.18;v.damage.material.opacity=b>0?.05+b*.34:0;
     v.damage.material.color.setHex(b>=.55?0xff4938:b>=.25?0xff8a45:0xffc04d)
   }
-  for(const w of localXrayWarriors())syncWarriorConcealment(w)
+  for(const w of localXrayWarriors()){
+    syncWarriorConcealment(w);
+    if(w.isCaptain&&w.captainBeacon?.visible){const pulse=Math.abs(Math.sin(now*.0048));w.captainBeacon.scale.setScalar(1+pulse*.055);w.captainBeacon.material.opacity=.62+pulse*.24;if(w.xrayGlow?.visible)w.xrayGlow.material.opacity=.54+pulse*.18}
+  }
 }
 function updatePrivateXrayAnimation(dt){
   if(!xrayOpen)return;xrayPulse=(xrayPulse+dt*.20)%1;refreshPrivateXrayVisuals()
 }
 function openPrivateXray(reason='own vessel tap'){
   if(!battleStarted||matchEnded||xrayOpen)return;const mine=multiplayer?currentTurn===localSide:soloTurn==='aurelian';if(!mine)return;
-  xrayOpen=true;tacticalAimView=false;clearAim?.();applyXrayShell();buildPrivateXray();for(const w of localXrayWarriors())syncWarriorConcealment(w);statusEl.textContent='X-RAY • OWN VESSEL';diag('XRAY OPEN',`${reason} side=${localXraySide()} local-only=Y`)
+  xrayOpen=true;tacticalAimView=false;clearAim?.();applyXrayShell();buildPrivateXray();for(const w of localXrayWarriors())syncWarriorConcealment(w);statusEl.textContent='X-RAY • YOUR WARRIOR HIGHLIGHTED';diag('XRAY OPEN',`${reason} side=${localXraySide()} local-only=Y captainMarked=Y`)
 }
 function closePrivateXray(reason='manual'){
   if(!xrayOpen)return;xrayOpen=false;restoreXrayShell();if(xrayGroup){localCommandVessel().remove(xrayGroup);disposeXrayObject(xrayGroup)}xrayGroup=null;xrayScanBand=null;xrayRoomVisuals=[];for(const w of localXrayWarriors())syncWarriorConcealment(w);diag('XRAY CLOSE',`${reason} side=${localXraySide()}`);const mine=multiplayer?currentTurn===localSide:soloTurn==='aurelian';if(mine&&!matchEnded)statusEl.textContent='YOUR TURN • MOVE OR FIRE • TAP OWN VESSEL FOR X-RAY'
@@ -3780,6 +3807,7 @@ function syncWarriorConcealment(w){
   const isMine=!multiplayer?w.side==='aurelian':w.side===localSide;
   if(w.markerMat){w.markerMat.color.setHex(exposed?0xc8483e:w.assignedColor);w.markerMat.opacity=show?(exposed?.28:(w===selected?.35:0)):0}
   if(w.xrayGlow)w.xrayGlow.visible=show&&xrayOpen&&isMine&&w.aa>0;
+  if(w.captainBeacon)w.captainBeacon.visible=show&&xrayOpen&&isMine;
   if(w.hpBack)w.hpBack.visible=show&&w.aa>0;
   if(w.hpFill)w.hpFill.visible=show&&w.aa>0;
   const healthVisible=show&&w.aa<=0;
