@@ -2,27 +2,22 @@
 (() => {
   'use strict';
 
-  const intro = document.getElementById('storyIntro');
-  const comic = document.getElementById('storyComic');
-  const canvas = document.getElementById('storyPanelCanvas');
-  const count = document.getElementById('storyPanelCount');
-  const nextButton = document.getElementById('storyFrameBtn');
-  const continueButton = document.getElementById('storyContinue');
-  const rotate = document.getElementById('rotate');
-  if (!intro || !comic || !canvas) return;
+  const intro=document.getElementById('storyIntro');
+  const comic=document.getElementById('storyComic');
+  const canvas=document.getElementById('storyPanelCanvas');
+  const count=document.getElementById('storyPanelCount');
+  const nextButton=document.getElementById('storyFrameBtn');
+  const continueButton=document.getElementById('storyContinue');
+  const mpOverlay=document.getElementById('mpOverlay');
+  const soloButton=document.getElementById('mpSoloBtn');
+  if(!intro||!comic||!canvas)return;
 
-  const APPROVED_PANELS = [
-    '/story-panels/panel-01.webp',
-    '/story-panels/panel-02.webp',
-    '/story-panels/panel-03.webp',
-    '/story-panels/panel-04.webp',
-    '/story-panels/panel-05.webp',
-    '/story-panels/panel-06.webp',
-    '/story-panels/panel-07.webp'
-  ];
+  const PANELS=[1,2,3,4,5,6,7].map(n=>`/story-panels/panel-0${n}.webp`);
+  const imageCache=new Map();
+  let panelIndex=0,customSequenceActive=false,storyArmed=false,pendingLandscapeStart=null,crawlWasPlaying=false,preloadPromise=null;
 
-  const style = document.createElement('style');
-  style.textContent = `
+  const style=document.createElement('style');
+  style.textContent=`
     #storyCrawlWrap{overflow:hidden!important}
     #storyCrawl{font-size:clamp(32px,5.2vw,48px)!important;line-height:1.46!important}
     #storyCrawl p,#storyCrawl span{font-size:inherit!important;line-height:inherit!important}
@@ -33,207 +28,152 @@
     #storyPanelCount{top:max(8px,env(safe-area-inset-top))!important;z-index:7!important;background:rgba(0,0,0,.62)!important;padding:5px 10px!important;border-radius:999px!important}
     #storyFrameBtn,#storyContinue{z-index:8!important;bottom:max(10px,calc(env(safe-area-inset-bottom) + 4px))!important}
 
-    #acStartMenu{position:absolute;inset:0;z-index:6;display:none;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(circle at 50% 45%,rgba(120,0,0,.13),transparent 42%),linear-gradient(180deg,#020202,#080808 62%,#010101);text-align:center;padding:4vh 5vw calc(4vh + env(safe-area-inset-bottom));}
+    #acStartMenu{position:absolute;inset:0;z-index:6;display:none;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(circle at 50% 45%,rgba(120,0,0,.13),transparent 42%),linear-gradient(180deg,#020202,#080808 62%,#010101);text-align:center;padding:3vh 5vw calc(4vh + env(safe-area-inset-bottom));overflow:hidden}
     #storyComic.acStartMenu #acStartMenu{display:flex}
     #storyComic.acStartMenu #storyPanelCanvas,#storyComic.acStartMenu #storyPanelCount,#storyComic.acStartMenu #storyFrameBtn{display:none!important}
-    #acStartTitle{font-size:clamp(56px,13vw,150px);line-height:.83;font-weight:1000;letter-spacing:.015em;color:#f5f3ef;text-shadow:0 5px 28px #000;margin:0;white-space:nowrap}
-    #acStartSubtitle{margin-top:4vh;font-size:clamp(18px,3.4vw,38px);font-weight:1000;letter-spacing:.18em;color:#c51e24;text-transform:uppercase}
-    #acStartTap{margin-top:7vh;font-size:clamp(14px,2.4vw,28px);font-weight:900;letter-spacing:.17em;color:#ddd;animation:acStartPulse 1.45s ease-in-out infinite alternate}
-    #acStartDisclaimer{position:absolute;left:5vw;right:5vw;bottom:max(8px,env(safe-area-inset-bottom));font-size:clamp(7px,1vw,11px);line-height:1.35;font-weight:800;letter-spacing:.06em;color:#8f8f8f;text-transform:uppercase}
+    #acStartTitle{font-size:min(8.2vw,18vh);line-height:.9;font-weight:1000;letter-spacing:.012em;color:#f5f3ef;text-shadow:0 5px 28px #000;margin:0;white-space:nowrap;max-width:92vw}
+    #acStartSubtitle{margin-top:2.5vh;font-size:min(2.5vw,6vh);font-weight:1000;letter-spacing:.15em;color:#c51e24;text-transform:uppercase;white-space:nowrap}
+    #acStartTap{margin-top:4vh;font-size:min(1.8vw,4.2vh);font-weight:900;letter-spacing:.16em;color:#ddd;animation:acStartPulse 1.45s ease-in-out infinite alternate}
+    #acStartDisclaimer{position:absolute;left:5vw;right:5vw;bottom:max(7px,env(safe-area-inset-bottom));font-size:min(.82vw,2vh);line-height:1.25;font-weight:800;letter-spacing:.05em;color:#8f8f8f;text-transform:uppercase}
     @keyframes acStartPulse{from{opacity:.48}to{opacity:1}}
+    @media (orientation:landscape) and (max-height:430px){
+      #acStartTitle{font-size:min(7.4vw,17vh)}
+      #acStartSubtitle{margin-top:2vh;font-size:min(2.15vw,5.2vh)}
+      #acStartTap{margin-top:3vh;font-size:min(1.6vw,3.8vh)}
+      #acStartDisclaimer{font-size:min(.72vw,1.7vh)}
+    }
 
-    body.acStoryPortrait #rotate{display:flex!important;z-index:10000!important}
-    body.acStoryPortrait #storyIntro,body.acStoryPortrait #storyComic{visibility:hidden!important}
-    body.acStoryPortrait #rotate .rotateCard p:after{content:' The story will begin when your phone is sideways.'}
+    #acOrientationGate{position:fixed;inset:0;z-index:2147483647;display:none;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 30%,#10243a 0,#07111d 42%,#02070d 100%);padding:24px;color:white;text-align:center;touch-action:none}
+    body.acGlobalPortrait #acOrientationGate{display:flex!important}
+    #acOrientationCard{width:min(88vw,440px);padding:28px 24px;border:1px solid rgba(116,217,255,.35);border-radius:22px;background:rgba(3,13,25,.96);box-shadow:0 24px 70px rgba(0,0,0,.6)}
+    #acOrientationIcon{font-size:58px;line-height:1;margin-bottom:14px;transform:rotate(90deg)}
+    #acOrientationTitle{font-size:23px;font-weight:1000;letter-spacing:.08em}
+    #acOrientationText{margin-top:10px;font-size:14px;line-height:1.45;color:#c8d4df}
+    #acOrientationHint{margin-top:14px;font-size:11px;font-weight:900;letter-spacing:.13em;color:#74d9ff}
   `;
   document.head.appendChild(style);
 
-  const startMenu = document.createElement('div');
-  startMenu.id = 'acStartMenu';
-  startMenu.innerHTML = `
-    <div id="acStartTitle">AFTER CONTACT</div>
-    <div id="acStartSubtitle">THE WAR FOR AETHERIUM</div>
-    <div id="acStartTap">TAP TO CONTINUE</div>
-    <div id="acStartDisclaimer">AFTER CONTACT IS A WORK OF FICTION. CHARACTERS, GOVERNMENTS, EVENTS AND ORGANIZATIONS DEPICTED IN THE GAME ARE FICTIONAL OR USED FICTITIOUSLY.</div>
-  `;
+  const gate=document.createElement('div');
+  gate.id='acOrientationGate';
+  gate.innerHTML='<div id="acOrientationCard"><div id="acOrientationIcon">📱</div><div id="acOrientationTitle">TURN YOUR PHONE SIDEWAYS</div><div id="acOrientationText">After Contact is designed for landscape play. Rotate your phone to continue.</div><div id="acOrientationHint">THE GAME WILL START WHEN YOUR PHONE IS SIDEWAYS</div></div>';
+  document.body.appendChild(gate);
+
+  const startMenu=document.createElement('div');
+  startMenu.id='acStartMenu';
+  startMenu.innerHTML='<div id="acStartTitle">AFTER CONTACT</div><div id="acStartSubtitle">THE WAR FOR AETHERIUM</div><div id="acStartTap">TAP TO CONTINUE</div><div id="acStartDisclaimer">AFTER CONTACT IS A WORK OF FICTION. CHARACTERS, GOVERNMENTS, EVENTS AND ORGANIZATIONS DEPICTED IN THE GAME ARE FICTIONAL OR USED FICTITIOUSLY.</div>';
   comic.appendChild(startMenu);
 
-  let panelIndex = 0;
-  let customSequenceActive = false;
-  let pausedForPortrait = false;
-  let crawlWasPlaying = false;
-  let preloadPromise = null;
-  let pendingLandscapeStart = null;
-  const imageCache = new Map();
-
-  function isPortraitPhone() {
-    return matchMedia('(orientation: portrait)').matches && Math.min(innerWidth, innerHeight) < 700;
+  function isPortraitPhone(){return matchMedia('(orientation: portrait)').matches&&Math.min(innerWidth,innerHeight)<700;}
+  function syncGlobalOrientation(){
+    const portrait=isPortraitPhone();
+    document.body.classList.toggle('acGlobalPortrait',portrait);
+    if(!portrait&&pendingLandscapeStart&&originalStartStoryIntro){
+      const p=pendingLandscapeStart;pendingLandscapeStart=null;originalStartStoryIntro.apply(p.thisArg,p.args);
+    }
+    if(!portrait&&crawlWasPlaying&&intro.classList.contains('show')){
+      crawlWasPlaying=false;void intro.offsetWidth;requestAnimationFrame(()=>intro.classList.add('playing'));
+    }
+    if(portrait&&intro.classList.contains('playing')){intro.classList.remove('playing');crawlWasPlaying=true;}
   }
 
-  /* Gate the game's real story starter BEFORE it creates its 43.5s transition timer. */
-  const originalStartStoryIntro = typeof window.startStoryIntro === 'function' ? window.startStoryIntro : null;
-  if (originalStartStoryIntro) {
-    window.startStoryIntro = function(...args) {
-      if (isPortraitPhone()) {
-        pendingLandscapeStart = { thisArg: this, args };
-        document.body.classList.add('acStoryPortrait');
-        if (rotate) rotate.style.setProperty('display','flex','important');
-        return;
+  const originalStartStoryIntro=typeof window.startStoryIntro==='function'?window.startStoryIntro:null;
+  if(originalStartStoryIntro){
+    window.startStoryIntro=function(...args){
+      storyArmed=true;
+      if(isPortraitPhone()){
+        pendingLandscapeStart={thisArg:this,args};syncGlobalOrientation();return false;
       }
-      pendingLandscapeStart = null;
-      return originalStartStoryIntro.apply(this, args);
+      pendingLandscapeStart=null;
+      return originalStartStoryIntro.apply(this,args);
     };
   }
 
-  function syncOrientation() {
-    const storyVisible = !!pendingLandscapeStart || intro.classList.contains('show') || comic.classList.contains('show');
-    if (!storyVisible) {
-      document.body.classList.remove('acStoryPortrait');
-      pausedForPortrait = false;
-      return;
-    }
-
-    const portrait = isPortraitPhone();
-    document.body.classList.toggle('acStoryPortrait', portrait);
-
-    if (portrait) {
-      if (intro.classList.contains('playing')) {
-        intro.classList.remove('playing');
-        crawlWasPlaying = true;
-      }
-      pausedForPortrait = true;
-      if (rotate) rotate.style.setProperty('display','flex','important');
-      return;
-    }
-
-    if (rotate) rotate.style.removeProperty('display');
-
-    /* A portrait launch was requested: only now start the original story and its timer. */
-    if (pendingLandscapeStart && originalStartStoryIntro) {
-      const pending = pendingLandscapeStart;
-      pendingLandscapeStart = null;
-      pausedForPortrait = false;
-      originalStartStoryIntro.apply(pending.thisArg, pending.args);
-      return;
-    }
-
-    if (pausedForPortrait) {
-      pausedForPortrait = false;
-      if (crawlWasPlaying && intro.classList.contains('show')) {
-        crawlWasPlaying = false;
-        void intro.offsetWidth;
-        requestAnimationFrame(() => intro.classList.add('playing'));
-      }
-    }
-
-    if (comic.classList.contains('show') && !customSequenceActive && !comic.classList.contains('acStartMenu')) {
-      beginApprovedComic();
-    }
-  }
-
-  function loadImage(src) {
-    if (imageCache.has(src)) return Promise.resolve(imageCache.get(src));
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => { imageCache.set(src, img); resolve(img); };
-      img.onerror = reject;
-      img.src = src;
+  function loadImage(src,retry=false){
+    if(imageCache.has(src))return Promise.resolve(imageCache.get(src));
+    return new Promise((resolve,reject)=>{
+      const img=new Image();
+      img.onload=()=>{imageCache.set(src,img);resolve(img)};
+      img.onerror=()=>{
+        if(!retry){loadImage(src,true).then(resolve,reject);return;}
+        reject(new Error('Story image failed: '+src));
+      };
+      img.src=retry?`${src}?v=20260824-4`:src;
     });
   }
+  function preloadPanels(){if(!preloadPromise)preloadPromise=Promise.all(PANELS.map(src=>loadImage(src).catch(()=>null)));return preloadPromise;}
 
-  function preloadApprovedPanels() {
-    if (!preloadPromise) preloadPromise = Promise.all(APPROVED_PANELS.map(src => loadImage(src).catch(() => null)));
-    return preloadPromise;
+  function drawContained(img){
+    const rect=comic.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2),w=Math.max(1,Math.round(rect.width*dpr)),h=Math.max(1,Math.round(rect.height*dpr));
+    if(canvas.width!==w)canvas.width=w;if(canvas.height!==h)canvas.height=h;
+    const ctx=canvas.getContext('2d');ctx.clearRect(0,0,w,h);ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);
+    const scale=Math.min(w/img.naturalWidth,h/img.naturalHeight),dw=img.naturalWidth*scale,dh=img.naturalHeight*scale;
+    ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(img,(w-dw)/2,(h-dh)/2,dw,dh);
   }
 
-  function drawContained(img) {
-    const rect = comic.getBoundingClientRect();
-    const dpr = Math.min(devicePixelRatio || 1, 2);
-    const w = Math.max(1, Math.round(rect.width * dpr));
-    const h = Math.max(1, Math.round(rect.height * dpr));
-    if (canvas.width !== w) canvas.width = w;
-    if (canvas.height !== h) canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0,0,w,h);
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0,0,w,h);
-    const scale = Math.min(w / img.naturalWidth, h / img.naturalHeight);
-    const dw = img.naturalWidth * scale;
-    const dh = img.naturalHeight * scale;
-    const dx = (w - dw) / 2;
-    const dy = (h - dh) / 2;
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(img, dx, dy, dw, dh);
+  function drawLoadFailure(index){
+    const rect=comic.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2),w=Math.max(1,Math.round(rect.width*dpr)),h=Math.max(1,Math.round(rect.height*dpr));
+    canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font=`900 ${Math.max(24,Math.round(h*.055))}px system-ui`;ctx.fillText(`FRAME ${index+1} IS RELOADING…`,w/2,h/2);
   }
 
-  async function renderApprovedPanel(index) {
-    customSequenceActive = true;
-    comic.classList.remove('acStartMenu','lastFrame');
-    panelIndex = Math.max(0, Math.min(index, APPROVED_PANELS.length - 1));
-    if (count) count.textContent = `${panelIndex + 1} / ${APPROVED_PANELS.length}`;
-    if (continueButton) continueButton.style.setProperty('display','none','important');
-    if (nextButton) {
-      nextButton.style.removeProperty('display');
-      nextButton.textContent = 'NEXT';
-    }
-    const img = await loadImage(APPROVED_PANELS[panelIndex]);
-    drawContained(img);
+  async function renderPanel(index){
+    customSequenceActive=true;comic.classList.remove('acStartMenu','lastFrame');panelIndex=Math.max(0,Math.min(index,PANELS.length-1));
+    if(count)count.textContent=`${panelIndex+1} / ${PANELS.length}`;
+    if(continueButton)continueButton.style.setProperty('display','none','important');
+    if(nextButton){nextButton.style.removeProperty('display');nextButton.textContent='NEXT';}
+    try{drawContained(await loadImage(PANELS[panelIndex]));}
+    catch{drawLoadFailure(panelIndex);setTimeout(()=>loadImage(PANELS[panelIndex],true).then(drawContained).catch(()=>{}),900);}
   }
 
-  function showNewStartMenu() {
-    customSequenceActive = true;
-    comic.classList.add('acStartMenu');
-    if (continueButton) continueButton.style.setProperty('display','none','important');
+  function beginApprovedComic(){
+    if(isPortraitPhone()||!storyArmed)return;
+    storyArmed=false;customSequenceActive=true;preloadPanels().finally(()=>renderPanel(0));
+  }
+  function showStartMenu(){customSequenceActive=true;comic.classList.add('acStartMenu');if(continueButton)continueButton.style.setProperty('display','none','important');}
+  function resetStoryPresentation(){
+    customSequenceActive=false;storyArmed=false;comic.classList.remove('acStartMenu');
+    if(continueButton)continueButton.style.removeProperty('display');
   }
 
-  function beginApprovedComic() {
-    if (isPortraitPhone()) return;
-    preloadApprovedPanels().then(() => renderApprovedPanel(0));
+  function handleNext(e){
+    if(!customSequenceActive||comic.classList.contains('acStartMenu'))return;
+    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+    if(panelIndex<PANELS.length-1)renderPanel(panelIndex+1);else showStartMenu();
+  }
+  function handleStartMenuTap(e){
+    if(!comic.classList.contains('acStartMenu'))return;
+    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+    comic.classList.remove('acStartMenu');customSequenceActive=false;storyArmed=false;
+    if(continueButton){continueButton.style.removeProperty('display');continueButton.click();}
   }
 
-  function handleNext(event) {
-    if (!customSequenceActive || comic.classList.contains('acStartMenu')) return;
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-    if (panelIndex < APPROVED_PANELS.length - 1) renderApprovedPanel(panelIndex + 1);
-    else showNewStartMenu();
-  }
+  if(nextButton){nextButton.addEventListener('click',handleNext,true);nextButton.addEventListener('pointerup',handleNext,true);}
+  startMenu.addEventListener('pointerup',handleStartMenuTap,true);
+  startMenu.addEventListener('click',handleStartMenuTap,true);
 
-  function handleStartMenuTap(event) {
-    if (!comic.classList.contains('acStartMenu')) return;
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-    comic.classList.remove('acStartMenu');
-    customSequenceActive = false;
-    if (continueButton) {
-      continueButton.style.removeProperty('display');
-      continueButton.click();
-    }
-  }
-
-  if (nextButton) nextButton.addEventListener('click', handleNext, true);
-  startMenu.addEventListener('click', handleStartMenuTap, true);
-  startMenu.addEventListener('touchend', handleStartMenuTap, {capture:true, passive:false});
-
-  const comicObserver = new MutationObserver(() => {
-    syncOrientation();
-    if (comic.classList.contains('show') && !customSequenceActive && !comic.classList.contains('acStartMenu')) beginApprovedComic();
+  const introObserver=new MutationObserver(()=>{
+    syncGlobalOrientation();
+    if(intro.classList.contains('show'))storyArmed=true;
   });
-  comicObserver.observe(comic, {attributes:true, attributeFilter:['class']});
+  introObserver.observe(intro,{attributes:true,attributeFilter:['class']});
 
-  const introObserver = new MutationObserver(syncOrientation);
-  introObserver.observe(intro, {attributes:true, attributeFilter:['class']});
+  const comicObserver=new MutationObserver(()=>{
+    syncGlobalOrientation();
+    if(comic.classList.contains('show')&&storyArmed&&!customSequenceActive&&!comic.classList.contains('acStartMenu'))beginApprovedComic();
+  });
+  comicObserver.observe(comic,{attributes:true,attributeFilter:['class']});
 
-  addEventListener('orientationchange', () => { setTimeout(syncOrientation,60); setTimeout(syncOrientation,260); });
-  addEventListener('resize', () => {
-    syncOrientation();
-    if (customSequenceActive && !comic.classList.contains('acStartMenu') && imageCache.has(APPROVED_PANELS[panelIndex])) drawContained(imageCache.get(APPROVED_PANELS[panelIndex]));
-  }, {passive:true});
-  visualViewport?.addEventListener('resize', syncOrientation, {passive:true});
+  if(mpOverlay){
+    new MutationObserver(()=>{if(!mpOverlay.classList.contains('hidden'))resetStoryPresentation();}).observe(mpOverlay,{attributes:true,attributeFilter:['class']});
+  }
+  if(soloButton){
+    const clean=()=>resetStoryPresentation();
+    soloButton.addEventListener('pointerdown',clean,true);soloButton.addEventListener('pointerup',clean,true);soloButton.addEventListener('click',clean,true);
+  }
 
-  preloadApprovedPanels();
-  syncOrientation();
+  addEventListener('orientationchange',()=>{setTimeout(syncGlobalOrientation,50);setTimeout(syncGlobalOrientation,260)});
+  addEventListener('resize',()=>{syncGlobalOrientation();if(customSequenceActive&&!comic.classList.contains('acStartMenu')&&imageCache.has(PANELS[panelIndex]))drawContained(imageCache.get(PANELS[panelIndex]));},{passive:true});
+  visualViewport?.addEventListener('resize',syncGlobalOrientation,{passive:true});
+
+  preloadPanels();
+  syncGlobalOrientation();
 })();
