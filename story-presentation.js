@@ -6,10 +6,28 @@
   const count = document.getElementById('storyPanelCount');
   const next = document.getElementById('storyFrameBtn');
   const start = document.getElementById('storyContinue');
+  const storyIntro = document.getElementById('storyIntro');
+  const storyCrawl = document.getElementById('storyCrawl');
   if (!comic || !canvas) return;
 
   const style = document.createElement('style');
   style.textContent = `
+    /* Phone-first crawl: visible immediately, larger, and substantially quicker. */
+    #storyCrawlWrap{top:22%!important;height:74%!important;width:min(94vw,900px)!important;perspective:460px!important}
+    #storyCrawl{font-size:clamp(31px,6.2vw,54px)!important;line-height:1.45!important;letter-spacing:.045em!important;transform:rotateX(20deg) translateY(58%)!important}
+    #storyIntro.playing #storyCrawl{animation:storyCrawlPhone 31s linear forwards!important}
+    @keyframes storyCrawlPhone{0%{transform:rotateX(20deg) translateY(58%)}100%{transform:rotateX(20deg) translateY(-188%) scale(.72)}}
+    @media (orientation:portrait){
+      #storyCrawlWrap{top:19%!important;height:77%!important;width:92vw!important}
+      #storyCrawl{font-size:clamp(30px,8vw,48px)!important;line-height:1.42!important}
+    }
+    @media (orientation:landscape) and (max-height:520px){
+      #storyCrawlWrap{top:13%!important;height:83%!important;width:min(88vw,900px)!important}
+      #storyCrawl{font-size:clamp(25px,4.2vw,40px)!important;line-height:1.36!important;transform:rotateX(18deg) translateY(42%)!important}
+      #storyIntro.playing #storyCrawl{animation-name:storyCrawlPhoneLandscape!important}
+      @keyframes storyCrawlPhoneLandscape{0%{transform:rotateX(18deg) translateY(42%)}100%{transform:rotateX(18deg) translateY(-194%) scale(.72)}}
+    }
+
     #storyComic{overflow:hidden!important;background:#000!important}
     #storyPanelCanvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;border-radius:0!important;box-shadow:none!important;background:#000!important}
     #storyPanelCount{top:max(10px,env(safe-area-inset-top))!important;padding:7px 11px!important;border-radius:999px!important;background:rgba(0,0,0,.58)!important;text-shadow:0 2px 8px #000!important;z-index:4!important;pointer-events:none!important;white-space:nowrap!important}
@@ -46,12 +64,10 @@
 
   function drawContainedPanel(){
     if(!comic.classList.contains('show')||!canvas.width||!canvas.height)return;
-
     const snapshot=document.createElement('canvas');
     snapshot.width=canvas.width;snapshot.height=canvas.height;
     snapshot.getContext('2d').drawImage(canvas,0,0);
     const b=visibleBounds(snapshot);
-
     const rect=comic.getBoundingClientRect();
     const cssW=Math.max(1,Math.round(rect.width||window.innerWidth));
     const cssH=Math.max(1,Math.round(rect.height||window.innerHeight));
@@ -59,14 +75,10 @@
     const outW=Math.round(cssW*dpr),outH=Math.round(cssH*dpr);
     const frame=Number(comic.dataset.frame||1);
     const landscape=cssW>cssH;
-
     canvas.width=outW;canvas.height=outH;
     const ctx=canvas.getContext('2d');
     ctx.fillStyle='#000';ctx.fillRect(0,0,outW,outH);
     ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
-
-    // The final title panel doubles as the actual start menu. Give it a cinematic
-    // backdrop while preserving the complete artwork in the foreground.
     if(frame===15){
       const bgScale=Math.max(outW/b.w,outH/b.h);
       const bgW=b.w*bgScale,bgH=b.h*bgScale;
@@ -75,9 +87,6 @@
       ctx.restore();
       const shade=ctx.createLinearGradient(0,0,0,outH);shade.addColorStop(0,'rgba(0,0,0,.16)');shade.addColorStop(.68,'rgba(0,0,0,.06)');shade.addColorStop(1,'rgba(0,0,0,.54)');ctx.fillStyle=shade;ctx.fillRect(0,0,outW,outH);
     }
-
-    // Phone-first CONTAIN rule: the ENTIRE panel remains visible in both portrait
-    // and landscape. Reserve a little room for the frame label and NEXT/START UI.
     const sidePad=(landscape?0.025:0.035)*outW;
     const topPad=(landscape?0.055:0.075)*outH;
     const bottomPad=(landscape?0.12:0.105)*outH;
@@ -87,7 +96,6 @@
     const dw=b.w*scale,dh=b.h*scale;
     const dx=(outW-dw)/2;
     const dy=topPad+(availH-dh)/2;
-
     if(frame===15){
       ctx.save();ctx.shadowColor='rgba(0,0,0,.75)';ctx.shadowBlur=22*dpr;ctx.shadowOffsetY=6*dpr;
       ctx.drawImage(snapshot,b.x,b.y,b.w,b.h,dx,dy,dw,dh);ctx.restore();
@@ -105,5 +113,23 @@
   window.visualViewport?.addEventListener('resize',()=>setTimeout(scheduleFit,90),{passive:true});
   if(count)count.setAttribute('aria-live','polite');
   if(start)start.setAttribute('aria-label','Start After Contact');
+
+  // The original intro waits ~43.5s. The phone crawl now finishes in ~31s,
+  // so reveal the comic as soon as the faster crawl completes. The old timer
+  // may fire later, but adding .show twice is harmless.
+  let fastComicTimer=null;
+  if(storyIntro){
+    new MutationObserver(ms=>{
+      if(!ms.some(m=>m.attributeName==='class'))return;
+      clearTimeout(fastComicTimer);fastComicTimer=null;
+      if(storyIntro.classList.contains('show')&&storyIntro.classList.contains('playing')){
+        fastComicTimer=setTimeout(()=>{if(storyIntro.classList.contains('show'))comic.classList.add('show')},31200);
+      }
+    }).observe(storyIntro,{attributes:true,attributeFilter:['class']});
+  }
+
+  // Ensure the crawl is ready to paint on the very first frame instead of
+  // appearing to "load" after several seconds.
+  if(storyCrawl){storyCrawl.style.willChange='transform';storyCrawl.getBoundingClientRect();}
   scheduleFit();
 })();
