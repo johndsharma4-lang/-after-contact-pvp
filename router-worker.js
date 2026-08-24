@@ -17,7 +17,7 @@ function documentHeaders(response) {
 
 class StoryPresentationInjector {
   element(element) {
-    element.append('<style>#storyPanelCount{display:none!important}</style><script src="/story-presentation.js?v=20260824-12"></script><script src="/solo-handoff-fix.js?v=20260824-12"></script>', { html: true });
+    element.append('<style>#storyPanelCount{display:none!important}</style><script src="/story-presentation.js?v=20260824-13"></script><script src="/solo-handoff-fix.js?v=20260824-13"></script>', { html: true });
   }
 }
 
