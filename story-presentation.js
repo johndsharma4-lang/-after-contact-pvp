@@ -1,53 +1,207 @@
-/* After Contact — landscape-only story presentation */
+/* After Contact — approved story presentation */
 (() => {
   'use strict';
-  const intro=document.getElementById('storyIntro');
-  const comic=document.getElementById('storyComic');
-  const canvas=document.getElementById('storyPanelCanvas');
-  const count=document.getElementById('storyPanelCount');
-  const start=document.getElementById('storyContinue');
-  const rotate=document.getElementById('rotate');
-  if(!intro||!comic||!canvas)return;
 
-  const style=document.createElement('style');
-  style.textContent=`
-    /* Keep the original 43s reading speed. Only shorten the empty lead-in before the first words arrive. */
+  const intro = document.getElementById('storyIntro');
+  const comic = document.getElementById('storyComic');
+  const canvas = document.getElementById('storyPanelCanvas');
+  const count = document.getElementById('storyPanelCount');
+  const nextButton = document.getElementById('storyFrameBtn');
+  const continueButton = document.getElementById('storyContinue');
+  const rotate = document.getElementById('rotate');
+  if (!intro || !comic || !canvas) return;
+
+  const APPROVED_PANELS = [
+    '/story-panels/panel-01.webp',
+    '/story-panels/panel-02.webp',
+    '/story-panels/panel-03.webp',
+    '/story-panels/panel-04.webp',
+    '/story-panels/panel-05.webp',
+    '/story-panels/panel-06.webp',
+    '/story-panels/panel-07.webp'
+  ];
+
+  const style = document.createElement('style');
+  style.textContent = `
     #storyCrawlWrap{overflow:hidden!important}
     #storyCrawl{font-size:clamp(32px,5.2vw,48px)!important;line-height:1.46!important}
     #storyCrawl p,#storyCrawl span{font-size:inherit!important;line-height:inherit!important}
     #storyIntro.playing #storyCrawl{animation-duration:43s!important;animation-delay:-8s!important}
-    @media (orientation:landscape) and (max-height:560px){#storyCrawl{font-size:clamp(30px,5vw,44px)!important;line-height:1.42!important}}
 
-    /* Frames 1–14: one isolated panel only. */
-    #storyComic{overflow:hidden!important;background:#030303!important}
-    #storyPanelCanvas{position:absolute!important;left:50%!important;top:50%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%)!important;width:auto!important;height:auto!important;max-width:calc(100vw - 18px)!important;max-height:calc(100vh - 64px)!important;aspect-ratio:960/620!important;border:0!important;border-radius:5px!important;box-shadow:0 12px 42px #000!important;background:#050505!important}
-    #storyPanelCount{top:max(5px,env(safe-area-inset-top))!important;z-index:4!important;background:rgba(0,0,0,.62)!important;padding:5px 9px!important;border-radius:999px!important}
-    #storyFrameBtn,#storyContinue{bottom:max(5px,env(safe-area-inset-bottom))!important;z-index:5!important;padding:9px 18px!important;min-width:145px!important;background:rgba(3,8,14,.88)!important}
-    #storyComic.lastFrame{background:#000!important}
-    #storyComic.lastFrame #storyPanelCanvas{width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;left:0!important;top:0!important;transform:none!important;border-radius:0!important;box-shadow:none!important;background:#000!important}
-    #storyComic.lastFrame:after{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,0) 46%,rgba(0,0,0,.16) 67%,rgba(0,0,0,.66))}
-    #storyComic.lastFrame #storyPanelCount,#storyComic.lastFrame #storyFrameBtn{display:none!important}
-    #storyComic.lastFrame #storyContinue{display:block!important;z-index:6!important;left:50%!important;bottom:max(18px,calc(env(safe-area-inset-bottom) + 10px))!important;min-width:min(310px,48vw)!important;height:50px!important;padding:0 30px!important;border:1px solid rgba(255,255,255,.76)!important;border-radius:999px!important;background:linear-gradient(180deg,rgba(12,20,30,.92),rgba(2,7,12,.94))!important;color:#fff!important;font-size:13px!important;font-weight:1000!important;letter-spacing:.22em!important}
+    #storyComic{overflow:hidden!important;background:#000!important}
+    #storyPanelCanvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;transform:none!important;border:0!important;border-radius:0!important;background:#000!important;box-shadow:none!important}
+    #storyPanelCount{top:max(8px,env(safe-area-inset-top))!important;z-index:7!important;background:rgba(0,0,0,.62)!important;padding:5px 10px!important;border-radius:999px!important}
+    #storyFrameBtn,#storyContinue{z-index:8!important;bottom:max(10px,calc(env(safe-area-inset-bottom) + 4px))!important}
+
+    #acStartMenu{position:absolute;inset:0;z-index:6;display:none;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(circle at 50% 45%,rgba(120,0,0,.13),transparent 42%),linear-gradient(180deg,#020202,#080808 62%,#010101);text-align:center;padding:4vh 5vw calc(4vh + env(safe-area-inset-bottom));}
+    #storyComic.acStartMenu #acStartMenu{display:flex}
+    #storyComic.acStartMenu #storyPanelCanvas,#storyComic.acStartMenu #storyPanelCount,#storyComic.acStartMenu #storyFrameBtn{display:none!important}
+    #acStartTitle{font-size:clamp(56px,13vw,150px);line-height:.83;font-weight:1000;letter-spacing:.015em;color:#f5f3ef;text-shadow:0 5px 28px #000;margin:0;white-space:nowrap}
+    #acStartSubtitle{margin-top:4vh;font-size:clamp(18px,3.4vw,38px);font-weight:1000;letter-spacing:.18em;color:#c51e24;text-transform:uppercase}
+    #acStartTap{margin-top:7vh;font-size:clamp(14px,2.4vw,28px);font-weight:900;letter-spacing:.17em;color:#ddd;animation:acStartPulse 1.45s ease-in-out infinite alternate}
+    #acStartDisclaimer{position:absolute;left:5vw;right:5vw;bottom:max(8px,env(safe-area-inset-bottom));font-size:clamp(7px,1vw,11px);line-height:1.35;font-weight:800;letter-spacing:.06em;color:#8f8f8f;text-transform:uppercase}
+    @keyframes acStartPulse{from{opacity:.48}to{opacity:1}}
+
     body.acStoryPortrait #rotate{display:flex!important;z-index:10000!important}
-    body.acStoryPortrait #rotate .rotateCard p:after{content:' The story will continue automatically when your phone is sideways.'}
+    body.acStoryPortrait #storyIntro,body.acStoryPortrait #storyComic{visibility:hidden!important}
+    body.acStoryPortrait #rotate .rotateCard p:after{content:' The story is paused until your phone is sideways.'}
   `;
   document.head.appendChild(style);
 
-  let pausedForPortrait=false;
-  function isPortraitPhone(){return matchMedia('(orientation: portrait)').matches&&Math.min(innerWidth,innerHeight)<700;}
-  function syncStoryOrientation(){
-    if(!intro.classList.contains('show')){document.body.classList.remove('acStoryPortrait');pausedForPortrait=false;return;}
-    const portrait=isPortraitPhone();
-    document.body.classList.toggle('acStoryPortrait',portrait);
-    if(portrait){if(intro.classList.contains('playing')){intro.classList.remove('playing');pausedForPortrait=true;}if(rotate)rotate.style.setProperty('display','flex','important');return;}
-    if(rotate)rotate.style.removeProperty('display');
-    if(pausedForPortrait){pausedForPortrait=false;void intro.offsetWidth;requestAnimationFrame(()=>intro.classList.add('playing'));}
+  const startMenu = document.createElement('div');
+  startMenu.id = 'acStartMenu';
+  startMenu.innerHTML = `
+    <div id="acStartTitle">AFTER CONTACT</div>
+    <div id="acStartSubtitle">THE WAR FOR AETHERIUM</div>
+    <div id="acStartTap">TAP TO CONTINUE</div>
+    <div id="acStartDisclaimer">AFTER CONTACT IS A WORK OF FICTION. CHARACTERS, GOVERNMENTS, EVENTS AND ORGANIZATIONS DEPICTED IN THE GAME ARE FICTIONAL OR USED FICTITIOUSLY.</div>
+  `;
+  comic.appendChild(startMenu);
+
+  let panelIndex = 0;
+  let customSequenceActive = false;
+  let pausedForPortrait = false;
+  let crawlWasPlaying = false;
+  let preloadPromise = null;
+  const imageCache = new Map();
+
+  function isPortraitPhone() {
+    return matchMedia('(orientation: portrait)').matches && Math.min(innerWidth, innerHeight) < 700;
   }
-  new MutationObserver(syncStoryOrientation).observe(intro,{attributes:true,attributeFilter:['class']});
-  addEventListener('orientationchange',()=>{setTimeout(syncStoryOrientation,60);setTimeout(syncStoryOrientation,260)});
-  addEventListener('resize',()=>setTimeout(syncStoryOrientation,50),{passive:true});
-  visualViewport?.addEventListener('resize',()=>setTimeout(syncStoryOrientation,50),{passive:true});
-  if(count)count.setAttribute('aria-live','polite');
-  if(start)start.setAttribute('aria-label','Start After Contact');
-  syncStoryOrientation();
+
+  function syncOrientation() {
+    const storyVisible = intro.classList.contains('show') || comic.classList.contains('show');
+    if (!storyVisible) {
+      document.body.classList.remove('acStoryPortrait');
+      pausedForPortrait = false;
+      return;
+    }
+
+    const portrait = isPortraitPhone();
+    document.body.classList.toggle('acStoryPortrait', portrait);
+
+    if (portrait) {
+      if (intro.classList.contains('playing')) {
+        intro.classList.remove('playing');
+        crawlWasPlaying = true;
+      }
+      pausedForPortrait = true;
+      if (rotate) rotate.style.setProperty('display','flex','important');
+      return;
+    }
+
+    if (rotate) rotate.style.removeProperty('display');
+    if (pausedForPortrait) {
+      pausedForPortrait = false;
+      if (crawlWasPlaying && intro.classList.contains('show')) {
+        crawlWasPlaying = false;
+        void intro.offsetWidth;
+        requestAnimationFrame(() => intro.classList.add('playing'));
+      }
+    }
+  }
+
+  function loadImage(src) {
+    if (imageCache.has(src)) return Promise.resolve(imageCache.get(src));
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => { imageCache.set(src, img); resolve(img); };
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
+
+  function preloadApprovedPanels() {
+    if (!preloadPromise) preloadPromise = Promise.all(APPROVED_PANELS.map(src => loadImage(src).catch(() => null)));
+    return preloadPromise;
+  }
+
+  function drawContained(img) {
+    const rect = comic.getBoundingClientRect();
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = Math.max(1, Math.round(rect.width * dpr));
+    const h = Math.max(1, Math.round(rect.height * dpr));
+    if (canvas.width !== w) canvas.width = w;
+    if (canvas.height !== h) canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0,0,w,h);
+    const scale = Math.min(w / img.naturalWidth, h / img.naturalHeight);
+    const dw = img.naturalWidth * scale;
+    const dh = img.naturalHeight * scale;
+    const dx = (w - dw) / 2;
+    const dy = (h - dh) / 2;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, dx, dy, dw, dh);
+  }
+
+  async function renderApprovedPanel(index) {
+    customSequenceActive = true;
+    comic.classList.remove('acStartMenu','lastFrame');
+    panelIndex = Math.max(0, Math.min(index, APPROVED_PANELS.length - 1));
+    if (count) count.textContent = `${panelIndex + 1} / ${APPROVED_PANELS.length}`;
+    if (continueButton) continueButton.style.setProperty('display','none','important');
+    if (nextButton) {
+      nextButton.style.removeProperty('display');
+      nextButton.textContent = panelIndex === APPROVED_PANELS.length - 1 ? 'NEXT' : 'NEXT';
+    }
+    const img = await loadImage(APPROVED_PANELS[panelIndex]);
+    drawContained(img);
+  }
+
+  function showNewStartMenu() {
+    customSequenceActive = true;
+    comic.classList.add('acStartMenu');
+    if (continueButton) continueButton.style.setProperty('display','none','important');
+  }
+
+  function beginApprovedComic() {
+    if (isPortraitPhone()) return;
+    preloadApprovedPanels().then(() => renderApprovedPanel(0));
+  }
+
+  function handleNext(event) {
+    if (!customSequenceActive || comic.classList.contains('acStartMenu')) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    if (panelIndex < APPROVED_PANELS.length - 1) renderApprovedPanel(panelIndex + 1);
+    else showNewStartMenu();
+  }
+
+  function handleStartMenuTap(event) {
+    if (!comic.classList.contains('acStartMenu')) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    comic.classList.remove('acStartMenu');
+    customSequenceActive = false;
+    // Let the game's existing continue handler perform the normal handoff.
+    if (continueButton) {
+      continueButton.style.removeProperty('display');
+      continueButton.click();
+    }
+  }
+
+  if (nextButton) nextButton.addEventListener('click', handleNext, true);
+  startMenu.addEventListener('click', handleStartMenuTap, true);
+  startMenu.addEventListener('touchend', handleStartMenuTap, {capture:true, passive:false});
+
+  const comicObserver = new MutationObserver(() => {
+    syncOrientation();
+    if (comic.classList.contains('show') && !customSequenceActive && !comic.classList.contains('acStartMenu')) beginApprovedComic();
+  });
+  comicObserver.observe(comic, {attributes:true, attributeFilter:['class']});
+
+  const introObserver = new MutationObserver(syncOrientation);
+  introObserver.observe(intro, {attributes:true, attributeFilter:['class']});
+
+  addEventListener('orientationchange', () => { setTimeout(syncOrientation,60); setTimeout(syncOrientation,260); });
+  addEventListener('resize', () => { syncOrientation(); if (customSequenceActive && !comic.classList.contains('acStartMenu') && imageCache.has(APPROVED_PANELS[panelIndex])) drawContained(imageCache.get(APPROVED_PANELS[panelIndex])); }, {passive:true});
+  visualViewport?.addEventListener('resize', syncOrientation, {passive:true});
+
+  preloadApprovedPanels();
+  syncOrientation();
 })();
