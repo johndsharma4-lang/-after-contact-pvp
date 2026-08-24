@@ -597,7 +597,7 @@ html.gameView #stageShell{
 .ndaKicker{font-size:9px;font-weight:1000;letter-spacing:.17em;color:#74d9ff;text-align:center}.ndaTitle{font-size:clamp(22px,3.4vw,38px);font-weight:1000;text-align:center;margin:5px 0}.ndaLead{text-align:center;font-size:10px;line-height:1.45;opacity:.72;margin-bottom:12px}.ndaTerms{max-height:230px;overflow:auto;padding:12px;border:1px solid rgba(255,255,255,.12);border-radius:13px;background:rgba(0,0,0,.24);font-size:9px;line-height:1.5;user-select:text;-webkit-user-select:text;touch-action:pan-y}.ndaTerms b{color:#d8f7ff}.ndaForm{display:grid;gap:9px;margin-top:12px}.ndaForm input{height:42px;border-radius:11px;border:1px solid rgba(116,217,255,.3);background:#020a12;color:white;padding:0 12px;font-size:13px;user-select:text;-webkit-user-select:text;touch-action:manipulation}.ndaCheck{display:flex;gap:9px;align-items:flex-start;font-size:9px;line-height:1.4;opacity:.85;touch-action:manipulation}.ndaCheck input{width:18px;height:18px;flex:0 0 auto}.ndaActions{display:flex;gap:8px}.ndaActions button{flex:1;height:44px;border-radius:12px;border:1px solid rgba(116,217,255,.28);font-weight:1000;letter-spacing:.07em}.ndaAgree{background:linear-gradient(#55dda0,#219863);color:#03110a}.ndaAgree:disabled{opacity:.35}.ndaSecondary{background:#0a1825;color:#dff7ff}.ndaStatus{font-size:9px;text-align:center;min-height:14px;color:#ffd17a}.ndaVersion{font-size:8px;text-align:center;opacity:.45;margin-top:7px}
 @media(max-height:430px){#ndaOverlay{align-items:flex-start;overflow:auto;padding:5px}.ndaCard{padding:10px;max-height:none}.ndaTitle{font-size:20px}.ndaLead{font-size:8px;margin-bottom:6px}.ndaTerms{max-height:112px;font-size:7.3px;padding:8px}.ndaForm{gap:5px;margin-top:6px}.ndaForm input{height:34px}.ndaActions button{height:35px;font-size:9px}}
 
-#ownerDbgBtn{display:none;position:absolute;z-index:120;right:max(6px,env(safe-area-inset-right));bottom:calc(6px + env(safe-area-inset-bottom));width:50px;height:23px;border-radius:7px;border:1px solid rgba(110,210,255,.42);background:rgba(3,15,27,.74);color:#a9ecff;font:900 8px/1 system-ui;letter-spacing:.07em;pointer-events:auto;opacity:.72;backdrop-filter:blur(5px)}#ownerDbgBtn.debugVisible{display:block}#ownerDbgBtn:active{opacity:1;transform:scale(.96)}#ownerDbgPanel{display:none;position:absolute;z-index:125;right:max(6px,env(safe-area-inset-right));bottom:calc(34px + env(safe-area-inset-bottom));width:min(460px,72vw);max-height:68vh;overflow:auto;padding:10px;border-radius:13px;border:1px solid rgba(110,210,255,.5);background:rgba(2,9,17,.97);color:#d8f4ff;box-shadow:0 12px 36px rgba(0,0,0,.62);font:600 8.5px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;pointer-events:auto}#ownerDbgPanel.show{display:block}#ownerDbgPanel .dbgHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;color:#7ddfff;font-weight:900}.dbgHint{font:700 7.5px/1.3 system-ui;opacity:.58;margin:0 0 7px}#ownerDbgText{white-space:pre-wrap;word-break:break-word;max-height:43vh;overflow:auto;padding:7px;border-radius:8px;background:rgba(0,0,0,.22)}.dbgActions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.dbgActions button{padding:7px 4px;border-radius:8px;border:1px solid rgba(110,210,255,.3);background:#092239;color:#dff7ff;font:800 8px system-ui}.dbgActions .wide{grid-column:1/-1}#ownerDbgClose{border:0;background:transparent;color:#fff;font-weight:900}@media(max-height:430px){#ownerDbgPanel{width:min(500px,76vw);max-height:82vh;bottom:31px}#ownerDbgText{max-height:42vh}.dbgActions button{padding:5px}}
+#ownerDbgBtn{display:none;position:absolute;z-index:120;right:max(6px,env(safe-area-inset-right));bottom:calc(6px + env(safe-area-inset-bottom));width:50px;height:23px;border-radius:7px;border:1px solid rgba(110,210,255,.42);background:rgba(3,15,27,.74);color:#a9ecff;font:900 8px/1 system-ui;letter-spacing:.07em;pointer-events:auto;opacity:.72;backdrop-filter:blur(5px)}#ownerDbgBtn.debugVisible{display:block}#ownerDbgBtn:active{opacity:1;transform:scale(.96)}#ownerDbgPanel{display:none;position:absolute;z-index:125;right:max(6px,env(safe-area-inset-right));bottom:calc(34px + env(safe-area-inset-bottom));width:min(460px,72vw);max-height:68vh;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y!important;padding:10px;border-radius:13px;border:1px solid rgba(110,210,255,.5);background:rgba(2,9,17,.97);color:#d8f4ff;box-shadow:0 12px 36px rgba(0,0,0,.62);font:600 8.5px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;pointer-events:auto}#ownerDbgPanel.show{display:block}#ownerDbgPanel .dbgHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;color:#7ddfff;font-weight:900;position:sticky;top:-10px;z-index:2;padding:6px 0;background:rgba(2,9,17,.97)}.dbgHint{font:700 7.5px/1.3 system-ui;opacity:.58;margin:0 0 7px}#ownerDbgText{white-space:pre-wrap;word-break:break-word;max-height:43vh;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y!important;padding:7px;border-radius:8px;background:rgba(0,0,0,.22)}.dbgActions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.dbgActions button{padding:7px 4px;border-radius:8px;border:1px solid rgba(110,210,255,.3);background:#092239;color:#dff7ff;font:800 8px system-ui}.dbgActions .wide{grid-column:1/-1}#ownerDbgClose{width:34px;height:34px;border:1px solid rgba(255,255,255,.2);border-radius:9px;background:#132638;color:#fff;font-size:16px;font-weight:900;line-height:1;touch-action:manipulation!important;flex:0 0 auto}@media(max-height:430px){#ownerDbgPanel{width:min(500px,76vw);max-height:82vh;bottom:31px}#ownerDbgText{max-height:42vh}.dbgActions button{padding:5px}}
 
 #ownerDbgSelect{display:none;width:100%;min-height:120px;max-height:32vh;margin-top:8px;padding:8px;border-radius:8px;border:1px solid rgba(110,210,255,.35);background:#020a12;color:#dff7ff;font:600 8px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;overflow:auto;resize:vertical;user-select:text!important;-webkit-user-select:text!important;touch-action:auto!important}
 #ownerDbgSelect.show{display:block}
@@ -942,6 +942,7 @@ for(const [key,a] of Object.entries(musicDeck)){
   if(AFTER_CONTACT_MUSIC[key]?.src)a.src=AFTER_CONTACT_MUSIC[key].src;
 }
 function updateMusicToggle(){if(musicToggleBtn)musicToggleBtn.textContent=musicEnabled?'MUSIC ON':'MUSIC OFF'}
+function musicNormalVolume(mode=musicMode){return mode==='battle'?.14:.24}
 function unlockGameAudio(){
   unlockCombatAudio();
   if(musicUnlocked)return;musicUnlocked=true;
@@ -955,7 +956,7 @@ function crossfadeMusic(mode,ms=900){
     for(const a of Object.values(musicDeck)){try{a.pause();a.volume=0}catch{}}
     return;
   }
-  const token=++musicFadeToken,steps=Math.max(1,Math.round(ms/50)),startT=target.volume||0,startO=other.volume||0,targetVol=mode==='battle'?.20:.28;
+  const token=++musicFadeToken,steps=Math.max(1,Math.round(ms/50)),startT=target.volume||0,startO=other.volume||0,targetVol=musicNormalVolume(mode);
   try{target.play().catch(()=>{})}catch{}
   let n=0;const timer=setInterval(()=>{
     if(token!==musicFadeToken){clearInterval(timer);return}
@@ -1074,13 +1075,13 @@ function hapticHit(){gameHaptic([34,24,52],'HIT')}
 function hapticHeavy(){gameHaptic([55,28,78],'HEAVY HIT')}
 
 // v0.31.8 COMBAT MIX — music ducks under weapon transients.
-let musicDuckTimer=null;
+let musicDuckTimer=null,musicDuckFade=null;
 function duckMusic(strength=.42,holdMs=260){
   if(!musicEnabled||!musicUnlocked)return;
   const a=musicDeck[musicMode];if(!a||a.paused)return;
-  const normal=musicMode==='battle'?.20:.28,target=Math.max(.035,normal*strength);
-  a.volume=Math.min(a.volume,target);clearTimeout(musicDuckTimer);
-  musicDuckTimer=setTimeout(()=>{if(!musicEnabled||a.paused)return;const start=a.volume,steps=8;let i=0;const tm=setInterval(()=>{i++;a.volume=start+(normal-start)*(i/steps);if(i>=steps)clearInterval(tm)},35)},holdMs);
+  const normal=musicNormalVolume(),target=Math.max(.018,normal*strength);
+  clearTimeout(musicDuckTimer);clearInterval(musicDuckFade);musicDuckFade=null;a.volume=Math.min(a.volume,target);
+  musicDuckTimer=setTimeout(()=>{if(!musicEnabled||a.paused)return;const start=a.volume,steps=10;let i=0;clearInterval(musicDuckFade);musicDuckFade=setInterval(()=>{i++;a.volume=start+(normal-start)*(i/steps);if(i>=steps){clearInterval(musicDuckFade);musicDuckFade=null}},38)},holdMs);
 }
 // v0.31.8 PROCEDURAL COMBAT AUDIO — no external SFX assets required.
 let combatAudioCtx=null,lastImpactSfxAt=0;
@@ -1109,14 +1110,14 @@ function audioNoise(dur=.14,gain=.08,filterFreq=1200,delay=0){
   g.gain.setValueAtTime(gain,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);src.connect(f).connect(g).connect(c.destination);src.start(t);
 }
 function weaponFireSfx(kind){
-  duckMusic(.34,220);
-  if(kind==='explosive'){audioNoise(.11,.11,760);audioTone(105,.18,'sawtooth',.10,.56);audioTone(58,.20,'sine',.12,.72,.03)}
+  const mix=kind==='disintegrator'?[.14,620]:kind==='laser'?[.16,480]:kind==='acid'?[.17,560]:[.16,620];duckMusic(mix[0],mix[1]);
+  if(kind==='explosive'){audioNoise(.11,.11,760);audioTone(105,.18,'sawtooth',.10,.56);audioTone(58,.20,'sine',.12,.72,.03);audioNoise(.08,.065,1450,.07);audioNoise(.08,.055,1650,.14)}
   else if(kind==='laser'){audioTone(330,.26,'sawtooth',.07,2.8);audioTone(1180,.34,'sine',.095,.64,.035);audioTone(2220,.18,'triangle',.045,.82,.055)}
   else if(kind==='disintegrator'){audioTone(145,.34,'square',.055,3.2);audioTone(820,.42,'sine',.075,.24,.03);audioNoise(.25,.045,1600,.04)}
   else if(kind==='acid'){audioNoise(.34,.085,2300);audioTone(185,.28,'sawtooth',.035,.72);audioNoise(.18,.045,5200,.09)}
 }
 function weaponImpactSfx(kind,heavy=false){
-  duckMusic(heavy?.20:.28,340);
+  duckMusic(heavy?.10:.18,heavy?620:420);
   const now=performance.now();if(now-lastImpactSfxAt<75)return;lastImpactSfxAt=now;
   if(kind==='explosive'){audioNoise(.24,heavy?.16:.11,680);audioTone(72,.32,'sine',heavy?.15:.10,.48)}
   else if(kind==='laser'){audioTone(1650,.22,'triangle',.09,.30);audioNoise(.20,.065,3300);audioTone(240,.28,'sine',.055,.62,.025)}
@@ -1147,7 +1148,7 @@ const mpOverlay=document.getElementById('mpOverlay'),mpHostBtn=document.getEleme
 const isEditableTarget=t=>t instanceof HTMLInputElement||t instanceof HTMLTextAreaElement||t instanceof HTMLSelectElement||t?.isContentEditable;
 const stopNative=e=>{if(isEditableTarget(e.target))return;if(e.cancelable)e.preventDefault()};
 for(const type of ['contextmenu','selectstart','dragstart','gesturestart','gesturechange','gestureend'])document.addEventListener(type,stopNative,{passive:false});
-const isGameControlTarget=t=>!!t?.closest?.('#mpOverlay button,#mpOverlay a,#mpOverlay input,#characterOverlay button,#deployOverlay button,#starterCard,.deploySlot,#movePad button,#ndaOverlay button,#ndaOverlay input,#ownerDbgPanel button,#ownerDbgPanel textarea,#ownerDbgBtn');
+const isGameControlTarget=t=>!!t?.closest?.('#mpOverlay button,#mpOverlay a,#mpOverlay input,#characterOverlay button,#deployOverlay button,#starterCard,.deploySlot,#movePad button,#ndaOverlay button,#ndaOverlay input,#ownerDbgPanel,#ownerDbgBtn');
 for(const type of ['touchstart','touchmove','touchend','touchcancel'])shell.addEventListener(type,e=>{
   if(isEditableTarget(e.target)||isGameControlTarget(e.target))return;
   stopNative(e)
@@ -1198,9 +1199,11 @@ function updateBattleCamera(snap=false,frameDt=null){
   const desiredPos=new THREE.Vector3(midX,(tactical?27.5:23.5)+midY*.11+altExtra*.22,safeZ);
   // Focus is damped with camera position. Keep the real battlefield midpoint centered and preserve extra lobbed-shot airspace.
   const desiredLook=new THREE.Vector3(midX,Math.max(10,midY*.48)+(tactical?Math.min(8,sep*.045):0),0);
-  if(snap){camera.position.copy(desiredPos);cameraLookTarget.copy(desiredLook)}else{
+  const desiredZoom=xrayOpen?1.055:1;
+  if(snap){camera.position.copy(desiredPos);cameraLookTarget.copy(desiredLook);camera.zoom=desiredZoom}else{
     const posA=1-Math.exp(-(tactical?10.5:8.8)*dt),lookA=1-Math.exp(-(tactical?12.0:10.5)*dt);
-    camera.position.lerp(desiredPos,posA);cameraLookTarget.lerp(desiredLook,lookA);
+    const zoomA=1-Math.exp(-9.5*dt);
+    camera.position.lerp(desiredPos,posA);cameraLookTarget.lerp(desiredLook,lookA);camera.zoom=THREE.MathUtils.lerp(camera.zoom,desiredZoom,zoomA);
   }
   camera.lookAt(cameraLookTarget);camera.aspect=16/9;camera.near=.1;camera.far=900;camera.updateProjectionMatrix();
 }
@@ -1324,9 +1327,9 @@ function toggleOwnerDebug(e){if(e){try{stopNative(e)}catch{}}const opening=!owne
 let ownerDbgLastToggle=0;function activateOwnerDebug(e){const now=performance.now();if(now-ownerDbgLastToggle<350)return;ownerDbgLastToggle=now;toggleOwnerDebug(e)}
 function closeOwnerDebug(e){if(e){try{stopNative(e)}catch{}}ownerDbgPanel.classList.remove('show');ownerDbgPanel.setAttribute('aria-hidden','true');ownerDbgSelect?.classList.remove('show');if(ownerDbgNotice)ownerDbgNotice.textContent='';diag('DEBUG MENU','closed')}
 function debugKeyboardFallback(el,fn){el?.addEventListener('click',e=>{if(e.detail===0)fn(e)},{passive:false})}
-ownerDbgBtn?.addEventListener('pointerdown',activateOwnerDebug,{passive:false});
+ownerDbgBtn?.addEventListener('pointerup',activateOwnerDebug,{passive:false});
 debugKeyboardFallback(ownerDbgBtn,activateOwnerDebug);
-ownerDbgClose?.addEventListener('pointerdown',closeOwnerDebug,{passive:false});debugKeyboardFallback(ownerDbgClose,closeOwnerDebug);
+ownerDbgClose?.addEventListener('pointerup',closeOwnerDebug,{passive:false});debugKeyboardFallback(ownerDbgClose,closeOwnerDebug);
 ownerDbgRefresh?.addEventListener('pointerdown',e=>{stopNative(e);diag('DEBUG SNAPSHOT','manual refresh');refreshOwnerDebug();ownerDbgRefresh.textContent='REFRESHED ✓';setTimeout(()=>ownerDbgRefresh.textContent='REFRESH SNAPSHOT',900)},{passive:false});
 ownerDbgClear?.addEventListener('pointerdown',e=>{stopNative(e);diagLines.length=0;diag('LOG CLEARED','manual');refreshOwnerDebug()},{passive:false});
 function setDebugNotice(msg){if(ownerDbgNotice)ownerDbgNotice.textContent=msg||''}
@@ -2682,7 +2685,7 @@ const WEAPONS={
 };
 function makeCrewSilhouetteTexture(){const c=document.createElement('canvas');c.width=64;c.height=112;const x=c.getContext('2d');x.clearRect(0,0,64,112);x.fillStyle='#fff';x.beginPath();x.arc(32,17,13,0,Math.PI*2);x.fill();x.beginPath();x.moveTo(18,36);x.quadraticCurveTo(32,29,46,36);x.lineTo(54,76);x.lineTo(42,76);x.lineTo(39,108);x.lineTo(25,108);x.lineTo(22,76);x.lineTo(10,76);x.closePath();x.fill();const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;return t}
 const crewSilhouetteTexture=makeCrewSilhouetteTexture();
-function makeWarriors(side,roomGroup,roomIndices,texture,weaponKey,options={}){const out=[];for(let i=0;i<roomIndices.length;i++){const roomIndex=roomIndices[i],room=roomGroup.userData.rooms[roomIndex],role=options.role||'captain',assignedColor=options.assignedColors?.[i]??(side==='aurelian'?0xf0c65a:0x74d9ff);const markerMat=new THREE.MeshBasicMaterial({color:assignedColor,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide});const marker=new THREE.Mesh(new THREE.PlaneGeometry(3.25,4.85),markerMat);marker.position.copy(room.local).add(new THREE.Vector3(0,-.05,-.95));if(side==='aurelian')marker.rotation.y=Math.PI;roomGroup.add(marker);const mat=new THREE.SpriteMaterial({map:texture,color:role==='shadow'?0x111820:0xffffff,transparent:true,opacity:role==='shadow'?.68:1,depthTest:true,depthWrite:false});const spr=new THREE.Sprite(mat);spr.scale.set(role==='shadow'?2.05:2.5,role==='shadow'?3.55:4.2,1);spr.position.copy(room.local).add(new THREE.Vector3(0,-.1,-.75));roomGroup.add(spr);const hpBack=box(2.75,.22,.16,0x08111b,.05,.9);hpBack.position.copy(room.local).add(new THREE.Vector3(0,1.78,-.64));roomGroup.add(hpBack);const hpFill=box(2.55,.12,.18,0x74dfff,.05,.65);hpFill.position.copy(room.local).add(new THREE.Vector3(0,1.78,-.53));roomGroup.add(hpFill);const healthBaseMat=new THREE.SpriteMaterial({map:crewSilhouetteTexture,color:0x071019,transparent:true,opacity:.72,depthTest:false,depthWrite:false});const healthBase=new THREE.Sprite(healthBaseMat);healthBase.scale.set(1.22,2.14,1);healthBase.position.copy(room.local).add(new THREE.Vector3(0,-.14,.56));healthBase.renderOrder=82;roomGroup.add(healthBase);const healthFillMat=new THREE.SpriteMaterial({map:crewSilhouetteTexture,color:assignedColor,transparent:true,opacity:.92,depthTest:false,depthWrite:false,blending:THREE.AdditiveBlending});const healthFill=new THREE.Sprite(healthFillMat);healthFill.scale.set(1.22,2.14,1);healthFill.position.copy(healthBase.position);healthFill.renderOrder=83;roomGroup.add(healthFill);healthBase.visible=false;healthFill.visible=false;const w={side,index:i,sprite:spr,marker,markerMat,hpBack,hpFill,healthBase,healthFill,healthHeight:2.14,roomIndex,hp:100,maxHp:100,aa:60,maxAa:60,aaLevel:1,weaponKey,roomGroup,role,isCaptain:role==='captain',passive:role==='shadow',canAttack:role==='captain',active:true,assignedColor,displayName:role==='shadow'?`SHADOW ${i+1}`:null,captainPenaltyApplied:false};marker.userData.warrior=w;out.push(w)}return out}
+function makeWarriors(side,roomGroup,roomIndices,texture,weaponKey,options={}){const out=[];for(let i=0;i<roomIndices.length;i++){const roomIndex=roomIndices[i],room=roomGroup.userData.rooms[roomIndex],role=options.role||'captain',assignedColor=options.assignedColors?.[i]??(side==='aurelian'?0xf0c65a:0x74d9ff);const markerMat=new THREE.MeshBasicMaterial({color:assignedColor,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide});const marker=new THREE.Mesh(new THREE.PlaneGeometry(3.25,4.85),markerMat);marker.position.copy(room.local).add(new THREE.Vector3(0,-.05,-.95));if(side==='aurelian')marker.rotation.y=Math.PI;roomGroup.add(marker);const mat=new THREE.SpriteMaterial({map:texture,color:role==='shadow'?0x25313d:0xffffff,transparent:true,opacity:role==='shadow'?.86:1,depthTest:true,depthWrite:false});const spr=new THREE.Sprite(mat);spr.scale.set(role==='shadow'?2.18:2.5,role==='shadow'?3.78:4.2,1);spr.position.copy(room.local).add(new THREE.Vector3(0,-.1,-.75));roomGroup.add(spr);const xrayGlowMat=new THREE.SpriteMaterial({map:crewSilhouetteTexture,color:assignedColor,transparent:true,opacity:.26,depthTest:false,depthWrite:false,blending:THREE.AdditiveBlending});const xrayGlow=role==='shadow'?new THREE.Sprite(xrayGlowMat):null;if(xrayGlow){xrayGlow.scale.set(1.48,2.60,1);xrayGlow.position.copy(room.local).add(new THREE.Vector3(0,-.14,.50));xrayGlow.renderOrder=81;xrayGlow.visible=false;roomGroup.add(xrayGlow)}const hpBack=box(2.75,.22,.16,0x08111b,.05,.9);hpBack.position.copy(room.local).add(new THREE.Vector3(0,1.78,-.64));roomGroup.add(hpBack);const hpFill=box(2.55,.12,.18,0x74dfff,.05,.65);hpFill.position.copy(room.local).add(new THREE.Vector3(0,1.78,-.53));roomGroup.add(hpFill);const healthBaseMat=new THREE.SpriteMaterial({map:crewSilhouetteTexture,color:0x071019,transparent:true,opacity:.72,depthTest:false,depthWrite:false});const healthBase=new THREE.Sprite(healthBaseMat);healthBase.scale.set(1.22,2.14,1);healthBase.position.copy(room.local).add(new THREE.Vector3(0,-.14,.56));healthBase.renderOrder=82;roomGroup.add(healthBase);const healthFillMat=new THREE.SpriteMaterial({map:crewSilhouetteTexture,color:assignedColor,transparent:true,opacity:.92,depthTest:false,depthWrite:false,blending:THREE.AdditiveBlending});const healthFill=new THREE.Sprite(healthFillMat);healthFill.scale.set(1.22,2.14,1);healthFill.position.copy(healthBase.position);healthFill.renderOrder=83;roomGroup.add(healthFill);healthBase.visible=false;healthFill.visible=false;const w={side,index:i,sprite:spr,marker,markerMat,xrayGlow,hpBack,hpFill,healthBase,healthFill,healthHeight:2.14,roomIndex,hp:100,maxHp:100,aa:60,maxAa:60,aaLevel:1,weaponKey,roomGroup,role,isCaptain:role==='captain',passive:role==='shadow',canAttack:role==='captain',active:true,assignedColor,displayName:role==='shadow'?`SHADOW ${i+1}`:null,captainPenaltyApplied:false};marker.userData.warrior=w;out.push(w)}return out}
 // Captains remain the only selectable/firing warriors. Eight passive shadow occupants fill the other
 // compartments and can take AA/HP damage, but they never receive movement, weapon, or turn control.
 const SHADOW_CREW_COLORS=[0x60d9ff,0x7cff9b,0xffd45f,0xc489ff,0xff8c68,0x56e0c5,0xff83c8,0xe8f1ff];
@@ -2700,6 +2703,7 @@ function setWarriorRoom(w,roomIndex){
   w.marker.position.copy(room.local).add(new THREE.Vector3(0,-.05,-.95));
   w.marker.rotation.y=w.side==='aurelian'?Math.PI:0;
   w.sprite.position.copy(room.local).add(new THREE.Vector3(0,-.1,-.75));
+  if(w.xrayGlow)w.xrayGlow.position.copy(room.local).add(new THREE.Vector3(0,-.14,.50));
   w.hpBack.position.copy(room.local).add(new THREE.Vector3(0,1.78,-.64));
   w.hpFill.position.copy(room.local).add(new THREE.Vector3(0,1.78,-.53));
   if(w.healthBase)w.healthBase.position.copy(room.local).add(new THREE.Vector3(0,-.14,.56));
@@ -2716,13 +2720,13 @@ function arrangePassiveCrew(side){
 function factionCrewColor(side){return({earth:0x4ebdff,aurelian:0xffd65a,lizard:0x69e88b,gray:0xa96cff})[factionForWorldSide(side)]||0x74d9ff}
 function syncCrewIdentityColors(){
   for(const w of [...aWarriors,...eWarriors])w.assignedColor=factionCrewColor(w.side);
-  for(const w of allWarriors){if(w.healthFill?.material)w.healthFill.material.color.setHex(w.assignedColor)}
+  for(const w of allWarriors){if(w.healthFill?.material)w.healthFill.material.color.setHex(w.assignedColor);if(w.xrayGlow?.material)w.xrayGlow.material.color.setHex(w.assignedColor)}
 }
 function setWarriorObjectsVisible(w,visible){
   if(!w)return false;
   const on=!!visible;
   for(const obj of [w.sprite,w.marker,w.hpBack,w.hpFill])if(obj)obj.visible=on;
-  if(!on){if(w.healthBase)w.healthBase.visible=false;if(w.healthFill)w.healthFill.visible=false}
+  if(!on){if(w.xrayGlow)w.xrayGlow.visible=false;if(w.healthBase)w.healthBase.visible=false;if(w.healthFill)w.healthFill.visible=false}
   if(w.hpEl)w.hpEl.style.display=on?'':'none';
   return true;
 }
@@ -3356,6 +3360,7 @@ function isDescendantOf(obj,root){for(let n=obj;n;n=n.parent)if(n===root)return 
 function pointHitsLocalVessel(pt){
   const ndc=new THREE.Vector2(pt.x/640-1,1-pt.y/360);raycaster.setFromCamera(ndc,camera);
   const root=localCommandVessel(),rooms=localXrayRooms();
+  if(xrayOpen&&xrayGroup&&raycaster.intersectObject(xrayGroup,true).some(h=>h.object?.visible!==false))return true;
   return raycaster.intersectObject(root,true).some(h=>{
     const o=h.object;if(!o||o.visible===false||o.userData?.xrayVisual||isDescendantOf(o,rooms))return false;
     const mats=Array.isArray(o.material)?o.material:[o.material];
@@ -3772,7 +3777,9 @@ function syncWarriorConcealment(w){
   if(w.sprite)w.sprite.visible=show;
   if(w.marker)w.marker.visible=show;
   const room=w.roomGroup?.userData?.rooms?.[w.roomIndex],exposed=!!w.exposedBySolar||(room?.breach||0)>=55;
+  const isMine=!multiplayer?w.side==='aurelian':w.side===localSide;
   if(w.markerMat){w.markerMat.color.setHex(exposed?0xc8483e:w.assignedColor);w.markerMat.opacity=show?(exposed?.28:(w===selected?.35:0)):0}
+  if(w.xrayGlow)w.xrayGlow.visible=show&&xrayOpen&&isMine&&w.aa>0;
   if(w.hpBack)w.hpBack.visible=show&&w.aa>0;
   if(w.hpFill)w.hpFill.visible=show&&w.aa>0;
   const healthVisible=show&&w.aa<=0;
