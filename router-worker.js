@@ -17,7 +17,7 @@ function documentHeaders(response) {
 
 class StoryPresentationInjector {
   element(element) {
-    element.append('<script src="/story-presentation.js?v=1"></script>', { html: true });
+    element.append('<script src="/story-presentation.js?v=20260824-2"></script>', { html: true });
   }
 }
 
