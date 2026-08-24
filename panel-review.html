@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>After Contact Panel Review</title><style>html,body{margin:0;background:#05070a;color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif}body{padding:18px}.head{position:sticky;top:0;z-index:5;background:rgba(5,7,10,.94);backdrop-filter:blur(10px);padding:12px 0 16px}.head h1{margin:0;font-size:22px}.head p{margin:6px 0 0;opacity:.7;font-size:13px}.grid{display:grid;grid-template-columns:1fr;gap:18px}.card{border:1px solid #26303c;border-radius:16px;background:#0a0f15;padding:12px}.label{font-weight:900;letter-spacing:.08em;font-size:12px;margin:0 0 8px}.frame{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;display:grid;place-items:center}.frame canvas{max-width:100%;max-height:100%;width:auto;height:auto;display:block;background:#000}.note{font-size:11px;opacity:.62;margin-top:8px}@media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}</style></head><body><div class="head"><h1>AFTER CONTACT • PANEL REVIEW</h1><p>Each preview is cropped independently from the original comic sheet. Approve or flag each frame before it goes back into the story.</p></div><div class="grid" id="grid"></div><img id="src" src="/first-contact-story.webp" hidden><script>const panels=[
+{x:.209,y:.019,w:.237,h:.247,label:'01 • WHITE HOUSE'},
+{x:.209,y:.259,w:.237,h:.242,label:'02 • PRESIDENTIAL RESPONSE'},
+{x:.459,y:.019,w:.177,h:.237,label:'03 • FIRST CONTACT'},
+{x:.644,y:.019,w:.172,h:.237,label:'04 • THE GREYS'},
+{x:.824,y:.019,w:.167,h:.237,label:'05 • THE REPTILIANS'},
+{x:.454,y:.259,w:.177,h:.227,label:'06 • CONTACT ESCALATES'},
+{x:.639,y:.259,w:.177,h:.227,label:'07 • THE WARNING'},
+{x:.824,y:.259,w:.167,h:.227,label:'08 • INVASION'},
+{x:.209,y:.509,w:.237,h:.217,label:'09 • EARTH RESPONDS'},
+{x:.454,y:.499,w:.177,h:.227,label:'10 • THE FALL'},
+{x:.639,y:.499,w:.177,h:.227,label:'11 • AFTERMATH'},
+{x:.824,y:.499,w:.167,h:.227,label:'12 • SURVIVORS'},
+{x:.209,y:.734,w:.277,h:.252,label:'13 • THE WORLD BURNS'},
+{x:.494,y:.734,w:.237,h:.252,label:'14 • LAST STAND'},
+{x:.739,y:.734,w:.252,h:.252,label:'15 • AFTER CONTACT START SCREEN'}];
+const src=document.getElementById('src'),grid=document.getElementById('grid');function render(){grid.innerHTML='';for(const p of panels){const card=document.createElement('section');card.className='card';const title=document.createElement('div');title.className='label';title.textContent=p.label;const frame=document.createElement('div');frame.className='frame';const c=document.createElement('canvas');const sw=Math.round(src.naturalWidth*p.w),sh=Math.round(src.naturalHeight*p.h),sx=Math.round(src.naturalWidth*p.x),sy=Math.round(src.naturalHeight*p.y);c.width=Math.max(1,sw);c.height=Math.max(1,sh);c.getContext('2d').drawImage(src,sx,sy,sw,sh,0,0,sw,sh);frame.appendChild(c);const note=document.createElement('div');note.className='note';note.textContent='Candidate crop • no scaling/stretching inside the crop';card.append(title,frame,note);grid.appendChild(card)}}src.addEventListener('load',render);if(src.complete&&src.naturalWidth)render();</script></body></html>
