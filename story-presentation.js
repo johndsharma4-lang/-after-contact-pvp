@@ -44,7 +44,7 @@
 
     body.acStoryPortrait #rotate{display:flex!important;z-index:10000!important}
     body.acStoryPortrait #storyIntro,body.acStoryPortrait #storyComic{visibility:hidden!important}
-    body.acStoryPortrait #rotate .rotateCard p:after{content:' The story is paused until your phone is sideways.'}
+    body.acStoryPortrait #rotate .rotateCard p:after{content:' The story will begin when your phone is sideways.'}
   `;
   document.head.appendChild(style);
 
@@ -63,14 +63,30 @@
   let pausedForPortrait = false;
   let crawlWasPlaying = false;
   let preloadPromise = null;
+  let pendingLandscapeStart = null;
   const imageCache = new Map();
 
   function isPortraitPhone() {
     return matchMedia('(orientation: portrait)').matches && Math.min(innerWidth, innerHeight) < 700;
   }
 
+  /* Gate the game's real story starter BEFORE it creates its 43.5s transition timer. */
+  const originalStartStoryIntro = typeof window.startStoryIntro === 'function' ? window.startStoryIntro : null;
+  if (originalStartStoryIntro) {
+    window.startStoryIntro = function(...args) {
+      if (isPortraitPhone()) {
+        pendingLandscapeStart = { thisArg: this, args };
+        document.body.classList.add('acStoryPortrait');
+        if (rotate) rotate.style.setProperty('display','flex','important');
+        return;
+      }
+      pendingLandscapeStart = null;
+      return originalStartStoryIntro.apply(this, args);
+    };
+  }
+
   function syncOrientation() {
-    const storyVisible = intro.classList.contains('show') || comic.classList.contains('show');
+    const storyVisible = !!pendingLandscapeStart || intro.classList.contains('show') || comic.classList.contains('show');
     if (!storyVisible) {
       document.body.classList.remove('acStoryPortrait');
       pausedForPortrait = false;
@@ -91,6 +107,16 @@
     }
 
     if (rotate) rotate.style.removeProperty('display');
+
+    /* A portrait launch was requested: only now start the original story and its timer. */
+    if (pendingLandscapeStart && originalStartStoryIntro) {
+      const pending = pendingLandscapeStart;
+      pendingLandscapeStart = null;
+      pausedForPortrait = false;
+      originalStartStoryIntro.apply(pending.thisArg, pending.args);
+      return;
+    }
+
     if (pausedForPortrait) {
       pausedForPortrait = false;
       if (crawlWasPlaying && intro.classList.contains('show')) {
@@ -98,6 +124,10 @@
         void intro.offsetWidth;
         requestAnimationFrame(() => intro.classList.add('playing'));
       }
+    }
+
+    if (comic.classList.contains('show') && !customSequenceActive && !comic.classList.contains('acStartMenu')) {
+      beginApprovedComic();
     }
   }
 
@@ -145,7 +175,7 @@
     if (continueButton) continueButton.style.setProperty('display','none','important');
     if (nextButton) {
       nextButton.style.removeProperty('display');
-      nextButton.textContent = panelIndex === APPROVED_PANELS.length - 1 ? 'NEXT' : 'NEXT';
+      nextButton.textContent = 'NEXT';
     }
     const img = await loadImage(APPROVED_PANELS[panelIndex]);
     drawContained(img);
@@ -178,7 +208,6 @@
     event.stopImmediatePropagation();
     comic.classList.remove('acStartMenu');
     customSequenceActive = false;
-    // Let the game's existing continue handler perform the normal handoff.
     if (continueButton) {
       continueButton.style.removeProperty('display');
       continueButton.click();
@@ -199,7 +228,10 @@
   introObserver.observe(intro, {attributes:true, attributeFilter:['class']});
 
   addEventListener('orientationchange', () => { setTimeout(syncOrientation,60); setTimeout(syncOrientation,260); });
-  addEventListener('resize', () => { syncOrientation(); if (customSequenceActive && !comic.classList.contains('acStartMenu') && imageCache.has(APPROVED_PANELS[panelIndex])) drawContained(imageCache.get(APPROVED_PANELS[panelIndex])); }, {passive:true});
+  addEventListener('resize', () => {
+    syncOrientation();
+    if (customSequenceActive && !comic.classList.contains('acStartMenu') && imageCache.has(APPROVED_PANELS[panelIndex])) drawContained(imageCache.get(APPROVED_PANELS[panelIndex]));
+  }, {passive:true});
   visualViewport?.addEventListener('resize', syncOrientation, {passive:true});
 
   preloadApprovedPanels();
