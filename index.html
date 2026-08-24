@@ -1159,7 +1159,7 @@ mpCodeInput.addEventListener('blur',()=>{setTimeout(()=>mpOverlay.classList.remo
 mpCodeInput.addEventListener('input',()=>{mpCodeInput.value=mpCodeInput.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6)});
 if(window.visualViewport){window.visualViewport.addEventListener('resize',()=>{if(document.activeElement===mpCodeInput){mpOverlay.classList.add('typing');setTimeout(()=>{try{mpCodeInput.scrollIntoView({block:'center'})}catch{}},40)}})}
 
-let battleStarted=false,matchEnded=false;
+let battleStarted=false,matchEnded=false;const deployment=EARLY_DEPLOYMENT;
 let multiplayer=false,localSide='aurelian',currentTurn='aurelian',mpSocket=null,mpToken='',mpCode='',mpConnected=false,mpBothConnected=false,networkApplying=false,mpRound=1;let mpHandshakePhase='idle',mpHandshakeTimer=null,mpHandshakeBusy=false;
 let mpReconnectTimer=null,mpReconnectAttempts=0,mpSocketGeneration=0,mpPlayStarted=false;
 const movePad=document.getElementById('movePad'),moveUp=document.getElementById('moveUp'),moveDown=document.getElementById('moveDown'),moveLeft=document.getElementById('moveLeft'),moveRight=document.getElementById('moveRight'),moveFuel=document.getElementById('moveFuel');
@@ -2728,7 +2728,6 @@ syncCrewIdentityColors();
 // retained as future-ready placeholders but are inactive until they are actually owned/unlocked.
 
 aWarriors.forEach((w,i)=>{w.active=i<OWNED_STARTER_COUNT;if(!w.active)setWarriorObjectsVisible(w,false)});
-const deployment=EARLY_DEPLOYMENT;
 // Shared deployment interaction state. These MUST be declared in module scope; assigning undeclared
 // names inside <script type=module> throws ReferenceError and kills touch/drag handling on iPhone.
 let dragWarrior=null,dragSource='roster',dragSourceRoom=null;
