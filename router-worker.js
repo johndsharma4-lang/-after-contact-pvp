@@ -6,6 +6,21 @@ function isDocumentRequest(request, url) {
   return url.pathname === '/' || url.pathname === '/index.html';
 }
 
+function documentHeaders(response) {
+  const headers = new Headers(response.headers);
+  headers.set('content-type', 'text/html; charset=UTF-8');
+  headers.set('cache-control', 'no-store, no-cache, must-revalidate');
+  headers.set('x-content-type-options', 'nosniff');
+  headers.delete('content-disposition');
+  return headers;
+}
+
+class StoryPresentationInjector {
+  element(element) {
+    element.append('<script src="/story-presentation.js?v=1"></script>', { html: true });
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -19,15 +34,23 @@ export default {
       });
 
       const assetResponse = await env.ASSETS.fetch(assetRequest);
-      const headers = new Headers(assetResponse.headers);
-      headers.set('content-type', 'text/html; charset=UTF-8');
-      headers.set('cache-control', 'no-store, no-cache, must-revalidate');
-      headers.set('x-content-type-options', 'nosniff');
-      headers.delete('content-disposition');
+      const headers = documentHeaders(assetResponse);
 
-      return new Response(request.method === 'HEAD' ? null : assetResponse.body, {
-        status: assetResponse.status,
-        statusText: assetResponse.statusText,
+      if (request.method === 'HEAD') {
+        return new Response(null, {
+          status: assetResponse.status,
+          statusText: assetResponse.statusText,
+          headers,
+        });
+      }
+
+      const transformed = new HTMLRewriter()
+        .on('body', new StoryPresentationInjector())
+        .transform(assetResponse);
+
+      return new Response(transformed.body, {
+        status: transformed.status,
+        statusText: transformed.statusText,
         headers,
       });
     }
