@@ -10,11 +10,17 @@
 
   const style = document.createElement('style');
   style.textContent = `
-    /* IMPORTANT: preserve the original index.html crawl animation/timing/position.
-       Only enlarge its typography for phone readability. */
-    #storyCrawl{font-size:clamp(26px,6.2vw,46px)!important;line-height:1.42!important}
-    @media (orientation:portrait){#storyCrawl{font-size:clamp(28px,7.2vw,46px)!important}}
-    @media (orientation:landscape) and (max-height:520px){#storyCrawl{font-size:clamp(22px,3.7vw,34px)!important}}
+    /* Preserve the ORIGINAL crawl movement/position/keyframes.
+       Only increase readability and shorten its existing startup delay. */
+    #storyCrawl{font-size:clamp(34px,8.8vw,60px)!important;line-height:1.38!important}
+    #storyCrawl p,#storyCrawl div,#storyCrawl span{font-size:inherit!important;line-height:inherit!important}
+    #storyIntro.playing #storyCrawl{animation-delay:2.5s!important}
+    @media (orientation:portrait){
+      #storyCrawl{font-size:clamp(36px,9.4vw,58px)!important;line-height:1.36!important}
+    }
+    @media (orientation:landscape) and (max-height:520px){
+      #storyCrawl{font-size:clamp(28px,5vw,42px)!important;line-height:1.32!important}
+    }
 
     #storyComic{overflow:hidden!important;background:#000!important}
     #storyPanelCanvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;border-radius:0!important;box-shadow:none!important;background:#000!important}
