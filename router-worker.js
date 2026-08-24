@@ -17,7 +17,7 @@ function documentHeaders(response) {
 
 class StoryPresentationInjector {
   element(element) {
-    element.append('<style>#storyPanelCount{display:none!important}</style><script src="/story-presentation.js?v=20260824-14"></script>', { html: true });
+    element.append('<style>#storyPanelCount{display:none!important}</style><script src="/story-presentation.js?v=20260824-10"></script>', { html: true });
   }
 }
 
