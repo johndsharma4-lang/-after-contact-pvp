@@ -26,7 +26,7 @@ body{display:grid;place-items:center;position:fixed;inset:0}
 
 #structureHud{position:absolute;z-index:9;left:16px;right:16px;top:49px;display:flex;justify-content:space-between;gap:18px;pointer-events:none}.structureSide{width:min(25vw,210px);opacity:.74;transition:opacity .18s ease}.structureSide.right{text-align:right}.structureLabel{font-size:clamp(6px,.62vw,8px);font-weight:1000;letter-spacing:.08em;text-shadow:0 2px 8px #000}.structureTrack{display:block;margin-top:2px;height:3px;border:1px solid rgba(198,230,240,.30);border-radius:999px;background:rgba(1,8,14,.72);overflow:hidden;box-shadow:0 2px 9px #0008;opacity:.42;transform:scaleY(.78);transition:opacity .16s ease,transform .16s ease}.structureSide.damageActive{opacity:1}.structureSide.damageActive .structureTrack{opacity:1;transform:scaleY(1)}.structureFill{height:100%;width:100%;background:linear-gradient(90deg,#7695a0,#d7edf3);transition:width .18s ease,background .18s ease}.structureSide.right .structureFill{background:linear-gradient(90deg,#7695a0,#d7edf3)}
 #rangeBadge{position:absolute;z-index:9;left:50%;top:47px;transform:translateX(-50%);padding:5px 10px;border-radius:999px;background:rgba(3,13,25,.72);border:1px solid rgba(116,217,255,.18);font-size:clamp(7px,.78vw,10px);font-weight:1000;letter-spacing:.1em;pointer-events:none;opacity:0;transition:opacity .16s}.rangeLive{opacity:.86!important}
-#damageFlash{position:absolute;z-index:11;left:50%;top:24%;transform:translate(-50%,-50%);max-width:62%;padding:4px 9px;border-radius:999px;background:rgba(3,10,18,.72);font-size:clamp(10px,1.28vw,19px);font-weight:1000;letter-spacing:.04em;text-align:center;color:#fff1b0;text-shadow:0 0 7px #ffb300;pointer-events:none;opacity:0;transition:opacity .10s}
+#damageFlash{position:absolute;z-index:11;left:50%;top:23%;transform:translate(-50%,-50%);max-width:46%;padding:3px 8px;border-radius:999px;background:rgba(3,10,18,.58);font-size:clamp(8px,1vw,14px);font-weight:1000;letter-spacing:.035em;text-align:center;color:#fff1b0;text-shadow:0 0 5px #ffb300;pointer-events:none;opacity:0;transition:opacity .08s}
 #unitHpLayer{position:absolute;inset:0;z-index:10;pointer-events:none}.unitHp{position:absolute;width:40px;transform:translate(-50%,-100%);font-size:5px;font-weight:1000;letter-spacing:.03em;text-align:center;text-shadow:0 1px 4px #000;opacity:0;transition:opacity .16s ease}.unitHp.damageActive{opacity:1}.unitAaLabel{margin-bottom:1px;white-space:nowrap;font-size:5px;color:#8feaff;text-shadow:0 0 6px rgba(90,220,255,.65)}.unitAaTrack{height:3px;border-radius:999px;background:#06111a;border:1px solid rgba(118,226,255,.48);overflow:hidden;box-shadow:0 0 7px rgba(80,210,255,.26)}.unitAaFill{height:100%;width:100%;background:linear-gradient(90deg,#4ec7ff,#d8f7ff);transform-origin:left center;transition:width .25s ease}.unitHp.shadowCrew{width:30px}.shadowHpName{margin-bottom:1px;white-space:nowrap}
 #muzzleDot{fill:#fff7b8;filter:drop-shadow(0 0 8px #ffd65a);opacity:0}
 #factionOverlay{position:absolute;inset:0;z-index:42;background:radial-gradient(circle at 50% 18%,rgba(116,217,255,.12),transparent 38%),linear-gradient(135deg,#020811,#071321 52%,#02060d);display:none;align-items:center;justify-content:center;padding:14px}#factionOverlay.show{display:flex}.factionPanel{width:min(980px,96%);max-height:92%;overflow:auto;padding:18px;border:1px solid rgba(116,217,255,.28);border-radius:22px;background:rgba(3,12,22,.97);box-shadow:0 24px 70px rgba(0,0,0,.6)}.factionKicker{font-size:9px;font-weight:1000;letter-spacing:.18em;color:var(--cyan);text-align:center}.factionTitle{font-size:clamp(26px,4vw,48px);font-weight:1000;letter-spacing:.07em;text-align:center;margin:4px 0}.factionText{font-size:11px;opacity:.68;text-align:center;margin-bottom:14px}.factionGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.factionCard{min-height:190px;border:1px solid rgba(255,255,255,.13);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(0,0,0,.28));color:#fff;padding:14px;display:flex;flex-direction:column;justify-content:space-between;text-align:left;touch-action:manipulation}.factionCard.selected{outline:2px solid #fff;box-shadow:0 0 26px rgba(116,217,255,.18)}.factionSymbol{font-size:42px;line-height:1}.factionName{font-size:16px;font-weight:1000;letter-spacing:.08em;margin-top:8px}.factionStarter{font-size:10px;font-weight:900;margin-top:4px;opacity:.85}.factionDesc{font-size:9px;line-height:1.35;opacity:.58;margin-top:7px}.factionCard[data-faction="earth"]{border-color:rgba(116,217,255,.45)}.factionCard[data-faction="aurelian"]{border-color:rgba(240,198,90,.5)}.factionCard[data-faction="lizard"]{border-color:rgba(120,255,90,.45)}.factionCard[data-faction="gray"]{border-color:rgba(186,126,255,.48)}#factionContinue{width:100%;height:48px;margin-top:12px;border:1px solid #79f0ac;border-radius:14px;background:linear-gradient(180deg,#4ad794,#1f9e69);color:#03110a;font-weight:1000;letter-spacing:.09em}#factionContinue:disabled{opacity:.35}@media(max-width:760px){.factionGrid{grid-template-columns:repeat(2,1fr)}.factionCard{min-height:128px;padding:10px}.factionSymbol{font-size:30px}.factionName{font-size:13px}.factionDesc{font-size:8px}}@media(max-height:430px){#factionOverlay{align-items:flex-start;overflow:auto;padding:6px}.factionPanel{padding:9px;max-height:none}.factionTitle{font-size:22px}.factionText{margin-bottom:7px}.factionGrid{grid-template-columns:repeat(4,1fr);gap:6px}.factionCard{min-height:105px;padding:7px}.factionSymbol{font-size:24px}.factionName{font-size:10px}.factionStarter{font-size:7px}.factionDesc{display:none}#factionContinue{height:38px;margin-top:7px;font-size:10px}}
@@ -796,7 +796,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <button id="moveDown" aria-label="Move down">▼</button>
 </div>
   <div class="hud"><div class="side"><div class="name" id="leftFactionName">AURELIAN ACCORD</div><div class="sub" id="leftFactionSub">SOLAR LANCER • PENETRATION TEST</div></div><div class="side right"><div class="name" id="rightFactionName">EARTH COMMAND</div><div class="sub" id="rightFactionSub">BOMBARDIER • FORTRESS LV.1</div></div></div>
-  <div class="lab">3D LAB • MOBILE PVP TEST • v0.31.22</div>
+  <div class="lab">3D LAB • MOBILE PVP TEST • v0.31.23</div>
   <div id="structureHud"><div class="structureSide"><div class="structureLabel" id="leftStructureLabel">VESSEL STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="leftStructureFill"></div></div></div><div class="structureSide right"><div class="structureLabel" id="rightStructureLabel">FORTRESS STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="rightStructureFill"></div></div></div></div>
   <div id="rangeBadge">RANGE 885m</div>
   <svg id="aimSvg" viewBox="0 0 1280 720" preserveAspectRatio="none"><g id="acidShotLayer" pointer-events="none"></g><path id="aimPath"/><circle id="aimDot" r="4"/><circle id="muzzleDot" r="6"/></svg>
@@ -823,7 +823,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
   <div id="mpOverlay" aria-live="polite">
     <div class="mpCard">
       <div class="mpKicker">AFTER CONTACT • MAIN MENU</div>
-      <div class="mpTitle">PRIVATE PVP TEST • v0.31.22</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
+      <div class="mpTitle">PRIVATE PVP TEST • v0.31.23</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
       <div class="mpText">Choose Solo Game or Multiplayer. Multiplayer creates a private room you can share with another tester.</div>
       <div class="mpActions"><button class="mpBtn primary" id="mpHostBtn">MULTIPLAYER</button><button class="mpBtn" id="mpSoloBtn">SOLO GAME</button><button class="mpBtn" id="replayStoryBtn" type="button">REPLAY STORY INTRO</button></div>
       <div class="mpJoin"><input id="mpCodeInput" maxlength="6" inputmode="text" autocomplete="off" placeholder="ROOM CODE"><button class="mpBtn" id="mpJoinBtn">JOIN</button></div>
@@ -1194,10 +1194,14 @@ function resetShieldState(){shieldHp={aurelian:SHIELD_MAX,earth:SHIELD_MAX};shie
 function makeVesselHealthShell(side,kind){
   const skin=side==='aurelian'?factionSkinA:factionSkinE;if(!skin)return new THREE.Group();
   const shell=skin.clone(true),color=kind==='shield'?0xa9c8d2:vesselHealthColor(side),meshes=[];shell.name=kind==='shield'?'VESSEL_SHIELD_TRACE':'VESSEL_HULL_TRACE';shell.userData.healthVisual=true;shell.userData.kind=kind;
-  shell.traverse(o=>{o.raycast=()=>{};if(o.isMesh)meshes.push(o);else if(o.isLine||o.isLight)o.visible=false});
+  shell.traverse(o=>{o.raycast=()=>{};if(o.isMesh){o.geometry?.computeBoundingBox?.();const box=o.geometry?.boundingBox,size=box?new THREE.Vector3().subVectors(box.max,box.min):new THREE.Vector3();o.userData.healthTraceSize=Math.max(size.x*Math.abs(o.scale.x||1),size.y*Math.abs(o.scale.y||1),size.z*Math.abs(o.scale.z||1));meshes.push(o)}else if(o.isLine||o.isLight)o.visible=false});
+  // Trace only the major hull masses. Cloning every pipe, plate and scar produced a dense gray
+  // duplicate vessel instead of one readable shield around the real ship.
+  const traceLimit=kind==='shield'?7:9,major=new Set([...meshes].sort((a,b)=>(b.userData.healthTraceSize||0)-(a.userData.healthTraceSize||0)).slice(0,traceLimit));
   for(const mesh of meshes){
     mesh.material=new THREE.MeshBasicMaterial({color,transparent:true,opacity:0,depthTest:false,depthWrite:false,side:THREE.DoubleSide});
-    const line=new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry,34),new THREE.LineBasicMaterial({color,transparent:true,opacity:kind==='shield'?.28:.32,depthTest:false,depthWrite:false,blending:THREE.NormalBlending}));
+    if(!major.has(mesh))continue;
+    const line=new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry,38),new THREE.LineBasicMaterial({color,transparent:true,opacity:kind==='shield'?.24:.28,depthTest:false,depthWrite:false,blending:THREE.NormalBlending}));
     line.userData.healthTraceLine=true;line.userData.healthTraceKind=kind;line.raycast=()=>{};line.renderOrder=kind==='shield'?24:25;mesh.add(line)
   }
   shell.position.copy(skin.position);shell.rotation.copy(skin.rotation);shell.scale.copy(skin.scale).multiplyScalar(kind==='shield'?1.016:1.008);return shell
@@ -1385,9 +1389,9 @@ const baseOwnerDebugReport=ownerDebugReport;
 ownerDebugReport=function(){
   const crewState=(label,crew)=>`${label} CREW ${crew.filter(w=>w.active).map(w=>`${w.isCaptain?'CAPTAIN':`S${w.index+1}`}@R${Number.isInteger(w.roomIndex)?w.roomIndex+1:'-'} HP${Math.round(w.hp)}/${w.maxHp} AA${Math.round(w.aa)}/${w.maxAa}`).join(' | ')}`;
   let leftCrew=[],rightCrew=[];try{leftCrew=aCrew;rightCrew=eCrew}catch{}
-  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.31.22').replace('build=2026-08-20_01-58PM_PT','build=2026-08-25_VISUAL_TRUTH_CLEANUP').replace('vfxWatchdog=8s','vfxWatchdog=3s/solar6.5s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
+  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.31.23').replace('build=2026-08-20_01-58PM_PT','build=2026-08-25_CRISP_DESTRUCTION_CLEANUP').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT').replace('vfxWatchdog=8s','vfxWatchdog=3s/solar6.5s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
 };
-const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.31.22';
+const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.31.23';
 function debugButtonAllowed(){return true}
 function updateDebugButtonVisibility(){if(!ownerDbgBtn)return;ownerDbgBtn.classList.toggle('debugVisible',debugButtonAllowed())}
 function refreshOwnerDebug(){if(!ownerDbgText)return;ownerDbgText.textContent=ownerDebugReport()}
@@ -2451,24 +2455,19 @@ function applyFactionRoomLayout(side,faction){
 }
 const aureOriginalHull=[body,spine,wingL,wingR,ring,bridge];
 const earthOriginalHull=[base,front,center,...earthTowers];
-let factionSkinA=null,factionSkinE=null;
-// PATCH 2 MOTION POLISH: authoritative vessel roots still snap to server/physics coordinates,
-// while only the exterior art skin eases from the old render position to the new one.
-// Rooms, hit planes, warrior state, muzzle math and multiplayer coordinates remain authoritative.
+let factionSkinA=null,factionSkinE=null;const progressiveVesselDamageState=new WeakMap();
+// Crisp single-root movement: hull, shield, rooms and hit planes remain visually locked together.
+// The previous exterior-only spring left the shield at the new position while the colored hull
+// eased from the old position, which read as a duplicate or shadow ship during every move.
 const vesselVisualMotion={aurelian:{offset:new THREE.Vector3(),vel:new THREE.Vector3()},earth:{offset:new THREE.Vector3(),vel:new THREE.Vector3()}};
 function visualSkinForSide(side){return side==='aurelian'?factionSkinA:factionSkinE}
 function beginVesselVisualMove(side,oldPos,newPos){
   const state=vesselVisualMotion[side],skin=visualSkinForSide(side);if(!state||!skin)return;
-  state.offset.add(oldPos.clone().sub(newPos));
-  state.offset.x=Math.max(-18,Math.min(18,state.offset.x));state.offset.y=Math.max(-12,Math.min(12,state.offset.y));
-  skin.position.copy(state.offset);
+  state.offset.set(0,0,0);state.vel.set(0,0,0);skin.position.set(0,0,0);
 }
 function updateVesselVisualMotion(dt){
   for(const side of ['aurelian','earth']){const state=vesselVisualMotion[side],skin=visualSkinForSide(side);if(!state||!skin)continue;
-    // Critically damped-ish spring: weighted acceleration/deceleration without changing gameplay position.
-    const stiffness=42,damping=12.5;state.vel.addScaledVector(state.offset,-stiffness*dt);state.vel.multiplyScalar(Math.exp(-damping*dt));state.offset.addScaledVector(state.vel,dt);
-    if(state.offset.lengthSq()<.0004&&state.vel.lengthSq()<.002){state.offset.set(0,0,0);state.vel.set(0,0,0)}
-    skin.position.copy(state.offset);
+    if(state.offset.lengthSq()||state.vel.lengthSq()||skin.position.lengthSq()){state.offset.set(0,0,0);state.vel.set(0,0,0);skin.position.set(0,0,0)}
   }
 }
 
@@ -3413,6 +3412,8 @@ function removeTransientEffectVisuals(q){
     if(q.laser){scene.remove(q.laser.outer,q.laser.core,q.laser.muzzleOuter,q.laser.muzzleCore);if(q.laser.burn){for(const o of q.laser.burn.objects||[])scene.remove(o);for(const e of q.laser.burn.embers||[])scene.remove(e.mesh);for(const d of q.laser.burn.molten||[])scene.remove(d.mesh)}}
     if(q.acidFlood){for(const s of q.acidFlood.streams||[])scene.remove(s.line);for(const d of q.acidFlood.droplets||[])scene.remove(d.mesh);removeAcidScreenShot(q.acidFlood.screenShot)}
     if(q.acid){for(const p of q.acid.pools||[])scene.remove(p.mesh);for(const d of q.acid.drips||[])scene.remove(d.mesh);for(const f of q.acid.fumes||[])scene.remove(f.mesh);for(const line of q.acid.trails||[])scene.remove(line)}
+    if(q.smoke?.particles)for(const p of q.smoke.particles)if(p?.mesh)scene.remove(p.mesh);
+    if(q.fire?.particles)for(const p of q.fire.particles)if(p?.mesh)scene.remove(p.mesh);
     if(q.barrage){for(const m of q.missiles||[])scene.remove(m.mesh);if(q.trail)scene.remove(q.trail)}
     if(q.singularityLoad){scene.remove(q.singularityLoad.core,q.singularityLoad.ring)}
     if(q.singularity){for(const o of q.singularity.objects||[])scene.remove(o);for(const m of q.singularity.motes||[])scene.remove(m.mesh)}
@@ -3526,7 +3527,7 @@ function objectScreenRect(obj,pad=0){obj.updateWorldMatrix(true,false);if(!obj.g
 function pointInRect(pt,r){return pt.x>=r.x1&&pt.x<=r.x2&&pt.y>=r.y1&&pt.y<=r.y2}
 function opposing(w){return (w.side==='aurelian'?eCrew:aCrew).filter(x=>x.active)}
 function opposingRooms(w){return w.side==='aurelian'?eRooms:aRooms}
-function updateHpOverlays(){for(const w of allWarriors){if(!w.hpEl)continue;const isMine=!multiplayer?w.side==='aurelian':w.side===localSide,show=battleStarted&&isMine&&w.hp>0&&w.aa>0&&!xrayOpen&&Date.now()<(w.damageHudUntil||0);w.hpEl.style.display=show?'block':'none';w.hpEl.classList.toggle('damageActive',show);if(!show)continue;const p=worldToStage(warriorWorld(w));const hudX=Math.max(4,Math.min(96,p.x/12.8)),hudY=Math.max(7,Math.min(92,(p.y-52)/7.2));w.hpEl.style.left=`${hudX}%`;w.hpEl.style.top=`${hudY}%`;if(w.aaDomFill)w.aaDomFill.style.width=`${Math.max(0,Math.min(100,w.aa/w.maxAa*100))}%`}}
+function updateHpOverlays(){for(const w of allWarriors){if(!w.hpEl)continue;const isMine=!multiplayer?w.side==='aurelian':w.side===localSide,show=battleStarted&&!exteriorRoomsHidden&&isMine&&w.hp>0&&w.aa>0&&!xrayOpen&&Date.now()<(w.damageHudUntil||0);w.hpEl.style.display=show?'block':'none';w.hpEl.classList.toggle('damageActive',show);if(!show)continue;const p=worldToStage(warriorWorld(w));const hudX=Math.max(4,Math.min(96,p.x/12.8)),hudY=Math.max(7,Math.min(92,(p.y-52)/7.2));w.hpEl.style.left=`${hudX}%`;w.hpEl.style.top=`${hudY}%`;if(w.aaDomFill)w.aaDomFill.style.width=`${Math.max(0,Math.min(100,w.aa/w.maxAa*100))}%`}}
 const HIT_DEBUG=new URLSearchParams(location.search).get('hitdebug')==='1';
 function targetPlanePointForOpponent(attacker,pt){const rooms=opposingRooms(attacker).userData.rooms;const center=rooms[4].hitPlane.getWorldPosition(new THREE.Vector3());return worldPointOnCameraPlane(pt,center)}
 function lineRectEntry(a,b,r){
@@ -3942,7 +3943,7 @@ function selectWarrior(w){diag('SELECT WARRIOR',`${w?.weaponKey||'none'} hp=${w?
   if(wd)wd.textContent=w.weaponKey==='acid_brute'?'CORROSIVE FLOOD • hydro-pack acid hose • stacking AOE':w.weaponKey==='spatial_disintegrator'?'MATTER COLLAPSE • Singularity Core • unstable array':w.weaponKey==='bombardier'?'HE-9 barrage • explosive siege fire':'5s burn-through • 2 compartments • exposes survivors';
 }
 function warriorShouldBeVisible(w){if(!w||!w.active||w.hp<=0)return false;const room=w.roomGroup?.userData?.rooms?.[w.roomIndex];if(!room)return false;const isMine=!multiplayer?w.side==='aurelian':w.side===localSide;if(xrayOpen&&isMine)return true;if(exteriorRoomsHidden)return false;if(isMine)return true;return !!w.exposedBySolar||crewExposureTier(room)>=3}
-function syncWarriorConcealment(w){if(!w)return;const room=w.roomGroup?.userData?.rooms?.[w.roomIndex],tier=w.exposedBySolar?4:crewExposureTier(room);const isMine=!multiplayer?w.side==='aurelian':w.side===localSide,xrayMine=xrayOpen&&isMine,enemyExposed=!isMine&&tier>=3,show=warriorShouldBeVisible(w);if(w.sprite)w.sprite.visible=show&&!xrayMine&&!enemyExposed;if(w.marker)w.marker.visible=show&&!xrayMine;if(w.markerMat){w.markerMat.color.setHex(0x9deeff);w.markerMat.opacity=show&&!xrayMine?(isMine&&w===selected?.35:0):0}const armorVisible=!xrayMine&&w.active&&w.hp>0&&w.aa>0&&(isMine||tier>=3);if(w.xrayGlow){w.xrayGlow.visible=armorVisible;w.xrayGlow.material.opacity=isMine?.40:[0,0,0,.46,.68][tier]}const healthVisible=!xrayMine&&w.active&&w.hp>0&&w.aa<=0&&(isMine||tier>=3);if(w.healthBase)w.healthBase.visible=healthVisible;if(w.healthFill)w.healthFill.visible=healthVisible;if(w.captainBeacon)w.captainBeacon.visible=healthVisible&&w.isCaptain;if(w.hpBack)w.hpBack.visible=false;if(w.hpFill)w.hpFill.visible=false;if(w.hpEl)w.hpEl.style.display='none'}
+function syncWarriorConcealment(w){if(!w)return;const room=w.roomGroup?.userData?.rooms?.[w.roomIndex],tier=w.exposedBySolar?4:crewExposureTier(room);const isMine=!multiplayer?w.side==='aurelian':w.side===localSide,xrayMine=xrayOpen&&isMine,enemyExposed=!isMine&&tier>=3,show=warriorShouldBeVisible(w);if(w.sprite)w.sprite.visible=show&&!xrayMine&&!enemyExposed;if(w.marker)w.marker.visible=show&&!xrayMine;if(w.markerMat){w.markerMat.color.setHex(0x9deeff);w.markerMat.opacity=show&&!xrayMine?(isMine&&w===selected?.35:0):0}const exteriorCrewVisible=!exteriorRoomsHidden&&(isMine||tier>=3);const armorVisible=!xrayMine&&exteriorCrewVisible&&w.active&&w.hp>0&&w.aa>0;if(w.xrayGlow){w.xrayGlow.visible=armorVisible;w.xrayGlow.material.opacity=isMine?.40:[0,0,0,.46,.68][tier]}const healthVisible=!xrayMine&&exteriorCrewVisible&&w.active&&w.hp>0&&w.aa<=0;if(w.healthBase)w.healthBase.visible=healthVisible;if(w.healthFill)w.healthFill.visible=healthVisible;if(w.captainBeacon)w.captainBeacon.visible=healthVisible&&w.isCaptain;if(w.hpBack)w.hpBack.visible=false;if(w.hpFill)w.hpFill.visible=false;if(w.hpEl)w.hpEl.style.display='none'}
 function updateUnitVisuals(){
   // v0.28.6 defensive visual isolation: inactive or dead models are forcibly hidden every frame update.
   for(const w of allWarriors){
@@ -4018,7 +4019,12 @@ function applyWarriorDamage(w,amount,label,attacker=null){
   let captainEndedMatch=false;if(beforeHP>0&&w.hp===0){if(w.isCaptain)captainEndedMatch=resolveCaptainElimination(w,attacker);if(!captainEndedMatch)statusEl.textContent=`${label} • ${w.side.toUpperCase()} ${w.isCaptain?'CAPTAIN':'SHADOW'} ELIMINATED`}
   updateUnitVisuals();if(w.hp===0&&!captainEndedMatch)checkMatchEnd();return aaDamage+hpDamage
 }
-function flashDamage(text){damageFlash.textContent=text;damageFlash.style.opacity='1';clearTimeout(flashDamage.t);flashDamage.t=setTimeout(()=>damageFlash.style.opacity='0',480)}
+function flashDamage(text){
+  const now=performance.now();damageFlash.textContent=text;damageFlash.style.opacity='1';
+  if(!flashDamage.visibleSince||now-flashDamage.visibleSince>620)flashDamage.visibleSince=now;
+  clearTimeout(flashDamage.t);const remaining=Math.max(70,360-(now-flashDamage.visibleSince));
+  flashDamage.t=setTimeout(()=>{damageFlash.style.opacity='0';flashDamage.visibleSince=0},remaining)
+}
 function unitDamageLabel(w,unitDamage=0){if(!w||!unitDamage)return'';const aa=Math.round(w.lastAaDamage||0),hp=Math.round(w.lastHpDamage||0);const bits=[];if(aa)bits.push(`-${aa} AA`);if(hp)bits.push(`-${hp} HP`);return bits.length?bits.join(' / '):`-${Math.round(unitDamage)} UNIT`}
 function updateDamageMonitor(room,index,unitDamage=0,attacker=null){targetRoomEl.textContent=index>=0?`ROOM ${index+1}`:'MISS';if(!room){targetArmorEl.textContent='—';targetBreachEl.textContent='—';targetUnitEl.textContent='NO DAMAGE';return}targetArmorEl.textContent=Math.round(room.armor);targetBreachEl.textContent=`${Math.round(room.breach)}%`;const pool=attacker?opposing(attacker):eCrew;const occ=pool.find(w=>w.roomIndex===index&&w.hp>0);const dmg=unitDamageLabel(occ,unitDamage);if(!occ){targetUnitEl.textContent='EMPTY';targetUnitEl.className='dmgValue'}else if(room.breach>=EXPOSURE_THRESHOLDS.targetable||occ.exposedBySolar){targetUnitEl.textContent=`${occ.exposedBySolar?'EXPOSED • ':''}AA ${occ.aa} • HP ${occ.hp}${dmg?` (${dmg})`:''}`;targetUnitEl.className='dmgValue'}else{targetUnitEl.textContent=dmg?`HIDDEN (${dmg})`:'HIDDEN';targetUnitEl.className='dmgHidden'}}
 function syncRoomStructuralDamage(room){
@@ -4079,17 +4085,22 @@ function scheduleStructuralFire(attacker,room,index){
 }
 function ensurePersistentRubble(room,point,color=0x514b44){
   if(!room||room.rubbleFx)return room?.rubbleFx||null;const parent=room.hitPlane.parent,group=new THREE.Group();group.position.copy(parent.worldToLocal(point.clone()));group.position.z+=.35;
-  for(let i=0;i<8;i++){const m=box(.28+Math.random()*.52,.18+Math.random()*.34,.22+Math.random()*.48,color,.30,.82);m.position.set((Math.random()-.5)*2.4,-1.05+Math.random()*.40,(Math.random()-.5)*1.2);m.rotation.set(Math.random()*2,Math.random()*2,Math.random()*2);group.add(m)}
+  for(let i=0;i<4;i++){const m=box(.30+Math.random()*.46,.18+Math.random()*.28,.22+Math.random()*.40,color,.30,.82);m.position.set((Math.random()-.5)*2.2,-1.05+Math.random()*.32,(Math.random()-.5)*1.0);m.rotation.set(Math.random()*2,Math.random()*2,Math.random()*2);group.add(m)}
   parent.add(group);room.rubbleFx=group;return group
 }
 function makeCompartmentVoid(room,localY){
   const parent=room?.hitPlane?.parent;if(!parent)return null;const faction=factionForWorldSide(room.visualSide),rimColor=({earth:0x72c8ff,aurelian:0xffd45f,lizard:0x74ff74,gray:0xb56cff})[faction]||0xff8a52;
   const points=[[-1.98,-1.30],[-1.63,-1.53],[-.82,-1.36],[-.20,-1.55],[.62,-1.34],[1.50,-1.52],[1.98,-1.18],[1.78,-.35],[2.03,.34],[1.72,1.34],[.86,1.50],[.18,1.34],[-.72,1.54],[-1.56,1.35],[-2.02,.68],[-1.80,-.12]];
   const shape=new THREE.Shape();shape.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)shape.lineTo(points[i][0],points[i][1]);shape.closePath();
-  const group=new THREE.Group(),voidMesh=new THREE.Mesh(new THREE.ShapeGeometry(shape),new THREE.MeshBasicMaterial({color:0x000003,transparent:true,opacity:.98,depthTest:false,depthWrite:false,side:THREE.DoubleSide}));voidMesh.renderOrder=46;group.add(voidMesh);
-  for(const [scale,color,opacity,z] of [[.82,0x09101a,.92,.012],[.62,0x120b18,.88,.024],[.42,0x020207,.98,.036]]){const depth=new THREE.Mesh(new THREE.ShapeGeometry(shape),new THREE.MeshBasicMaterial({color,transparent:true,opacity,depthTest:false,depthWrite:false,side:THREE.DoubleSide}));depth.scale.set(scale,scale,1);depth.position.z=z;depth.renderOrder=46;group.add(depth)}
+  const group=new THREE.Group(),voidMesh=new THREE.Mesh(new THREE.ShapeGeometry(shape),new THREE.MeshBasicMaterial({color:0x010207,transparent:true,opacity:.98,depthTest:false,depthWrite:false,side:THREE.DoubleSide}));voidMesh.renderOrder=46;group.add(voidMesh);
+  // Deep perspective tunnel: each darker plane recedes down/right and shrinks substantially,
+  // so an erased compartment reads as volume cut out of the hull instead of a flat black icon.
+  for(const [scale,x,y,color,opacity,z] of [[.86,.07,-.08,0x101725,.96,.012],[.68,.16,-.17,0x080b14,.97,.024],[.49,.25,-.27,0x020207,.99,.036]]){const depth=new THREE.Mesh(new THREE.ShapeGeometry(shape),new THREE.MeshBasicMaterial({color,transparent:true,opacity,depthTest:false,depthWrite:false,side:THREE.DoubleSide}));depth.scale.set(scale,scale,1);depth.position.set(x,y,z);depth.renderOrder=46;group.add(depth)}
   const rimPoints=points.map(([x,y])=>new THREE.Vector3(x,y,.02)),rimGeo=new THREE.BufferGeometry().setFromPoints([...rimPoints,rimPoints[0]]),rim=new THREE.Line(rimGeo,new THREE.LineBasicMaterial({color:rimColor,transparent:true,opacity:.96,depthTest:false,depthWrite:false,blending:THREE.AdditiveBlending}));rim.renderOrder=47;group.add(rim);
-  for(let i=0;i<5;i++){const strut=new THREE.Mesh(new THREE.BoxGeometry(.09,.45+i%2*.18,.08),new THREE.MeshBasicMaterial({color:i%2?0x582016:rimColor,transparent:true,opacity:.72,depthTest:false,depthWrite:false}));strut.position.set(-1.35+i*.68,(i%2?-.94:.96),.04);strut.rotation.z=(i-2)*.12;strut.renderOrder=48;group.add(strut)}
+  // Four sloped wall planes connect the bright torn rim to the recessed back wall.
+  const inner={l:-.76,r:1.24,t:.49,b:-1.04},wallMat=(color,opacity)=>new THREE.MeshBasicMaterial({color,transparent:true,opacity,depthTest:false,depthWrite:false,side:THREE.DoubleSide});
+  for(const [verts,color] of [[[-1.98,-1.30,inner.l,inner.b,inner.l,inner.t,-2.02,.68],0x17131d],[[1.98,-1.18,1.72,1.34,inner.r,inner.t,inner.r,inner.b],0x070912],[[-1.56,1.35,.86,1.50,inner.r,inner.t,inner.l,inner.t],0x202230],[[-1.98,-1.30,1.98,-1.18,inner.r,inner.b,inner.l,inner.b],0x05060b]]){const wallShape=new THREE.Shape();wallShape.moveTo(verts[0],verts[1]);for(let i=2;i<verts.length;i+=2)wallShape.lineTo(verts[i],verts[i+1]);wallShape.closePath();const wall=new THREE.Mesh(new THREE.ShapeGeometry(wallShape),wallMat(color,.92));wall.position.z=.045;wall.renderOrder=47;group.add(wall)}
+  for(let i=0;i<3;i++){const strut=new THREE.Mesh(new THREE.BoxGeometry(.10,.62+i*.12,.10),new THREE.MeshBasicMaterial({color:i===1?0x582016:rimColor,transparent:true,opacity:.62,depthTest:false,depthWrite:false}));strut.position.set(-1.18+i*1.14,(i%2?-.83:.86),.06);strut.rotation.z=(i-1)*.18;strut.renderOrder=48;group.add(strut)}
   group.position.set(room.local.x,localY,room.hitPlane.position.z+2.35);parent.add(group);return group
 }
 function ensureErasedCompartmentVoid(room){if(!room)return null;if(!room.erasureVoid)room.erasureVoid=makeCompartmentVoid(room,room.local.y);return room.erasureVoid}
@@ -4108,10 +4119,33 @@ function collapseUnsupportedCompartment(attacker,erasedIndex){
   let dealt=0;if(w){setWarriorRoom(w,aboveIndex);const fallDamage=Math.round(w.maxHp*(.10+.05*Math.max(0,levels-1)));dealt=applyWarriorDamage(w,fallDamage,`COMPARTMENT FALL ${levels} LEVEL${levels===1?'':'S'}`,attacker)}
   diag('COMPARTMENT FALL',`room=${aboveIndex+1} levels=${levels} unit=${dealt} actionLock=N`);return levels
 }
+function syncProgressiveVesselDestruction(side){
+  const skin=side==='aurelian'?factionSkinA:factionSkinE,rooms=(side==='aurelian'?aRooms:eRooms)?.userData?.rooms||[];if(!skin||!rooms.length)return;
+  if(!progressiveVesselDamageState.has(skin)){
+    const damageModules=new Set(skin.userData.damageModules||[]),parts=skin.children.filter(o=>(o.isMesh||o.isGroup)&&!damageModules.has(o));
+    progressiveVesselDamageState.set(skin,parts.map((o,i)=>({
+      object:o,index:i,initialVisible:o.visible,position:o.position.clone(),rotation:o.rotation.clone(),scale:o.scale.clone()
+    })));
+  }
+  const parts=progressiveVesselDamageState.get(skin),erased=rooms.filter(r=>r.erased).length,ratio=Math.max(0,Math.min(1,erased/rooms.length)),count=Math.max(1,parts.length);
+  for(const p of parts){
+    const rank=((p.index*7)%count)/count,threshold=.18+rank*1.02,stress=Math.max(0,Math.min(1,1-(threshold-ratio)/.24)),o=p.object;
+    o.visible=p.initialVisible&&ratio<threshold;
+    if(!o.visible)continue;
+    o.position.copy(p.position);o.position.y-=stress*(.28+.16*(p.index%3));o.position.x+=(p.index%2?1:-1)*stress*.10;
+    o.rotation.copy(p.rotation);o.rotation.z+=(p.index%2?1:-1)*stress*(.035+.018*(p.index%4));
+    o.scale.copy(p.scale);o.scale.y*=1-stress*.10;
+  }
+  skin.userData.progressiveErasedRooms=erased;diag('PROGRESSIVE HULL',`side=${side} erased=${erased}/${rooms.length} visibleParts=${parts.filter(p=>p.object.visible).length}/${parts.length}`)
+}
+function clearRoomHazards(room){
+  if(!room)return;for(let i=effects.length-1;i>=0;i--){const q=effects[i];if(q?.room!==room)continue;removeTransientEffectVisuals(q);effects.splice(i,1)}
+  room.smokeFx=null;room.fireFx=null;room.acidFx=null
+}
 function eraseCompartment(attacker,room,index){
   if(!room||room.erased)return false;room.erased=true;room.armor=0;room.breach=100;room.structuralFireScheduled=false;
-  for(const o of [room.frame,room.cavity,room.edge,room.breachMask])if(o)o.visible=false;room.hitPlane.visible=false;syncRoomStructuralDamage(room);ensureErasedCompartmentVoid(room);if(room.exteriorScar){room.exteriorScar.visible=true;room.exteriorScar.material.color.setHex(0x020104);room.exteriorScar.material.opacity=.96}
-  collapseUnsupportedCompartment(attacker,index);diag('COMPARTMENT ERASED',`room=${index+1} geometry=REMOVED shotPath=OPEN`);return true
+  clearRoomHazards(room);for(const o of [room.frame,room.cavity,room.edge,room.breachMask])if(o)o.visible=false;room.hitPlane.visible=false;syncRoomStructuralDamage(room);ensureErasedCompartmentVoid(room);if(room.exteriorScar){room.exteriorScar.visible=true;room.exteriorScar.material.color.setHex(0x020104);room.exteriorScar.material.opacity=.96}
+  collapseUnsupportedCompartment(attacker,index);syncProgressiveVesselDestruction(room.visualSide);rebuildVesselHealthSilhouettes();diag('COMPARTMENT ERASED',`room=${index+1} geometry=REMOVED shotPath=OPEN progressiveHull=Y`);return true
 }
 let destructionDemoFx=null,destructionDemoTimers=[];
 function clearDestructionDemo(reason='complete'){
@@ -4143,15 +4177,15 @@ function resolveHit(attacker,hit,weapon){if(matchEnded)return{armorDamage:0,unit
   if(weapon.kind==='explosive'){for(const w of opposing(attacker)){if(w.roomIndex===index||w.hp<=0)continue;const ri=w.roomGroup.userData.rooms[w.roomIndex],gap=Math.abs(w.roomIndex-index);if(gap===1||gap===3){const rp=ri.hitPlane.getWorldPosition(new THREE.Vector3()),splashShield=absorbShieldHit(attacker,w.roomIndex,weapon.splash*.60,'EXPLOSIVE SPLASH',rp);if(splashShield.blocked)continue;ri.armor=Math.max(0,ri.armor-splashShield.passed);ri.breach=Math.min(100,100-ri.armor);damageRoomVisual(ri);if(ri.breach>=40)applyWarriorDamage(w,weapon.splash*.25*(ri.breach/100),'SPLASH',attacker)}}}if(matchEnded){const armorDamage=Math.round(beforeArmor-room.armor);updateDamageMonitor(room,index,unitDamage,attacker);return{armorDamage,unitDamage}}
   const armorDamage=Math.round(beforeArmor-room.armor),structureDamage=applyStructureDamage(attacker,armorDamage,weapon.name);diag('DAMAGE RESULT',`${weapon.name} room=${index+1} armor=${armorDamage} unit=${Math.round(unitDamage)}${occ?.w?` aa=${occ.w.lastAaDamage||0} hp=${occ.w.lastHpDamage||0}`:''} breach=${Math.round(room.breach)}%`);updateDamageMonitor(room,index,unitDamage,attacker);if(matchEnded)return{armorDamage,unitDamage,structureDamage};const unitBreakdown=occ?.w?unitDamageLabel(occ.w,unitDamage):'';statusEl.textContent=`${weapon.name} • ROOM ${index+1} • -${armorDamage} ARMOR • BREACH ${Math.round(room.breach)}%${unitBreakdown?` • ${unitBreakdown}`:''}`;flashDamage(`-${armorDamage} ARMOR${unitBreakdown?`  •  ${unitBreakdown}`:''}`);checkMatchEnd();return{armorDamage,unitDamage,structureDamage}
 }
-function spawnDebris(point,color=0x6f6f6f,count=10,minSize=.18,maxSize=.46){const pieces=[];for(let i=0;i<count;i++){const size=minSize+Math.random()*(maxSize-minSize);const m=box(size,size*(.7+Math.random()*.7),size*(.7+Math.random()*.8),color,.15,.8);m.position.copy(point).add(new THREE.Vector3((Math.random()-.5)*1.5,(Math.random()-.5)*1.0,(Math.random()-.5)*1.4));scene.add(m);pieces.push({mesh:m,vel:new THREE.Vector3((Math.random()-.5)*5,2+Math.random()*5,(Math.random()-.5)*4),spin:new THREE.Vector3(Math.random()*5,Math.random()*5,Math.random()*5)});}effects.push({debris:pieces,life:1.55,max:1.55});}
-function ensureSmoke(room,point){if(room.smokeFx)return;const parts=[];for(let i=0;i<5;i++){const m=glowSphere(.24+Math.random()*.22,0x171c21,6);m.material.transparent=true;m.material.opacity=.12+Math.random()*.10;m.position.copy(point).add(new THREE.Vector3((Math.random()-.5)*.9,Math.random()*.45,(Math.random()-.5)*.6));scene.add(m);parts.push({mesh:m,seed:Math.random()*6.28,base:point.clone()})}room.smokeFx={particles:parts};effects.push({smoke:room.smokeFx,room,persistent:true})}
-function ensureFire(room,point){if(room.fireFx)return;const parts=[];for(let i=0;i<5;i++){const m=glowSphere(.12+Math.random()*.15,i%2?0xffa21a:0xff5a18,5);m.material.transparent=true;m.material.opacity=.66;m.position.copy(point).add(new THREE.Vector3((Math.random()-.5)*.7,(Math.random()-.5)*.38,(Math.random()-.5)*.42));scene.add(m);parts.push({mesh:m,seed:Math.random()*6.28,base:point.clone()})}room.fireFx={particles:parts};effects.push({fire:room.fireFx,room,persistent:true})}
+function spawnDebris(point,color=0x6f6f6f,count=10,minSize=.18,maxSize=.46){const pieces=[],visibleCount=Math.min(20,Math.max(1,count));for(let i=0;i<visibleCount;i++){const size=minSize+Math.random()*(maxSize-minSize);const m=box(size,size*(.7+Math.random()*.7),size*(.7+Math.random()*.8),color,.15,.8);m.position.copy(point).add(new THREE.Vector3((Math.random()-.5)*1.5,(Math.random()-.5)*1.0,(Math.random()-.5)*1.4));scene.add(m);pieces.push({mesh:m,vel:new THREE.Vector3((Math.random()-.5)*5,2+Math.random()*5,(Math.random()-.5)*4),spin:new THREE.Vector3(Math.random()*5,Math.random()*5,Math.random()*5)});}effects.push({debris:pieces,life:1.10,max:1.10});}
+function ensureSmoke(room,point){if(room.smokeFx)return;const parts=[];for(let i=0;i<2;i++){const m=glowSphere(.26+Math.random()*.18,0x171c21,6);m.material.transparent=true;m.material.opacity=.10+Math.random()*.08;m.position.copy(point).add(new THREE.Vector3((Math.random()-.5)*.7,Math.random()*.35,(Math.random()-.5)*.5));scene.add(m);parts.push({mesh:m,seed:Math.random()*6.28,base:point.clone()})}room.smokeFx={particles:parts};effects.push({smoke:room.smokeFx,room,persistent:true})}
+function ensureFire(room,point){if(room.fireFx)return;const parts=[];for(let i=0;i<2;i++){const m=glowSphere(.13+Math.random()*.12,i%2?0xffa21a:0xff5a18,5);m.material.transparent=true;m.material.opacity=.58;m.position.copy(point).add(new THREE.Vector3((Math.random()-.5)*.55,(Math.random()-.5)*.30,(Math.random()-.5)*.34));scene.add(m);parts.push({mesh:m,seed:Math.random()*6.28,base:point.clone()})}room.fireFx={particles:parts};effects.push({fire:room.fireFx,room,persistent:true})}
 let shakeTime=0,shakeStrength=0,shakeDuration=0;
 function kickCamera(strength=.18,duration=.16){
   // Impact feedback is visual-only. It no longer pauses or snaps the authoritative battle camera.
   shakeStrength=Math.max(shakeStrength,strength);shakeTime=Math.max(shakeTime,duration);shakeDuration=Math.max(shakeDuration,duration);
 }
-function spawnImpactBurst(point,color){const sparks=[];for(let i=0;i<26;i++){const s=glowSphere(.10+Math.random()*.12,color,6);s.material.transparent=true;s.material.opacity=.96;s.position.copy(point);scene.add(s);sparks.push({mesh:s,vel:new THREE.Vector3((Math.random()-.5)*10,(Math.random()-.18)*9,(Math.random()-.5)*8)});}const flash=glowSphere(.48,color,10);flash.material.transparent=true;flash.material.opacity=.82;flash.position.copy(point);scene.add(flash);effects.push({sparks,objects:[flash],life:.68,max:.68});}
+function spawnImpactBurst(point,color){const sparks=[];for(let i=0;i<14;i++){const s=glowSphere(.10+Math.random()*.11,color,6);s.material.transparent=true;s.material.opacity=.92;s.position.copy(point);scene.add(s);sparks.push({mesh:s,vel:new THREE.Vector3((Math.random()-.5)*9,(Math.random()-.18)*8,(Math.random()-.5)*7)});}const flash=glowSphere(.45,color,10);flash.material.transparent=true;flash.material.opacity=.78;flash.position.copy(point);scene.add(flash);effects.push({sparks,objects:[flash],life:.48,max:.48});}
 function spawnExplosionVisual(point,color=0xff8a36,scale=1){
   const objects=[],rings=[],smoke=[];
   const core=glowSphere(1.05*scale,color,13);core.material.transparent=true;core.material.opacity=.96;core.position.copy(point);scene.add(core);objects.push(core);
@@ -4762,7 +4796,7 @@ let battleSceneWatch=0;const clock=new THREE.Clock();function animate(){requestA
   for(const s of q.explosion.smoke){s.mesh.position.addScaledVector(s.vel,dt);s.mesh.scale.multiplyScalar(1+s.grow*dt);s.mesh.rotation.x+=s.spin*dt;s.mesh.rotation.y+=s.spin*.65*dt;s.mesh.material.opacity=Math.max(0,ratio*.28)}
   if(q.life<=0){for(const o of q.explosion.objects)scene.remove(o);for(const r of q.explosion.rings)scene.remove(r);for(const s of q.explosion.smoke)scene.remove(s.mesh);effects.splice(i,1)}
 }else if(q.orb){q.t+=dt*q.speed;q.orb.position.copy(q.curve.getPoint(Math.min(q.t,1)));if(q.t>=1&&!q.impacted){q.impacted=true;q.onImpact();spawnImpactBurst(q.orb.position,0xffa24c);spawnDebris(q.orb.position,0x666666,14)}if(q.t>=1.08){scene.remove(q.orb,q.trail);effects.splice(i,1)}}else if(q.debris){q.life-=dt;for(const p of q.debris){p.vel.y-=9.8*dt;p.mesh.position.addScaledVector(p.vel,dt);p.mesh.rotation.x+=p.spin.x*dt;p.mesh.rotation.y+=p.spin.y*dt;p.mesh.rotation.z+=p.spin.z*dt;if(p.mesh.position.y<0)p.mesh.position.y=0;}if(q.life<=0){for(const p of q.debris)scene.remove(p.mesh);effects.splice(i,1)}}else if(q.sparks){q.life-=dt;for(const p of q.sparks){p.vel.y-=7*dt;p.mesh.position.addScaledVector(p.vel,dt);p.mesh.material.opacity=Math.max(0,q.life/q.max);}if(q.life<=0){for(const p of q.sparks)scene.remove(p.mesh);effects.splice(i,1)}}else{q.life-=dt;const lifeRatio=Math.max(0,q.life/q.max);for(const o of q.objects)o.material.opacity=lifeRatio;if(q.impactRing){const grow=1+(1-lifeRatio)*3.2;q.impactRing.scale.setScalar(grow);q.impactRing.material.opacity=lifeRatio*.8}if(q.life<=0){scene.remove(...q.objects);if(q.impactRing)scene.remove(q.impactRing);effects.splice(i,1)}}}
-// PATCH 2 MOTION POLISH: update only exterior render offsets; authoritative roots stay untouched.
+// Keep every vessel layer on the same authoritative root; no exterior-only afterimage.
 updateVesselVisualMotion(dt);
 // PATCH 2 CAMERA STABILIZATION: the authoritative camera keeps damping every frame, even during impacts.
 if(battleStarted)updateBattleCamera(false,dt);
