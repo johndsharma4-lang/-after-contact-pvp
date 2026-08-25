@@ -2709,36 +2709,8 @@ const WEAPONS={
   acid_brute:{name:'CORROSIVE FLOOD',kind:'acid',aim:'hose',damage:28,armorDamage:32,penetration:0,exposureScale:.34,color:0x78ff3b,description:'Hydro-pack acid hose • wide AOE • stacking corrosive burn'},
   spatial_disintegrator:{name:'MATTER COLLAPSE',kind:'disintegrator',aim:'straight',damage:85,armorDamage:100,penetration:1,exposureScale:.90,color:0xb06cff,description:'Singularity Core • unstable multi-beam array • compartment erasure'}
 };
-function makeCrewSilhouetteTexture(faction='earth'){
-  const c=document.createElement('canvas');c.width=96;c.height=128;const x=c.getContext('2d');x.clearRect(0,0,96,128);x.fillStyle='#fff';x.strokeStyle='#fff';x.lineCap='round';x.lineJoin='round';
-  const circle=(cx,cy,r)=>{x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.fill()};
-  const humanBody=()=>{circle(48,21,14);x.beginPath();x.moveTo(31,43);x.quadraticCurveTo(48,34,65,43);x.lineTo(71,86);x.lineTo(60,86);x.lineTo(57,124);x.lineTo(39,124);x.lineTo(36,86);x.lineTo(25,86);x.closePath();x.fill()};
-  if(faction==='lizard'){
-    x.save();x.translate(48,25);x.rotate(-.10);x.beginPath();x.ellipse(0,0,19,14,0,0,Math.PI*2);x.fill();x.beginPath();x.moveTo(8,-7);x.lineTo(31,-1);x.lineTo(30,9);x.lineTo(7,10);x.closePath();x.fill();x.restore();
-    for(const [px,py,sz] of [[31,10,8],[42,6,10],[54,7,9]]){x.beginPath();x.moveTo(px-sz*.5,py+6);x.lineTo(px,py-sz);x.lineTo(px+sz*.55,py+6);x.fill()}
-    x.beginPath();x.moveTo(31,46);x.quadraticCurveTo(48,36,65,47);x.lineTo(71,86);x.lineTo(60,89);x.lineTo(58,124);x.lineTo(40,124);x.lineTo(37,88);x.lineTo(24,84);x.closePath();x.fill();
-    x.lineWidth=10;x.beginPath();x.moveTo(36,78);x.quadraticCurveTo(12,91,13,116);x.quadraticCurveTo(17,125,27,118);x.stroke();
-    x.lineWidth=7;for(const side of[-1,1]){x.beginPath();x.moveTo(48+side*14,53);x.lineTo(48+side*28,76);x.lineTo(48+side*34,72);x.stroke()}
-  }else if(faction==='gray'){
-    x.beginPath();x.ellipse(48,24,22,28,0,0,Math.PI*2);x.fill();x.beginPath();x.moveTo(38,52);x.quadraticCurveTo(48,47,58,52);x.lineTo(61,91);x.lineTo(55,124);x.lineTo(44,124);x.lineTo(38,91);x.closePath();x.fill();x.lineWidth=7;for(const side of[-1,1]){x.beginPath();x.moveTo(48+side*8,57);x.lineTo(48+side*23,102);x.stroke()}
-    x.globalCompositeOperation='destination-out';x.fillStyle='#000';x.beginPath();x.ellipse(38,22,6,12,-.30,0,Math.PI*2);x.fill();x.beginPath();x.ellipse(58,22,6,12,.30,0,Math.PI*2);x.fill();x.globalCompositeOperation='source-over';x.fillStyle='#fff';
-  }else if(faction==='aurelian'){
-    humanBody();x.beginPath();x.moveTo(29,13);x.lineTo(48,0);x.lineTo(67,13);x.lineTo(61,19);x.lineTo(48,9);x.lineTo(35,19);x.closePath();x.fill();x.beginPath();x.moveTo(27,45);x.lineTo(16,65);x.lineTo(29,67);x.closePath();x.fill();x.beginPath();x.moveTo(69,45);x.lineTo(80,65);x.lineTo(67,67);x.closePath();x.fill();
-  }else{
-    humanBody();x.fillRect(29,39,38,8);x.beginPath();x.moveTo(31,42);x.lineTo(22,54);x.lineTo(28,65);x.lineTo(38,48);x.closePath();x.fill();x.beginPath();x.moveTo(65,42);x.lineTo(74,54);x.lineTo(68,65);x.lineTo(58,48);x.closePath();x.fill();
-  }
-  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;t.userData.crewFaction=faction;return t
-}
-const crewSilhouetteTextures={
-  earth:makeCrewSilhouetteTexture('earth'),
-  aurelian:makeCrewSilhouetteTexture('aurelian'),
-  lizard:makeCrewSilhouetteTexture('lizard'),
-  gray:makeCrewSilhouetteTexture('gray')
-};
-const crewSilhouetteTexture=crewSilhouetteTextures.earth;
-function crewSilhouetteTextureForFaction(faction){return crewSilhouetteTextures[faction]||crewSilhouetteTextures.earth}
-function crewSilhouetteTextureForSide(side){return crewSilhouetteTextureForFaction(factionForWorldSide(side))}
-function factionCrewSpecies(side){return({earth:'HUMAN',aurelian:'AURELIAN',lizard:'REPTILIAN',gray:'GRAY'})[factionForWorldSide(side)]||'CREW'}
+function makeCrewSilhouetteTexture(){const c=document.createElement('canvas');c.width=64;c.height=112;const x=c.getContext('2d');x.clearRect(0,0,64,112);x.fillStyle='#fff';x.beginPath();x.arc(32,17,13,0,Math.PI*2);x.fill();x.beginPath();x.moveTo(18,36);x.quadraticCurveTo(32,29,46,36);x.lineTo(54,76);x.lineTo(42,76);x.lineTo(39,108);x.lineTo(25,108);x.lineTo(22,76);x.lineTo(10,76);x.closePath();x.fill();const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;return t}
+const crewSilhouetteTexture=makeCrewSilhouetteTexture();
 function makeWarriors(side,roomGroup,roomIndices,texture,weaponKey,options={}){
   const out=[];
   for(let i=0;i<roomIndices.length;i++){
@@ -2797,23 +2769,15 @@ function arrangePassiveCrew(side){
 }
 function factionCrewColor(side){return({earth:0x4ebdff,aurelian:0xffd65a,lizard:0x69e88b,gray:0xa96cff})[factionForWorldSide(side)]||0x74d9ff}
 function syncCrewIdentityColors(){
-  for(const w of allWarriors){
-    // Every silhouette carries its faction identity. Captains use the same race color plus the captain beacon.
-    w.assignedColor=factionCrewColor(w.side);
-    const speciesMap=crewSilhouetteTextureForSide(w.side);
-    for(const sprite of [w.healthBase,w.healthFill,w.xrayGlow])if(sprite?.material){sprite.material.map=speciesMap;sprite.material.needsUpdate=true}
-    for(const sprite of [w.healthFill,w.xrayGlow])if(sprite?.material)sprite.material.color.setHex(w.assignedColor);
-    if(w.captainBeacon?.material)w.captainBeacon.material.color.setHex(w.assignedColor)
-  }
+  for(const w of [...aWarriors,...eWarriors])w.assignedColor=factionCrewColor(w.side);
+  for(const w of allWarriors){if(w.healthFill?.material)w.healthFill.material.color.setHex(w.assignedColor);if(w.xrayGlow?.material)w.xrayGlow.material.color.setHex(w.assignedColor);if(w.captainBeacon?.material)w.captainBeacon.material.color.setHex(w.assignedColor)}
 }
 function setWarriorObjectsVisible(w,visible){
   if(!w)return false;
   const on=!!visible;
-  for(const obj of [w.sprite,w.marker])if(obj)obj.visible=on;
-  // Legacy bars are permanently retired. AA remains in the tactical card; HP is the silhouette.
-  if(w.hpBack)w.hpBack.visible=false;if(w.hpFill)w.hpFill.visible=false;
+  for(const obj of [w.sprite,w.marker,w.hpBack,w.hpFill])if(obj)obj.visible=on;
   if(!on){if(w.xrayGlow)w.xrayGlow.visible=false;if(w.captainBeacon)w.captainBeacon.visible=false;if(w.healthBase)w.healthBase.visible=false;if(w.healthFill)w.healthFill.visible=false}
-  if(w.hpEl)w.hpEl.style.display='none';
+  if(w.hpEl)w.hpEl.style.display=on?'':'none';
   return true;
 }
 for(const w of allWarriors){const el=document.createElement('div');el.className=`unitHp ${w.side==='earth'?'enemy':'friendly'} ${w.passive?'shadowCrew':'captainCrew'}`;el.innerHTML=`<div class="shadowHpName"><span class="unitName">${w.displayName||'CAPTAIN'}</span></div><div class="unitAaPanel"><div class="unitAaLabel">AA • <span class="aaValue">60</span>/60</div><div class="unitAaTrack"><div class="unitAaFill"></div></div></div>`;unitHpLayer.appendChild(el);w.hpEl=el;w.aaPanel=el.querySelector('.unitAaPanel');w.aaText=el.querySelector('.aaValue');w.aaDomFill=el.querySelector('.unitAaFill');w.nameText=el.querySelector('.unitName');}
@@ -3495,10 +3459,7 @@ function objectScreenRect(obj,pad=0){obj.updateWorldMatrix(true,false);if(!obj.g
 function pointInRect(pt,r){return pt.x>=r.x1&&pt.x<=r.x2&&pt.y>=r.y1&&pt.y<=r.y2}
 function opposing(w){return (w.side==='aurelian'?eCrew:aCrew).filter(x=>x.active)}
 function opposingRooms(w){return w.side==='aurelian'?eRooms:aRooms}
-function updateHpOverlays(){
-  // Color-coded crew silhouettes replaced the original floating health bars.
-  for(const w of allWarriors)if(w.hpEl)w.hpEl.style.display='none'
-}
+function updateHpOverlays(){for(const w of allWarriors){if(!w.hpEl)continue;const show=battleStarted&&w.hp>0&&w.aa>0&&!xrayOpen&&Date.now()<(w.damageHudUntil||0);w.hpEl.style.display=show?'block':'none';w.hpEl.classList.toggle('damageActive',show);if(!show)continue;const p=worldToStage(warriorWorld(w));const hudX=Math.max(4,Math.min(96,p.x/12.8)),hudY=Math.max(7,Math.min(92,(p.y-52)/7.2));w.hpEl.style.left=`${hudX}%`;w.hpEl.style.top=`${hudY}%`;if(w.aaDomFill)w.aaDomFill.style.width=`${Math.max(0,Math.min(100,w.aa/w.maxAa*100))}%`}}
 const HIT_DEBUG=new URLSearchParams(location.search).get('hitdebug')==='1';
 function targetPlanePointForOpponent(attacker,pt){const rooms=opposingRooms(attacker).userData.rooms;const center=rooms[4].hitPlane.getWorldPosition(new THREE.Vector3());return worldPointOnCameraPlane(pt,center)}
 function lineRectEntry(a,b,r){
@@ -3806,8 +3767,7 @@ function markXray(o,order=72){o.userData.xrayVisual=true;o.renderOrder=order;ret
 function makeXrayCrewLabel(w){
   const c=document.createElement('canvas');c.width=384;c.height=72;const x=c.getContext('2d'),hex=`#${w.assignedColor.toString(16).padStart(6,'0')}`;
   x.fillStyle='rgba(1,8,14,.92)';x.fillRect(3,3,378,66);x.lineWidth=4;x.strokeStyle=hex;x.strokeRect(3,3,378,66);
-  const species=factionCrewSpecies(w.side),role=w.isCaptain?'CAPTAIN':`CREW ${w.index+1}`;
-  x.fillStyle='#f4fbff';x.font='900 22px system-ui';x.textAlign='center';x.textBaseline='middle';x.fillText(`${species} ${role}  •  R${w.roomIndex+1}`,192,37);
+  x.fillStyle='#f4fbff';x.font='900 27px system-ui';x.textAlign='center';x.textBaseline='middle';x.fillText(`${w.isCaptain?'CAPTAIN':`SHADOW ${w.index+1}`}  •  R${w.roomIndex+1}`,192,37);
   const map=new THREE.CanvasTexture(c);map.colorSpace=THREE.SRGBColorSpace;map.userData.xrayOwnedMap=true;map.needsUpdate=true;
   const label=markXray(new THREE.Sprite(new THREE.SpriteMaterial({map,transparent:true,opacity:.84,depthTest:false,depthWrite:false})),84);label.scale.set(4.55,.86,1);return label
 }
@@ -3815,7 +3775,7 @@ function disposeXrayObject(root){if(!root)return;root.traverse(o=>{if(o.geometry
 function refreshXrayCrewCard(){
   if(!xrayCrewCard)return;xrayCrewCard.classList.toggle('show',xrayOpen);xrayCrewCard.setAttribute('aria-hidden',xrayOpen?'false':'true');if(!xrayOpen)return;
   const w=xraySelectedCrew;if(!w){xrayCrewName.textContent='SELECT CREW';xrayCrewMeta.textContent='TAP A LABELED SILHOUETTE';xrayCrewAbility.textContent='TACTICAL CREW SELECTION';return}
-  const role=w.isCaptain?'CAPTAIN':`CREW ${w.index+1}`,species=factionCrewSpecies(w.side),profile=STARTER_PROFILES[w.weaponKey];xrayCrewName.textContent=`${species} ${role} • ROOM ${w.roomIndex+1}`;xrayCrewMeta.textContent=`ATMOSPHERE ARMOR ${Math.round(w.aa)}/${w.maxAa}  •  HP ${Math.round(w.hp)}/${w.maxHp}`;xrayCrewAbility.textContent=w.passive?'CREW SELECTED FOR INSPECTION • NO WEAPON':`ACTIVE COMBAT UNIT • ${profile?.name||w.weaponKey}`;const hex=`#${w.assignedColor.toString(16).padStart(6,'0')}`;xrayCrewColor.style.background=hex;xrayCrewColor.style.color=hex
+  const role=w.isCaptain?'CAPTAIN':`SHADOW ${w.index+1}`,profile=STARTER_PROFILES[w.weaponKey];xrayCrewName.textContent=`${role} • ROOM ${w.roomIndex+1}`;xrayCrewMeta.textContent=`ATMOSPHERE ARMOR ${Math.round(w.aa)}/${w.maxAa}  •  HP ${Math.round(w.hp)}/${w.maxHp}`;xrayCrewAbility.textContent=w.passive?'PASSIVE SHADOW • NO WEAPON ABILITY':`COMBAT SELECTED • ${profile?.name||w.weaponKey}`;const hex=`#${w.assignedColor.toString(16).padStart(6,'0')}`;xrayCrewColor.style.background=hex;xrayCrewColor.style.color=hex
 }
 function restoreXrayShell(){for(const item of xrayShellState){if(!item.mesh)continue;const originals=new Set(Array.isArray(item.material)?item.material:[item.material]),temporary=Array.isArray(item.mesh.material)?item.mesh.material:[item.mesh.material];for(const m of temporary)if(m&&!originals.has(m))m.dispose?.();item.mesh.material=item.material}xrayShellState=[]}
 function applyXrayShell(){
@@ -3827,7 +3787,7 @@ function applyXrayShell(){
 }
 function buildPrivateXray(){
   if(xrayGroup){localCommandVessel().remove(xrayGroup);disposeXrayObject(xrayGroup)}
-  const roomRoot=localXrayRooms(),rooms=roomRoot.userData.rooms,pal=localXrayPaletteSet(),faction=factionForWorldSide(localXraySide()),crewMap=crewSilhouetteTextureForFaction(faction);xrayRoomVisuals=[];
+  const roomRoot=localXrayRooms(),rooms=roomRoot.userData.rooms,pal=localXrayPaletteSet(),faction=factionForWorldSide(localXraySide());xrayRoomVisuals=[];
   const g=new THREE.Group();g.name='PRIVATE_XRAY_LOCAL_ONLY';g.userData.xrayVisual=true;g.position.copy(roomRoot.position);g.position.x=0;g.rotation.copy(roomRoot.rotation);g.scale.copy(roomRoot.scale);
   let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
   rooms.forEach(room=>{minX=Math.min(minX,room.local.x);maxX=Math.max(maxX,room.local.x);minY=Math.min(minY,room.local.y);maxY=Math.max(maxY,room.local.y)});
@@ -3849,9 +3809,9 @@ function buildPrivateXray(){
     const p=mapped[w.roomIndex];if(!p)continue;
     const marker=new THREE.Group();marker.userData.xrayVisual=true;marker.userData.xrayWarrior=w;marker.position.set(p.x,p.y,.82);g.add(marker);
     const fullH=w.isCaptain?3.12:2.26,fullW=w.isCaptain?1.78:1.28;
-    const hit=markXray(new THREE.Mesh(new THREE.PlaneGeometry(Math.min(cellW*.90,6.4),Math.min(cellH*.98,4.1)),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthTest:false,depthWrite:false,side:THREE.DoubleSide})),86);hit.userData.xrayWarrior=w;marker.add(hit);
-    const base=markXray(new THREE.Sprite(new THREE.SpriteMaterial({map:crewMap,color:0x02070c,transparent:true,opacity:.84,depthTest:false,depthWrite:false})),78);base.scale.set(fullW*1.18,fullH*1.12,1);marker.add(base);
-    const fill=markXray(new THREE.Sprite(new THREE.SpriteMaterial({map:crewMap,color:w.assignedColor,transparent:true,opacity:w.isCaptain?.88:.54,depthTest:false,depthWrite:false,blending:THREE.AdditiveBlending})),80);fill.scale.set(fullW,fullH,1);marker.add(fill);
+    const hit=markXray(new THREE.Mesh(new THREE.PlaneGeometry(Math.min(cellW*.78,5.6),Math.min(cellH*.94,3.5)),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthTest:false,depthWrite:false,side:THREE.DoubleSide})),86);hit.userData.xrayWarrior=w;marker.add(hit);
+    const base=markXray(new THREE.Sprite(new THREE.SpriteMaterial({map:crewSilhouetteTexture,color:0x02070c,transparent:true,opacity:.84,depthTest:false,depthWrite:false})),78);base.scale.set(fullW*1.18,fullH*1.12,1);marker.add(base);
+    const fill=markXray(new THREE.Sprite(new THREE.SpriteMaterial({map:crewSilhouetteTexture,color:w.assignedColor,transparent:true,opacity:w.isCaptain?.88:.54,depthTest:false,depthWrite:false,blending:THREE.AdditiveBlending})),80);fill.scale.set(fullW,fullH,1);marker.add(fill);
     const aura=markXray(new THREE.Mesh(new THREE.RingGeometry(w.isCaptain?1.42:.76,w.isCaptain?1.64:.90,w.isCaptain?6:24),xrayBasic(w.assignedColor,w.isCaptain?.78:.36,true)),79);aura.rotation.z=w.isCaptain?Math.PI/6:0;marker.add(aura);
     const aaWidth=w.isCaptain?2.75:1.92,aaY=w.isCaptain?1.82:1.38;
     const aaBack=markXray(new THREE.Mesh(new THREE.BoxGeometry(aaWidth,.18,.10),xrayBasic(0x03101a,.82,false)),81);aaBack.position.set(0,aaY,.10);marker.add(aaBack);
@@ -3869,7 +3829,7 @@ function refreshPrivateXrayVisuals(){
       const w=v.warrior,chosen=w===xraySelectedCrew,aa=Math.max(0,Math.min(1,w.aa/w.maxAa)),hp=Math.max(.001,Math.min(1,w.hp/w.maxHp)),display=w.aa>0?1:hp,h=v.fullH*display;
       v.fill.scale.set(v.fullW*(chosen?1.12:1),h*(chosen?1.12:1),1);v.fill.position.y=-(v.fullH-h)/2;v.fill.material.opacity=chosen?1:(w.aa>0?(w.isCaptain?.76:.50):.94);
       v.aaBack.visible=aa>0;v.aaFill.visible=aa>0;v.aaFill.scale.x=Math.max(.001,aa);v.aaFill.position.x=-(v.aaWidth*(1-aa))/2;
-      const pulse=Math.abs(Math.sin(now*(w.isCaptain?.0048:.0034)+w.roomIndex*.37));v.aura.material.opacity=chosen?.98:(w.isCaptain?.58:.28)+pulse*(w.isCaptain?.30:.18);v.aura.scale.setScalar((chosen?1.30:1)+pulse*(chosen?.10:(w.isCaptain?.07:.035)));v.warriorMarker.scale.setScalar(chosen?1.08:1);v.label.material.opacity=chosen?1:.82;
+      const pulse=Math.abs(Math.sin(now*(w.isCaptain?.0048:.0034)+w.roomIndex*.37));v.aura.material.opacity=chosen?.96:(w.isCaptain?.58:.28)+pulse*(w.isCaptain?.30:.18);v.aura.scale.setScalar((chosen?1.26:1)+pulse*(chosen?.08:(w.isCaptain?.07:.035)));v.label.material.opacity=chosen?1:.82;
       continue
     }
     const b=Math.max(0,Math.min(100,v.room.breach||0))/100,pulse=.54+.10*Math.abs(Math.sin(now*.003+v.index*.45));
@@ -3883,7 +3843,7 @@ function updatePrivateXrayAnimation(dt){
 }
 function openPrivateXray(reason='own vessel tap'){
   if(!battleStarted||matchEnded||xrayOpen)return;const mine=multiplayer?currentTurn===localSide:soloTurn==='aurelian';if(!mine)return;
-  xrayOpen=true;xraySelectedCrew=null;tacticalAimView=false;clearAim?.();applyXrayShell();buildPrivateXray();for(const w of localXrayWarriors())syncWarriorConcealment(w);refreshXrayCrewCard();updateBattleCamera();statusEl.textContent=`${factionCrewSpecies(localXraySide())} X-RAY • TAP A CREW SILHOUETTE • TAP OUTSIDE TO CLOSE`;diag('XRAY OPEN',`${reason} side=${localXraySide()} local-only=Y selectableCrew=Y fullHull=Y focusedCamera=Y`)
+  xrayOpen=true;xraySelectedCrew=null;tacticalAimView=false;clearAim?.();applyXrayShell();buildPrivateXray();for(const w of localXrayWarriors())syncWarriorConcealment(w);refreshXrayCrewCard();updateBattleCamera();statusEl.textContent='X-RAY • TAP A LABELED CREW SILHOUETTE • TAP OUTSIDE TO CLOSE';diag('XRAY OPEN',`${reason} side=${localXraySide()} local-only=Y selectableCrew=Y fullHull=Y focusedCamera=Y`)
 }
 function closePrivateXray(reason='manual'){
   if(!xrayOpen)return;xrayOpen=false;xraySelectedCrew=null;restoreXrayShell();if(xrayGroup){localCommandVessel().remove(xrayGroup);disposeXrayObject(xrayGroup)}xrayGroup=null;xrayScanBand=null;xrayRoomVisuals=[];refreshXrayCrewCard();for(const w of localXrayWarriors())syncWarriorConcealment(w);updateBattleCamera();diag('XRAY CLOSE',`${reason} side=${localXraySide()}`);const mine=multiplayer?currentTurn===localSide:soloTurn==='aurelian';if(mine&&!matchEnded)statusEl.textContent='YOUR TURN • MOVE OR FIRE • TAP OWN VESSEL FOR X-RAY'
@@ -3915,35 +3875,29 @@ function syncWarriorConcealment(w){
   const room=w.roomGroup?.userData?.rooms?.[w.roomIndex],exposed=!!w.exposedBySolar||(room?.breach||0)>=55;
   const isMine=!multiplayer?w.side==='aurelian':w.side===localSide;
   const xrayMine=xrayOpen&&isMine;
-  // X-Ray uses its own room-anchored silhouettes so normal combat art never floats over the hull.
+  // X-Ray uses its own room-anchored silhouettes so the normal warrior art never floats over the hull.
   if(w.sprite)w.sprite.visible=show&&!xrayMine;
   if(w.marker)w.marker.visible=show&&!xrayMine;
   if(w.markerMat){w.markerMat.color.setHex(exposed?0xc8483e:w.assignedColor);w.markerMat.opacity=show&&!xrayMine?(exposed?.28:(w===selected?.35:0)):0}
   if(w.xrayGlow)w.xrayGlow.visible=false;
-  // Legacy health bars never return. A breached/exposed compartment reveals the occupant as the HP meter.
-  if(w.hpBack)w.hpBack.visible=false;if(w.hpFill)w.hpFill.visible=false;
-  const healthVisible=!xrayMine&&w.active&&w.hp>0&&exposed;
+  if(w.captainBeacon)w.captainBeacon.visible=false;
+  if(w.hpBack)w.hpBack.visible=show&&!xrayMine&&w.aa>0;
+  if(w.hpFill)w.hpFill.visible=show&&!xrayMine&&w.aa>0;
+  // Once atmosphere armor is gone, the persistent faction-colored silhouette is the HP meter.
+  // depthTest=false keeps it glowing from inside the compartment instead of hovering above the vessel.
+  const healthVisible=!xrayMine&&w.active&&w.hp>0&&w.aa<=0;
   if(w.healthBase)w.healthBase.visible=healthVisible;
   if(w.healthFill)w.healthFill.visible=healthVisible;
-  // The race-colored captain beacon identifies the combat leader through the opening.
-  if(w.captainBeacon)w.captainBeacon.visible=healthVisible&&w.isCaptain;
-  if(w.hpEl)w.hpEl.style.display='none';
 }
 function updateUnitVisuals(){
+  // v0.28.6 defensive visual isolation: inactive or dead models are forcibly hidden every frame update.
   for(const w of allWarriors){
     const active=!!w.active&&w.hp>0;
     if(!active){setWarriorObjectsVisible(w,false);continue}
     syncWarriorConcealment(w);
-    if(w.hpEl)w.hpEl.style.display='none';
-    if(w.healthFill){
-      const room=w.roomGroup?.userData?.rooms?.[w.roomIndex],ratio=Math.max(.001,w.hp/w.maxHp),height=w.healthHeight*ratio;
-      const takingDamage=Date.now()<(w.damageHudUntil||0);
-      w.healthFill.scale.set(1.22*(takingDamage?1.10:1),height,1);
-      w.healthFill.material.opacity=takingDamage?1:.88;
-      if(room)w.healthFill.position.set(room.local.x,room.local.y-.14-w.healthHeight*.5+height*.5,.58)
-    }
-    if(w.healthBase?.material)w.healthBase.material.opacity=.76;
-    if(w.captainBeacon?.material)w.captainBeacon.material.opacity=.58+Math.abs(Math.sin(performance.now()*.005))*.30
+    if(w.hpEl){if(w.aaText)w.aaText.textContent=Math.round(w.aa);if(w.aaDomFill)w.aaDomFill.style.width=`${Math.max(0,w.aa/w.maxAa*100)}%`;const pr=STARTER_PROFILES[w.weaponKey];if(w.nameText)w.nameText.textContent=w.passive?w.displayName:(pr?.name||'CAPTAIN')}
+    if(w.hpFill)w.hpFill.scale.x=Math.max(.001,w.aa/w.maxAa);
+    if(w.healthFill){const room=w.roomGroup?.userData?.rooms?.[w.roomIndex],ratio=Math.max(.001,w.hp/w.maxHp),height=w.healthHeight*ratio;w.healthFill.scale.set(1.22,height,1);if(room)w.healthFill.position.set(room.local.x,room.local.y-.14-w.healthHeight*.5+height*.5,.58)}
   }
 }
 function primeSoloBattleSelection(){
@@ -4342,12 +4296,6 @@ function spawnAcidFlood(attacker,start,aimPt,power,weapon){
   const trajectory=acidTrajectoryData(attacker,start,aimPt),{profile,impactAim,hit,end,screenPath}=trajectory;
   const localAction=(!multiplayer&&attacker.side==='aurelian')||(multiplayer&&attacker.side===localSide);
   if(localAction){acidActionLock=true;diag('ACTION LOCK','ACID_HOSE_RESOLUTION');refreshMovePad()}
-  // Visual-only hydro-pressure muzzle pass: a short nozzle bloom and atomized droplets make the
-  // Reptilian corrosive weapon read as expelled fluid instead of a glowing laser.
-  const shotDir=end.clone().sub(start).normalize(),muzzleFlash=glowSphere(.38,0x9dff6a,10);muzzleFlash.material.transparent=true;muzzleFlash.material.opacity=.78;muzzleFlash.position.copy(start);scene.add(muzzleFlash);
-  const muzzleRing=new THREE.Mesh(new THREE.RingGeometry(.18,.46,22),new THREE.MeshBasicMaterial({color:0x70d94a,transparent:true,opacity:.70,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));muzzleRing.position.copy(start).add(shotDir.clone().multiplyScalar(.18));muzzleRing.lookAt(camera.position);scene.add(muzzleRing);
-  const atomized=[];for(let i=0;i<9;i++){const drop=glowSphere(.045+Math.random()*.07,i%3===0?0xcaff92:0x62b83f,5);drop.material.transparent=true;drop.material.opacity=.34+Math.random()*.28;drop.position.copy(start).add(shotDir.clone().multiplyScalar(.20+Math.random()*.48)).add(new THREE.Vector3((Math.random()-.5)*.32,(Math.random()-.5)*.32,(Math.random()-.5)*.25));scene.add(drop);atomized.push(drop)}
-  effects.push({objects:[muzzleFlash,muzzleRing,...atomized],life:.32,max:.32});
   const screenShot=createAcidScreenShot({...screenPath,releaseDistance:profile.dist});
   effects.push({acidFlood:{screenShot,attacker,aimPt,impactAim,weapon,profile,hit,end:end.clone(),localAction},life:1.18,max:1.18,impacted:false});
   statusEl.textContent=`CORROSIVE FLOOD • ${profile.mode} • HYDRO HOSE`;
