@@ -796,7 +796,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <button id="moveDown" aria-label="Move down">▼</button>
 </div>
   <div class="hud"><div class="side"><div class="name" id="leftFactionName">AURELIAN ACCORD</div><div class="sub" id="leftFactionSub">SOLAR LANCER • PENETRATION TEST</div></div><div class="side right"><div class="name" id="rightFactionName">EARTH COMMAND</div><div class="sub" id="rightFactionSub">BOMBARDIER • FORTRESS LV.1</div></div></div>
-  <div class="lab">3D LAB • MOBILE PVP TEST • v0.31.30</div>
+  <div class="lab">3D LAB • MOBILE PVP TEST • v0.31.31</div>
   <div id="structureHud"><div class="structureSide"><div class="structureLabel" id="leftStructureLabel">VESSEL STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="leftStructureFill"></div></div></div><div class="structureSide right"><div class="structureLabel" id="rightStructureLabel">FORTRESS STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="rightStructureFill"></div></div></div></div>
   <div id="rangeBadge">RANGE 885m</div>
   <svg id="aimSvg" viewBox="0 0 1280 720" preserveAspectRatio="none"><g id="acidShotLayer" pointer-events="none"></g><path id="aimPath"/><circle id="aimDot" r="4"/><circle id="muzzleDot" r="6"/></svg>
@@ -823,7 +823,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
   <div id="mpOverlay" aria-live="polite">
     <div class="mpCard">
       <div class="mpKicker">AFTER CONTACT • MAIN MENU</div>
-      <div class="mpTitle">PRIVATE PVP TEST • v0.31.30</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
+      <div class="mpTitle">PRIVATE PVP TEST • v0.31.31</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
       <div class="mpText">Choose Solo Game or Multiplayer. Multiplayer creates a private room you can share with another tester.</div>
       <div class="mpActions"><button class="mpBtn primary" id="mpHostBtn">MULTIPLAYER</button><button class="mpBtn" id="mpSoloBtn">SOLO GAME</button><button class="mpBtn" id="replayStoryBtn" type="button">REPLAY STORY INTRO</button></div>
       <div class="mpJoin"><input id="mpCodeInput" maxlength="6" inputmode="text" autocomplete="off" placeholder="ROOM CODE"><button class="mpBtn" id="mpJoinBtn">JOIN</button></div>
@@ -1389,9 +1389,9 @@ const baseOwnerDebugReport=ownerDebugReport;
 ownerDebugReport=function(){
   const crewState=(label,crew)=>`${label} CREW ${crew.filter(w=>w.active).map(w=>`${w.isCaptain?'CAPTAIN':`S${w.index+1}`}@R${Number.isInteger(w.roomIndex)?w.roomIndex+1:'-'} HP${Math.round(w.hp)}/${w.maxHp} AA${Math.round(w.aa)}/${w.maxAa}`).join(' | ')}`;
   let leftCrew=[],rightCrew=[];try{leftCrew=aCrew;rightCrew=eCrew}catch{}
-  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.31.30').replace('build=2026-08-20_01-58PM_PT','build=2026-08-25_TRIPLE_ACID_PRESSURE_SURGE').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT').replace('vfxWatchdog=8s','vfxWatchdog=3s/solar6.5s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
+  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.31.31').replace('build=2026-08-20_01-58PM_PT','build=2026-08-25_SOLAR_CONTACT_DRILL').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT').replace('vfxWatchdog=8s','vfxWatchdog=3s/solar6.5s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
 };
-const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.31.30';
+const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.31.31';
 function debugButtonAllowed(){return true}
 function updateDebugButtonVisibility(){if(!ownerDbgBtn)return;ownerDbgBtn.classList.toggle('debugVisible',debugButtonAllowed())}
 function refreshOwnerDebug(){if(!ownerDbgText)return;ownerDbgText.textContent=ownerDebugReport()}
@@ -3748,15 +3748,15 @@ function solarBeamPathFromStage(attacker,pt,maxCompartments=2){
   diag('SOLAR LOCK',`rooms=${path.map(x=>x.roomIndex+1).join('>')||'MISS'} source=${path[0]?.source||hits[0]?.source||'none'}`);
   return {start,end,path};
 }
-function ensureSolarBurnHole(room,point){
-  if(room.solarHoleFx){room.solarHole=true;return room.solarHoleFx}
+function ensureSolarBurnHole(room,point,intensity=0){
+  if(room.solarHoleFx){room.solarHole=true;const fx=room.solarHoleFx,grow=1+Math.min(9,intensity)*.075;fx.group.scale.setScalar(grow);fx.dark.material.opacity=Math.min(.99,.80+intensity*.02);fx.rim.material.opacity=Math.min(.96,.68+intensity*.035);fx.hot.material.opacity=Math.min(.72,.28+intensity*.045);return fx}
   const group=new THREE.Group();
-  const dark=new THREE.Mesh(new THREE.CircleGeometry(.30,28),new THREE.MeshBasicMaterial({color:0x050300,transparent:true,opacity:.96,depthWrite:false,side:THREE.DoubleSide}));
-  const rim=new THREE.Mesh(new THREE.RingGeometry(.30,.47,32),new THREE.MeshBasicMaterial({color:0xff6a18,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
-  const hot=new THREE.Mesh(new THREE.RingGeometry(.40,.56,32),new THREE.MeshBasicMaterial({color:0xffd66a,transparent:true,opacity:.46,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
-  group.add(dark,rim,hot);group.position.set(0,0,.08);room.hitPlane.add(group);
+  const dark=new THREE.Mesh(new THREE.CircleGeometry(.38,32),new THREE.MeshBasicMaterial({color:0x030405,transparent:true,opacity:.82,depthWrite:false,side:THREE.DoubleSide}));
+  const rim=new THREE.Mesh(new THREE.RingGeometry(.37,.58,36),new THREE.MeshBasicMaterial({color:0xff7a1c,transparent:true,opacity:.68,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+  const hot=new THREE.Mesh(new THREE.RingGeometry(.50,.72,36),new THREE.MeshBasicMaterial({color:0xffe69a,transparent:true,opacity:.28,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+  group.add(dark,rim,hot);room.hitPlane.updateWorldMatrix(true,false);const local=room.hitPlane.worldToLocal(point.clone());group.position.set(local.x,local.y,.08);room.hitPlane.add(group);
   room.solarHole=true;room.solarHoleFx={objects:[group],group,dark,rim,hot};
-  return room.solarHoleFx;
+  return ensureSolarBurnHole(room,point,intensity);
 }
 function resolveSolarBurnTick(attacker,path,weapon,tickIndex){
   if(!battleStarted||matchEnded)return;
@@ -3765,9 +3765,9 @@ function resolveSolarBurnTick(attacker,path,weapon,tickIndex){
   for(const hit of path){
     const room=hit.room,index=hit.roomIndex,before=room.armor;
     const shield=absorbShieldHit(attacker,index,weapon.armorDamage||4,'SOLAR BURN',hit.end);if(shield.blocked)break;
-    ensureSolarBurnHole(room,hit.end);
+    ensureSolarBurnHole(room,hit.end,tickIndex);
     const armorTick=Math.min(room.armor,shield.passed);room.armor=Math.max(0,room.armor-armorTick);room.breach=Math.min(100,100-room.armor);totalArmor+=before-room.armor;
-    damageRoomVisual(room);applyStructureDamage(attacker,before-room.armor,'SOLAR BURN');spawnImpactBurst(hit.end,tickIndex%2?0xff7a20:0xffd86a);if(tickIndex%2===0)spawnDebris(hit.end,0x5b5147,5,.05,.16);if(matchEnded)return;
+    damageRoomVisual(room);applyStructureDamage(attacker,before-room.armor,'SOLAR BURN');spawnImpactBurst(hit.end,tickIndex%2?0x6ddfff:0xfff0a8);if(tickIndex===0||tickIndex===4||tickIndex===9)spawnDebris(hit.end,0x5b5147,tickIndex===9?18:10,.06,tickIndex===9?.34:.22);if(matchEnded)return;
     const occ=opposing(attacker).find(w=>w.roomIndex===index&&w.hp>0);
     if(occ){const dealt=applyWarriorDamage(occ,weapon.damage||6,'SOLAR LANCER BURN',attacker);totalUnit+=dealt;}
     updateDamageMonitor(room,index,occ?occ.lastAaDamage+occ.lastHpDamage:0,attacker);if(matchEnded)return;
@@ -3778,14 +3778,14 @@ function resolveSolarBurnTick(attacker,path,weapon,tickIndex){
 function spawnSolarLancerBeam(attacker,start,beamPath,weapon){
   const localAction=(!multiplayer&&attacker.side==='aurelian')||(multiplayer&&attacker.side===localSide);solarActionLock=true;diag('ACTION LOCK',`${localAction?'LOCAL':'REMOTE'} SOLAR_LANCER_BURN`);refreshMovePad()
   const end=beamPath.end,dir=end.clone().sub(start),len=dir.length(),unit=dir.clone().normalize();
-  const outer=new THREE.Mesh(new THREE.CylinderGeometry(.38,.38,1,16),new THREE.MeshBasicMaterial({color:0xffa810,transparent:true,opacity:.48,blending:THREE.AdditiveBlending,depthWrite:false}));
-  const core=new THREE.Mesh(new THREE.CylinderGeometry(.105,.105,1,12),new THREE.MeshBasicMaterial({color:0xffffdf,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false}));
+  const outer=new THREE.Mesh(new THREE.CylinderGeometry(.28,.28,1,16),new THREE.MeshBasicMaterial({color:0xffb52a,transparent:true,opacity:.42,blending:THREE.AdditiveBlending,depthWrite:false}));
+  const core=new THREE.Mesh(new THREE.CylinderGeometry(.072,.072,1,12),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false}));
   for(const beam of [outer,core]){beam.scale.y=.001;beam.position.copy(start);beam.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),unit);scene.add(beam)}
   const muzzleOuter=glowSphere(.70,weapon.color,8);muzzleOuter.material.transparent=true;muzzleOuter.material.opacity=.95;muzzleOuter.position.copy(start);scene.add(muzzleOuter);
   const muzzleCore=glowSphere(.25,0xffffe0,10);muzzleCore.material.transparent=true;muzzleCore.position.copy(start);scene.add(muzzleCore);
-  const burns=beamPath.path.map(h=>({hit:h,rig:makeLaserBurnRig(h.end,unit,weapon.color)}));
+  const burns=beamPath.path.map(h=>({hit:h,rig:makeSolarContactDrillRig(h.end,unit)}));
   effects.push({solarBeam:{outer,core,muzzleOuter,muzzleCore,burns,start:start.clone(),end:end.clone(),dir,len,progress:0,hold:0,path:beamPath.path,weapon,attacker,aimStage:worldToStage(end),nextTick:.5,tick:0},life:(weapon.duration||5)+.28,max:(weapon.duration||5)+.28});
-  statusEl.textContent=`SOLAR LANCER • 5 SECOND BURN • ${beamPath.path.length||0}/2 COMPARTMENTS`;diag('SOLAR LANCER',`5s burn rooms=${beamPath.path.map(x=>x.roomIndex+1).join('>')||'MISS'}`);
+  statusEl.textContent=`SOLAR LANCER • CONTACT DRILL • ${beamPath.path.length||0}/2 COMPARTMENTS`;diag('SOLAR LANCER',`vfx=CONTACT_DRILL 5s burn rooms=${beamPath.path.map(x=>x.roomIndex+1).join('>')||'MISS'}`);
 }
 
 function explosiveHitFromEnd(attacker,end){
@@ -4232,6 +4232,24 @@ function makeLaserBurnRig(point,dir,color=0xffb300){
     embers.push({mesh:ember,base,phase:Math.random()*Math.PI*2});
   }
   const molten=[];for(let i=0;i<7;i++){const drop=glowSphere(.07+Math.random()*.08,i%2?0xffb21c:0xff6a12,9);drop.material.transparent=true;drop.material.opacity=.88;const base=point.clone().add(new THREE.Vector3((Math.random()-.5)*.7,-.10-Math.random()*.35,(Math.random()-.5)*.35));drop.position.copy(base);scene.add(drop);molten.push({mesh:drop,base,phase:Math.random()*6.28,speed:.35+Math.random()*.55});}return {objects,embers,ring,glow,hot,molten};
+}
+function makeSolarContactDrillRig(point,dir){
+  const objects=[],embers=[],molten=[],shockRings=[],fragments=[];
+  const glow=glowSphere(1.48,0x62dcff,18);glow.material.transparent=true;glow.material.opacity=0;glow.position.copy(point);scene.add(glow);objects.push(glow);
+  const hot=glowSphere(.64,0xffffff,20);hot.material.transparent=true;hot.material.opacity=0;hot.position.copy(point);scene.add(hot);objects.push(hot);
+  const ringMat=new THREE.MeshBasicMaterial({color:0xffe58a,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
+  const ring=new THREE.Mesh(new THREE.RingGeometry(.30,.54,36),ringMat);ring.position.copy(point);ring.lookAt(camera.position);scene.add(ring);objects.push(ring);
+  for(let i=0;i<3;i++){
+    const r=new THREE.Mesh(new THREE.RingGeometry(.56+i*.12,.70+i*.14,40),new THREE.MeshBasicMaterial({color:i===1?0xffffff:0x63dfff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));r.position.copy(point).add(dir.clone().multiplyScalar(-.02*i));r.lookAt(camera.position);scene.add(r);objects.push(r);shockRings.push({mesh:r,phase:i/3});
+  }
+  for(let i=0;i<16;i++){
+    const ember=glowSphere(.07+Math.random()*.10,i%4===0?0xffffff:i%2?0x68e4ff:0xffd663,7);ember.material.transparent=true;ember.material.opacity=0;const base=point.clone();ember.position.copy(base);scene.add(ember);embers.push({mesh:ember,base,phase:Math.random()*Math.PI*2,radial:new THREE.Vector3((Math.random()-.5)*2.2,(Math.random()-.5)*2.0,(Math.random()-.5)*1.5)});
+  }
+  for(let i=0;i<10;i++){
+    const shard=box(.05+Math.random()*.10,.12+Math.random()*.30,.05+Math.random()*.08,i%3?0x544f49:0xffb646,.2,.75);shard.material.transparent=true;shard.material.opacity=0;shard.position.copy(point);scene.add(shard);objects.push(shard);fragments.push({mesh:shard,phase:Math.random()*6.28,radial:new THREE.Vector3((Math.random()-.5)*2.8,(Math.random()-.25)*2.6,(Math.random()-.5)*1.8)});
+  }
+  for(let i=0;i<6;i++){const drop=glowSphere(.06+Math.random()*.07,i%2?0xffba2a:0xff681c,8);drop.material.transparent=true;drop.material.opacity=0;const base=point.clone().add(new THREE.Vector3((Math.random()-.5)*.7,-.08-Math.random()*.25,(Math.random()-.5)*.3));drop.position.copy(base);scene.add(drop);molten.push({mesh:drop,base,phase:Math.random()*6.28,speed:.32+Math.random()*.48})}
+  return{objects,embers,ring,glow,hot,molten,shockRings,fragments};
 }
 function spawnLaser(attacker,start,hit,weapon){
   const end=hit.end;
@@ -4719,7 +4737,15 @@ let battleSceneWatch=0;const clock=new THREE.Clock();function animate(){requestA
   if(b.progress>=1){
     b.hold+=dt;b.outer.material.opacity=.28+.25*Math.abs(Math.sin(b.hold*34));b.core.material.opacity=.86+.14*Math.abs(Math.sin(b.hold*46));
     b.muzzleOuter.material.opacity=.72+.22*Math.abs(Math.sin(b.hold*30));b.muzzleCore.material.opacity=.88+.12*Math.abs(Math.sin(b.hold*38));
-    for(const item of b.burns){const rig=item.rig,pulse=.58+.42*Math.abs(Math.sin(b.hold*28+item.hit.roomIndex));rig.glow.material.opacity=.46+.36*pulse;rig.hot.material.opacity=.68+.30*pulse;rig.ring.material.opacity=.42+.32*pulse;rig.ring.scale.setScalar(1.12+.24*Math.sin(b.hold*12+item.hit.roomIndex));for(const e of rig.embers){e.mesh.material.opacity=.42+.40*Math.abs(Math.sin(b.hold*15+e.phase));e.mesh.position.copy(e.base).add(new THREE.Vector3(Math.sin(b.hold*12+e.phase)*.10,Math.abs(Math.sin(b.hold*9+e.phase))*.09,Math.cos(b.hold*10+e.phase)*.08))}for(const d of rig.molten||[]){const fall=((b.hold*d.speed+d.phase)%1.4);d.mesh.position.copy(d.base).add(new THREE.Vector3(Math.sin(b.hold*6+d.phase)*.08,-fall*1.65,Math.cos(b.hold*5+d.phase)*.05));d.mesh.scale.setScalar(.8+.5*Math.abs(Math.sin(b.hold*10+d.phase)));d.mesh.material.opacity=Math.max(.15,.95-fall*.48)}}
+    for(const item of b.burns){
+      const rig=item.rig,pulse=.58+.42*Math.abs(Math.sin(b.hold*28+item.hit.roomIndex)),cycle=(b.hold*2.15)%1;
+      rig.glow.material.opacity=.34+.42*pulse;rig.glow.scale.setScalar(.88+.26*pulse);rig.hot.material.opacity=.74+.24*pulse;rig.hot.scale.setScalar(.82+.30*pulse);
+      rig.ring.material.opacity=.46+.38*pulse;rig.ring.scale.setScalar(1.05+.34*Math.sin(b.hold*15+item.hit.roomIndex));
+      for(const r of rig.shockRings||[]){const t=(cycle+r.phase)%1;r.mesh.scale.setScalar(.55+t*2.9);r.mesh.material.opacity=Math.max(0,(1-t)*(.62-r.phase*.12))}
+      for(const e of rig.embers){const surge=(b.hold*.86+e.phase/6.283)%1;e.mesh.material.opacity=Math.max(.10,(1-surge)*.86);e.mesh.position.copy(e.base).add(e.radial.clone().multiplyScalar(surge)).add(new THREE.Vector3(0,Math.sin(b.hold*18+e.phase)*.12,0));e.mesh.scale.setScalar(.72+(1-surge)*.85)}
+      for(const f of rig.fragments||[]){const surge=(b.hold*.52+f.phase/6.283)%1;f.mesh.position.copy(item.hit.end).add(f.radial.clone().multiplyScalar(surge));f.mesh.rotation.x=b.hold*7+f.phase;f.mesh.rotation.z=b.hold*5-f.phase;f.mesh.material.opacity=Math.max(0,(1-surge)*.72)}
+      for(const d of rig.molten||[]){const fall=((b.hold*d.speed+d.phase)%1.4);d.mesh.position.copy(d.base).add(new THREE.Vector3(Math.sin(b.hold*6+d.phase)*.08,-fall*1.65,Math.cos(b.hold*5+d.phase)*.05));d.mesh.scale.setScalar(.8+.5*Math.abs(Math.sin(b.hold*10+d.phase)));d.mesh.material.opacity=Math.max(.15,.95-fall*.48)}
+    }
     while(!matchEnded&&b.tick<10&&b.hold+1e-6>=b.nextTick){resolveSolarBurnTick(b.attacker,b.path,b.weapon,b.tick);b.tick++;b.nextTick+=b.weapon.tickInterval||.5}if(matchEnded)q.life=0
   }
   if(q.life<=0){scene.remove(b.outer,b.core,b.muzzleOuter,b.muzzleCore);for(const item of b.burns){for(const o of item.rig.objects)scene.remove(o);for(const e of item.rig.embers)scene.remove(e.mesh);for(const d of item.rig.molten||[])scene.remove(d.mesh)}if(!matchEnded)for(const hit of b.path){const occ=opposing(b.attacker).find(w=>w.roomIndex===hit.roomIndex&&w.hp>0);if(occ){occ.exposedBySolar=true;syncWarriorConcealment(occ);diag('SOLAR SURVIVOR EXPOSED',`room=${hit.roomIndex+1} ${STARTER_PROFILES[occ.weaponKey]?.name||occ.weaponKey} hp=${occ.hp} aa=${occ.aa}`)}}const localAction=(!multiplayer&&b.attacker.side==='aurelian')||(multiplayer&&b.attacker.side===localSide);solarActionLock=false;diag('ACTION UNLOCK',`${localAction?'LOCAL':'REMOTE'} SOLAR_LANCER_BURN COMPLETE`);refreshMovePad();if(localAction&&!multiplayer&&battleStarted&&!matchEnded&&soloTurn==='aurelian')endSoloPlayerTurnAfterShot();effects.splice(i,1)}
