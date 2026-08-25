@@ -2797,21 +2797,23 @@ function arrangePassiveCrew(side){
 }
 function factionCrewColor(side){return({earth:0x4ebdff,aurelian:0xffd65a,lizard:0x69e88b,gray:0xa96cff})[factionForWorldSide(side)]||0x74d9ff}
 function syncCrewIdentityColors(){
-  for(const w of [...aWarriors,...eWarriors])w.assignedColor=factionCrewColor(w.side);
   for(const w of allWarriors){
+    // Every silhouette carries its faction identity. Captains use the same race color plus the captain beacon.
+    w.assignedColor=factionCrewColor(w.side);
     const speciesMap=crewSilhouetteTextureForSide(w.side);
     for(const sprite of [w.healthBase,w.healthFill,w.xrayGlow])if(sprite?.material){sprite.material.map=speciesMap;sprite.material.needsUpdate=true}
-    if(w.healthFill?.material)w.healthFill.material.color.setHex(w.assignedColor);
-    if(w.xrayGlow?.material)w.xrayGlow.material.color.setHex(w.assignedColor);
+    for(const sprite of [w.healthFill,w.xrayGlow])if(sprite?.material)sprite.material.color.setHex(w.assignedColor);
     if(w.captainBeacon?.material)w.captainBeacon.material.color.setHex(w.assignedColor)
   }
 }
 function setWarriorObjectsVisible(w,visible){
   if(!w)return false;
   const on=!!visible;
-  for(const obj of [w.sprite,w.marker,w.hpBack,w.hpFill])if(obj)obj.visible=on;
+  for(const obj of [w.sprite,w.marker])if(obj)obj.visible=on;
+  // Legacy bars are permanently retired. AA remains in the tactical card; HP is the silhouette.
+  if(w.hpBack)w.hpBack.visible=false;if(w.hpFill)w.hpFill.visible=false;
   if(!on){if(w.xrayGlow)w.xrayGlow.visible=false;if(w.captainBeacon)w.captainBeacon.visible=false;if(w.healthBase)w.healthBase.visible=false;if(w.healthFill)w.healthFill.visible=false}
-  if(w.hpEl)w.hpEl.style.display=on?'':'none';
+  if(w.hpEl)w.hpEl.style.display='none';
   return true;
 }
 for(const w of allWarriors){const el=document.createElement('div');el.className=`unitHp ${w.side==='earth'?'enemy':'friendly'} ${w.passive?'shadowCrew':'captainCrew'}`;el.innerHTML=`<div class="shadowHpName"><span class="unitName">${w.displayName||'CAPTAIN'}</span></div><div class="unitAaPanel"><div class="unitAaLabel">AA • <span class="aaValue">60</span>/60</div><div class="unitAaTrack"><div class="unitAaFill"></div></div></div>`;unitHpLayer.appendChild(el);w.hpEl=el;w.aaPanel=el.querySelector('.unitAaPanel');w.aaText=el.querySelector('.aaValue');w.aaDomFill=el.querySelector('.unitAaFill');w.nameText=el.querySelector('.unitName');}
@@ -3493,7 +3495,10 @@ function objectScreenRect(obj,pad=0){obj.updateWorldMatrix(true,false);if(!obj.g
 function pointInRect(pt,r){return pt.x>=r.x1&&pt.x<=r.x2&&pt.y>=r.y1&&pt.y<=r.y2}
 function opposing(w){return (w.side==='aurelian'?eCrew:aCrew).filter(x=>x.active)}
 function opposingRooms(w){return w.side==='aurelian'?eRooms:aRooms}
-function updateHpOverlays(){for(const w of allWarriors){if(!w.hpEl)continue;const show=battleStarted&&w.hp>0&&w.aa>0&&!xrayOpen&&Date.now()<(w.damageHudUntil||0);w.hpEl.style.display=show?'block':'none';w.hpEl.classList.toggle('damageActive',show);if(!show)continue;const p=worldToStage(warriorWorld(w));const hudX=Math.max(4,Math.min(96,p.x/12.8)),hudY=Math.max(7,Math.min(92,(p.y-52)/7.2));w.hpEl.style.left=`${hudX}%`;w.hpEl.style.top=`${hudY}%`;if(w.aaDomFill)w.aaDomFill.style.width=`${Math.max(0,Math.min(100,w.aa/w.maxAa*100))}%`}}
+function updateHpOverlays(){
+  // Color-coded crew silhouettes replaced the original floating health bars.
+  for(const w of allWarriors)if(w.hpEl)w.hpEl.style.display='none'
+}
 const HIT_DEBUG=new URLSearchParams(location.search).get('hitdebug')==='1';
 function targetPlanePointForOpponent(attacker,pt){const rooms=opposingRooms(attacker).userData.rooms;const center=rooms[4].hitPlane.getWorldPosition(new THREE.Vector3());return worldPointOnCameraPlane(pt,center)}
 function lineRectEntry(a,b,r){
@@ -3910,29 +3915,35 @@ function syncWarriorConcealment(w){
   const room=w.roomGroup?.userData?.rooms?.[w.roomIndex],exposed=!!w.exposedBySolar||(room?.breach||0)>=55;
   const isMine=!multiplayer?w.side==='aurelian':w.side===localSide;
   const xrayMine=xrayOpen&&isMine;
-  // X-Ray uses its own room-anchored silhouettes so the normal warrior art never floats over the hull.
+  // X-Ray uses its own room-anchored silhouettes so normal combat art never floats over the hull.
   if(w.sprite)w.sprite.visible=show&&!xrayMine;
   if(w.marker)w.marker.visible=show&&!xrayMine;
   if(w.markerMat){w.markerMat.color.setHex(exposed?0xc8483e:w.assignedColor);w.markerMat.opacity=show&&!xrayMine?(exposed?.28:(w===selected?.35:0)):0}
   if(w.xrayGlow)w.xrayGlow.visible=false;
-  if(w.captainBeacon)w.captainBeacon.visible=false;
-  if(w.hpBack)w.hpBack.visible=show&&!xrayMine&&w.aa>0;
-  if(w.hpFill)w.hpFill.visible=show&&!xrayMine&&w.aa>0;
-  // Once atmosphere armor is gone, the persistent faction-colored silhouette is the HP meter.
-  // depthTest=false keeps it glowing from inside the compartment instead of hovering above the vessel.
-  const healthVisible=!xrayMine&&w.active&&w.hp>0&&w.aa<=0;
+  // Legacy health bars never return. A breached/exposed compartment reveals the occupant as the HP meter.
+  if(w.hpBack)w.hpBack.visible=false;if(w.hpFill)w.hpFill.visible=false;
+  const healthVisible=!xrayMine&&w.active&&w.hp>0&&exposed;
   if(w.healthBase)w.healthBase.visible=healthVisible;
   if(w.healthFill)w.healthFill.visible=healthVisible;
+  // The race-colored captain beacon identifies the combat leader through the opening.
+  if(w.captainBeacon)w.captainBeacon.visible=healthVisible&&w.isCaptain;
+  if(w.hpEl)w.hpEl.style.display='none';
 }
 function updateUnitVisuals(){
-  // v0.28.6 defensive visual isolation: inactive or dead models are forcibly hidden every frame update.
   for(const w of allWarriors){
     const active=!!w.active&&w.hp>0;
     if(!active){setWarriorObjectsVisible(w,false);continue}
     syncWarriorConcealment(w);
-    if(w.hpEl){if(w.aaText)w.aaText.textContent=Math.round(w.aa);if(w.aaDomFill)w.aaDomFill.style.width=`${Math.max(0,w.aa/w.maxAa*100)}%`;const pr=STARTER_PROFILES[w.weaponKey];if(w.nameText)w.nameText.textContent=w.passive?w.displayName:(pr?.name||'CAPTAIN')}
-    if(w.hpFill)w.hpFill.scale.x=Math.max(.001,w.aa/w.maxAa);
-    if(w.healthFill){const room=w.roomGroup?.userData?.rooms?.[w.roomIndex],ratio=Math.max(.001,w.hp/w.maxHp),height=w.healthHeight*ratio;w.healthFill.scale.set(1.22,height,1);if(room)w.healthFill.position.set(room.local.x,room.local.y-.14-w.healthHeight*.5+height*.5,.58)}
+    if(w.hpEl)w.hpEl.style.display='none';
+    if(w.healthFill){
+      const room=w.roomGroup?.userData?.rooms?.[w.roomIndex],ratio=Math.max(.001,w.hp/w.maxHp),height=w.healthHeight*ratio;
+      const takingDamage=Date.now()<(w.damageHudUntil||0);
+      w.healthFill.scale.set(1.22*(takingDamage?1.10:1),height,1);
+      w.healthFill.material.opacity=takingDamage?1:.88;
+      if(room)w.healthFill.position.set(room.local.x,room.local.y-.14-w.healthHeight*.5+height*.5,.58)
+    }
+    if(w.healthBase?.material)w.healthBase.material.opacity=.76;
+    if(w.captainBeacon?.material)w.captainBeacon.material.opacity=.58+Math.abs(Math.sin(performance.now()*.005))*.30
   }
 }
 function primeSoloBattleSelection(){
