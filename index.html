@@ -796,7 +796,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <button id="moveDown" aria-label="Move down">▼</button>
 </div>
   <div class="hud"><div class="side"><div class="name" id="leftFactionName">AURELIAN ACCORD</div><div class="sub" id="leftFactionSub">SOLAR LANCER • PENETRATION TEST</div></div><div class="side right"><div class="name" id="rightFactionName">EARTH COMMAND</div><div class="sub" id="rightFactionSub">BOMBARDIER • FORTRESS LV.1</div></div></div>
-  <div class="lab">3D LAB • MOBILE PVP TEST • v0.31.33</div>
+  <div class="lab">3D LAB • MOBILE PVP TEST • v0.31.34</div>
   <div id="structureHud"><div class="structureSide"><div class="structureLabel" id="leftStructureLabel">VESSEL STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="leftStructureFill"></div></div></div><div class="structureSide right"><div class="structureLabel" id="rightStructureLabel">FORTRESS STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="rightStructureFill"></div></div></div></div>
   <div id="rangeBadge">RANGE 885m</div>
   <svg id="aimSvg" viewBox="0 0 1280 720" preserveAspectRatio="none"><g id="acidShotLayer" pointer-events="none"></g><path id="aimPath"/><circle id="aimDot" r="4"/><circle id="muzzleDot" r="6"/></svg>
@@ -823,7 +823,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
   <div id="mpOverlay" aria-live="polite">
     <div class="mpCard">
       <div class="mpKicker">AFTER CONTACT • MAIN MENU</div>
-      <div class="mpTitle">PRIVATE PVP TEST • v0.31.33</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
+      <div class="mpTitle">PRIVATE PVP TEST • v0.31.34</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
       <div class="mpText">Choose Solo Game or Multiplayer. Multiplayer creates a private room you can share with another tester.</div>
       <div class="mpActions"><button class="mpBtn primary" id="mpHostBtn">MULTIPLAYER</button><button class="mpBtn" id="mpSoloBtn">SOLO GAME</button><button class="mpBtn" id="replayStoryBtn" type="button">REPLAY STORY INTRO</button></div>
       <div class="mpJoin"><input id="mpCodeInput" maxlength="6" inputmode="text" autocomplete="off" placeholder="ROOM CODE"><button class="mpBtn" id="mpJoinBtn">JOIN</button></div>
@@ -1170,7 +1170,8 @@ mpCodeInput.addEventListener('input',()=>{mpCodeInput.value=mpCodeInput.value.to
 if(window.visualViewport){window.visualViewport.addEventListener('resize',()=>{if(document.activeElement===mpCodeInput){mpOverlay.classList.add('typing');setTimeout(()=>{try{mpCodeInput.scrollIntoView({block:'center'})}catch{}},40)}})}
 
 let battleStarted=false,matchEnded=false;const deployment=EARLY_DEPLOYMENT;
-let multiplayer=false,localSide='aurelian',currentTurn='aurelian',mpSocket=null,mpToken='',mpCode='',mpConnected=false,mpBothConnected=false,networkApplying=false,mpRound=1;let mpHandshakePhase='idle',mpHandshakeTimer=null,mpHandshakeBusy=false;
+const TURN_LIMIT=28;
+let multiplayer=false,localSide='aurelian',currentTurn='aurelian',mpSocket=null,mpToken='',mpCode='',mpConnected=false,mpBothConnected=false,networkApplying=false,mpRound=1,turnsTaken=0;let mpHandshakePhase='idle',mpHandshakeTimer=null,mpHandshakeBusy=false;
 let mpReconnectTimer=null,mpReconnectAttempts=0,mpSocketGeneration=0,mpPlayStarted=false;
 const movePad=document.getElementById('movePad'),moveUp=document.getElementById('moveUp'),moveDown=document.getElementById('moveDown'),moveLeft=document.getElementById('moveLeft'),moveRight=document.getElementById('moveRight'),moveFuel=document.getElementById('moveFuel');
 const mobilityCoreLabel=document.getElementById('mobilityCoreLabel'),mobilityCoreSegments=[...document.querySelectorAll('.coreSeg')];
@@ -1389,9 +1390,9 @@ const baseOwnerDebugReport=ownerDebugReport;
 ownerDebugReport=function(){
   const crewState=(label,crew)=>`${label} CREW ${crew.filter(w=>w.active).map(w=>`${w.isCaptain?'CAPTAIN':`S${w.index+1}`}@R${Number.isInteger(w.roomIndex)?w.roomIndex+1:'-'} HP${Math.round(w.hp)}/${w.maxHp} AA${Math.round(w.aa)}/${w.maxAa}`).join(' | ')}`;
   let leftCrew=[],rightCrew=[];try{leftCrew=aCrew;rightCrew=eCrew}catch{}
-  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.31.33').replace('build=2026-08-20_01-58PM_PT','build=2026-08-25_FAST_SHIELD_BREAK').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT').replace('vfxWatchdog=8s','vfxWatchdog=3s/solar6.5s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
+  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.31.34').replace('build=2026-08-20_01-58PM_PT','build=2026-08-25_FREE_AIM_PENETRATION_28_TURNS').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT').replace('vfxWatchdog=8s','vfxWatchdog=3s/solar6.5s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
 };
-const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.31.33';
+const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.31.34';
 function debugButtonAllowed(){return true}
 function updateDebugButtonVisibility(){if(!ownerDbgBtn)return;ownerDbgBtn.classList.toggle('debugVisible',debugButtonAllowed())}
 function refreshOwnerDebug(){if(!ownerDbgText)return;ownerDbgText.textContent=ownerDebugReport()}
@@ -1641,7 +1642,7 @@ function setMpTurn(side=currentTurn){
   mpTurn.classList.add('show');const mine=side===localSide;
   mpTurn.classList.toggle('mine',mine);mpTurn.classList.toggle('theirs',!mine);
   const fm=FACTION_META[factionForSide(side)]||FACTION_META.earth;
-  mpTurn.textContent=`ROUND ${mpRound}/15 • ${mine?'YOUR TURN':`${fm.short} TURN`}`;
+  mpTurn.textContent=`TURN ${Math.min(TURN_LIMIT,turnsTaken+1)}/${TURN_LIMIT} • ${mine?'YOUR TURN':`${fm.short} TURN`}`;
   if(mine){if(previousTurn!==side)moveRemaining=5;if(battleStarted&&!matchEnded){ensureLocalBattleWarriorActive('turn ownership');scheduleXrayForTurn('multiplayer turn')}}
   movePending=false;if(previousTurn!==side)rearmMultiplayerInput('turn change',120);refreshMovePad();
   if(battleStarted&&!matchEnded)statusEl.textContent=mine?'YOUR TURN • MOVE OR FIRE':'OPPONENT TURN • WATCH THEIR MOVE/SHOT'
@@ -1956,10 +1957,11 @@ function handleMp(m){
     const mm=factionMovementMode(factionForWorldSide(m.side));statusEl.textContent=m.side===localSide?(mm==='submerged'?'DIVE CORE USED • UNDERWATER MOVE COMPLETE':mm==='flight'?'THRUST CORE USED • MOVE COMPLETE':'MOBILITY CORE USED • MOVE COMPLETE'):'OPPONENT MOVED';
     return;
   }
-  if(m.type==='fire'){networkApplying=true;const w=m.side==='earth'?eWarriors[0]:aWarriors[0];const routed=enforceAttackRoute(m.side,w,m.warrior,m.faction,'remote fire');diag('REMOTE ATTACK ROUTE',`${m.side} faction=${m.faction||mpFactionState?.[m.side]?.faction||'-'} warrior=${routed||'-'}`);fireWarriorFromStage(w,m.point,m.power,true,routed);networkApplying=false;mpRound=m.round||mpRound;setMpTurn(m.nextTurn);return}
-  if(m.type==='turn'){mpRound=m.round||mpRound;setMpTurn(m.turn);diag('ACTION TURN RELEASE',`turn=${m.turn} round=${mpRound}`);return}
+  if(m.type==='fire'){networkApplying=true;const w=m.side==='earth'?eWarriors[0]:aWarriors[0];const routed=enforceAttackRoute(m.side,w,m.warrior,m.faction,'remote fire');diag('REMOTE ATTACK ROUTE',`${m.side} faction=${m.faction||mpFactionState?.[m.side]?.faction||'-'} warrior=${routed||'-'}`);fireWarriorFromStage(w,m.point,m.power,true,routed);networkApplying=false;mpRound=m.round||mpRound;if(Number.isInteger(m.turnCount))turnsTaken=m.turnCount;setMpTurn(m.nextTurn);return}
+  if(m.type==='turn'){mpRound=m.round||mpRound;if(Number.isInteger(m.turnCount))turnsTaken=m.turnCount;setMpTurn(m.turn);diag('ACTION TURN RELEASE',`turn=${m.turn} round=${mpRound} action=${turnsTaken}/${TURN_LIMIT}`);return}
   if(m.type==='match_end'){if(!matchEnded)endMatch(m.winner===localSide?'VICTORY':'DEFEAT',m.reason||'OPPONENT ELIMINATED',true);return}
-  if(m.type==='draw'){if(!matchEnded)endMatch('DRAW',m.reason||'15 ROUNDS COMPLETE',true);return}
+  if(m.type==='turn_limit'){turnsTaken=TURN_LIMIT;setTimeout(()=>{if(!matchEnded)resolveTurnLimit()},2600);return}
+  if(m.type==='draw'){if(!matchEnded)endMatch('DRAW',m.reason||'TURN LIMIT COMPLETE',true);return}
   if(m.type==='reset'){mpBattleStartKey='';rearmMultiplayerInput(`network reset:${m.mode||'reset'}`,300);resetBattleWorld(m.mode==='faction'?'faction':'deployment');resultOverlay.classList.remove('show');mpRound=1;if(m.mode==='faction'){stopDeployReadyRetry();stopRoomStatePolling();mpDeployLocked=false;mpDeployReadyAck=false;selectedFaction='';selectedWarriorType=null;deployment.fill(null);factionCards.forEach(c=>c.classList.remove('selected'));factionContinue.disabled=true;showFactionSelect();diag('MP FACTION RESET','same room • both players choose new factions')}else if(m.mode==='redeploy'){stopDeployReadyRetry();stopRoomStatePolling();mpDeployLocked=false;mpDeployReadyAck=false;characterOverlay.classList.add('hidden');deployOverlay.classList.remove('hidden');updateAfterContactOrientationLock();deployOverlay.setAttribute('aria-hidden','false');updateDeployUI();diag('MP REDEPLOY','deployment preserved; ready state cleared')}else{diag('MP REMATCH','clean deployment phase -> authoritative restart');startNetworkBattle(m)}return}
   if(m.type==='error'){diag('NETWORK REJECT',`${m.code||'ERROR'} ${m.message||'Unknown network error'}`);statusEl.textContent=`NETWORK • ${m.message}`;mpStatus.textContent=m.message;if(m.code==='INVALID_SHOT'||m.code==='NOT_TURN'||m.code==='MATCH_INACTIVE')rearmMultiplayerInput(`server reject:${m.code}`,240);return}
 }
@@ -2003,7 +2005,7 @@ function enterSoloLab(e){
     try{mpSocket?.close(1000,'solo mode')}catch(err){diag('SOLO SOCKET CLOSE',String(err?.message||err))}
     mpSocket=null;mpToken='';mpCode='';mpDeployLocked=false;mpDeployReadyAck=false;deployReadyActivation=false;
     deployment.fill(null);dragWarrior=null;dragSource='roster';dragSourceRoom=null;if(dragGhost)dragGhost.style.display='none';
-    clearSoloAiTimer();soloTurn='aurelian';soloRound=1;moveRemaining=5;movePending=false;
+    clearSoloAiTimer();soloTurn='aurelian';soloRound=1;turnsTaken=0;moveRemaining=5;movePending=false;
     battleStarted=false;matchEnded=false;battleLaunchGuard=false;
     document.documentElement.classList.remove('gameView');document.body.classList.remove('gameView');
     mpTurn.classList.remove('show');deployReadyDock.style.setProperty('display','none','important');deployReadyDock.classList.remove('readyAttention');
@@ -3309,12 +3311,14 @@ function runSoloEarthTurn(){
   soloAiTimer=setTimeout(()=>{
     soloAiTimer=null;
     if(!battleStarted||matchEnded)return;
+    if(completeTurn())return;
     soloRound++;
     setSoloTurn('aurelian');
   },1850);
 }
 function endSoloPlayerTurnAfterShot(){
   if(multiplayer||!battleStarted||matchEnded)return;
+  if(completeTurn())return;
   soloTurn='earth';movePending=false;refreshMovePad();
   statusEl.textContent=`ROUND ${soloRound} • EARTH AI PREPARING COUNTERATTACK`;
   clearSoloAiTimer();
@@ -3350,7 +3354,7 @@ function startBattle(e){if(!multiplayer){diagLines.length=0;diag('MATCH START','
   deployOverlay.classList.add('hidden');deployOverlay.setAttribute('aria-hidden','true');deployReadyDock.style.display='none';
   applyBattleCleanLayout();
   applyProfileToWarrior(aWarriors[0],selectedWarriorType);
-  soloRound=1;clearSoloAiTimer();soloTurn='aurelian';moveRemaining=5;movePending=false;
+  soloRound=1;turnsTaken=0;clearSoloAiTimer();soloTurn='aurelian';moveRemaining=5;movePending=false;
   aure.position.y=selectedFaction==='earth'?EARTH_GROUND_Y:18;earth.position.y=EARTH_GROUND_Y;enforceFactionWorldConstraints('solo start');
   structureHp={aurelian:STRUCTURE_MAX,earth:STRUCTURE_MAX};resetShieldState();resetCaptainDamageBonuses();updateStructureHud();updateFactionBattleHud();applyFactionVesselPresentation();syncCrewIdentityColors();updateBattleCamera(true);restoreMainRenderer('solo prelaunch');ensureBattleSceneVisible('solo launch');primeSoloBattleSelection();updateUnitVisuals();setSoloTurn('aurelian');refreshMovePad();requestAnimationFrame(()=>ensureBattleSceneVisible('solo raf1'));setTimeout(()=>ensureBattleSceneVisible('solo 120ms'),120);setTimeout(()=>ensureBattleSceneVisible('solo 450ms'),450);
   statusEl.textContent=`ROUND 1 • YOUR TURN • ${STARTER_PROFILES[selectedWarriorType]?.name||'WARRIOR'} READY`;
@@ -3374,7 +3378,7 @@ function startNetworkBattle(m){
   setWarriorRoom(eWarriors[0],emap);eWarriors[0].deploySlotIndex=emap;eWarriors[0].active=true;setWarriorObjectsVisible(eWarriors[0],!exteriorRoomsHidden);
   arrangePassiveCrew('aurelian');arrangePassiveCrew('earth');
   if(m.positions){applyFortressPosition('aurelian',m.positions.aurelian);applyFortressPosition('earth',m.positions.earth)}
-  currentTurn=m.turn||'aurelian';mpRound=m.round||1;selected=null;
+  currentTurn=m.turn||'aurelian';mpRound=m.round||1;turnsTaken=Number.isInteger(m.turnCount)?m.turnCount:0;selected=null;
   moveRemaining=currentTurn===localSide?Math.max(0,5-(m.moveUsed?.[localSide]||0)):5;movePending=false;
   structureHp={aurelian:STRUCTURE_MAX,earth:STRUCTURE_MAX};resetShieldState();resetCaptainDamageBonuses();updateStructureHud();updateFactionBattleHud();applyFactionVesselPresentation();syncCrewIdentityColors();updateBattleCamera(true);ensureBattleSceneVisible('network launch');updateUnitVisuals();ensureLocalBattleWarriorActive(m.recovered?'battle recovery':'battle start');setMpTurn(currentTurn);applyAuthoritativeMovementState(m,m.recovered?'battle recovery':'battle start');rearmMultiplayerInput(m.recovered?'battle recovery':'battle start',m.recovered?320:180);refreshMovePad();statusEl.textContent=currentTurn===localSide?'YOUR TURN • MOVE OR FIRE':'OPPONENT TURN';requestAnimationFrame(()=>ensureBattleSceneVisible('network raf'));
 }
@@ -3508,7 +3512,7 @@ function setAimVisual(a,b){
     aimPath.setAttribute('d',guide.d);
     aimDot.setAttribute('cx',endGuide.x);aimDot.setAttribute('cy',endGuide.y);
     aimPath.style.stroke=profile.forward?'#86ff58':'#ff5a4d';aimDot.style.fill=profile.forward?'#d9ffc8':'#ff9288';
-    aimPath.style.strokeDasharray='none';aimPath.style.opacity='.48';aimDot.style.opacity='0';muzzleDot.style.opacity='0';
+    aimPath.style.strokeDasharray='13 9';aimPath.style.opacity='.58';aimDot.style.opacity='0';muzzleDot.style.opacity='0';
   }else{
     const cx=(a.x+b.x)/2,cy=Math.min(a.y,b.y)-Math.max(42,dist*.18);
     aimPath.setAttribute('d',`M ${a.x} ${a.y} Q ${cx} ${cy} ${b.x} ${b.y}`);
@@ -3599,12 +3603,12 @@ function acidSweptHullHit(attacker,fromStage,toStage){
   const exact=acidVisibleHullHitAtStagePoint(attacker,toStage);if(exact)return exact;
   const rooms=opposingRooms(attacker).userData.rooms,warriors=opposing(attacker),candidates=[];
   for(let i=0;i<rooms.length;i++){
-    const room=rooms[i],contact=lineRectEntry(fromStage,toStage,objectScreenRect(room.hitPlane,16));
+    const room=rooms[i],contact=lineRectEntry(fromStage,toStage,objectScreenRect(room.hitPlane,4));
     if(contact)candidates.push({i,room,contact});
   }
   candidates.sort((a,b)=>a.contact.t-b.contact.t);if(!candidates.length)return null;
   const c=candidates[0],occ=warriors.find(w=>w.roomIndex===c.i&&w.hp>0)||null;
-  diag('ACID SWEPT CONTACT',`room=${c.i+1} tolerance=16px x=${Math.round(c.contact.x)} y=${Math.round(c.contact.y)}`);
+  diag('ACID SWEPT CONTACT',`room=${c.i+1} tolerance=4px x=${Math.round(c.contact.x)} y=${Math.round(c.contact.y)}`);
   return{end:stagePointToRoomWorld(c.contact,c.room),roomIndex:c.i,room:c.room,warrior:occ,direct:!!occ,acidSwept:true,impactStage:{x:c.contact.x,y:c.contact.y}};
 }
 function exactAcidRoomHitAtStagePoint(attacker,pt){
@@ -3707,52 +3711,18 @@ function solarFrontFacePath(attacker,primaryHit){
   if(!primaryHit?.room)return[];const rooms=opposingRooms(attacker).userData.rooms,frontCol=attacker.side==='aurelian'?0:2,primaryRow=Math.floor(primaryHit.roomIndex/3),warriors=opposing(attacker);
   return[0,1,2].map(row=>{const roomIndex=row*3+frontCol,room=rooms[roomIndex],end=room.hitPlane.getWorldPosition(new THREE.Vector3()),warrior=warriors.find(w=>w.roomIndex===roomIndex&&w.hp>0)||null;return{room,roomIndex,end,warrior,direct:!!warrior,source:'solar-front-wall',primary:row===primaryRow}})
 }
-function solarPathCenter(path,fallback){if(!path?.length)return fallback.clone();const p=new THREE.Vector3();for(const h of path)p.add(h.room.hitPlane.getWorldPosition(new THREE.Vector3()));return p.multiplyScalar(1/path.length)}
 function solarBeamPathFromStage(attacker,pt,maxCompartments=3){
-  const rooms=opposingRooms(attacker).userData.rooms,warriors=opposing(attacker),start=muzzleWorld(attacker,pt),startStage=worldToStage(start);
+  const rooms=opposingRooms(attacker).userData.rooms,warriors=opposing(attacker),start=aimOriginWorld?.clone?.()||muzzleWorld(attacker,pt),startStage=worldToStage(start);
   let vx=pt.x-startStage.x,vy=pt.y-startStage.y;const mag=Math.hypot(vx,vy)||1;vx/=mag;vy/=mag;
   const farStage={x:startStage.x+vx*1900,y:startStage.y+vy*1900},hits=[];
-  const directAim=directVisibleAimHit(attacker,pt);
-  if(directAim?.room){
-    hits.push({room:directAim.room,roomIndex:directAim.roomIndex,entry:{x:pt.x,y:pt.y,t:0},source:'visible-pointer'});
-  }
+  // Exact free aim: no pointer snap, nearest-room retry, hull fallback, or center correction.
   for(let i=0;i<rooms.length;i++){
-    const rect=objectScreenRect(rooms[i].hitPlane,12),entry=lineRectEntry(startStage,farStage,rect);if(!entry)continue;
-    if(hits.some(h=>h.roomIndex===i))continue;
-    hits.push({room:rooms[i],roomIndex:i,entry,source:'primary'});
+    const rect=objectScreenRect(rooms[i].hitPlane,0),entry=lineRectEntry(startStage,farStage,rect);if(entry)hits.push({room:rooms[i],roomIndex:i,entry,source:'exact-ray'});
   }
-  hits.sort((a,b)=>(a.source==='visible-pointer'?-1:b.source==='visible-pointer'?1:a.entry.t-b.entry.t));
-  // If the rendered beam crosses the fortress silhouette but the tiny hit plane misses by a few pixels,
-  // do one screen-space retry against room centers. This keeps visual and logical impact aligned on mobile.
-  if(!hits.length){
-    const retry=[];
-    for(let i=0;i<rooms.length;i++){
-      const c=worldToStage(rooms[i].hitPlane.getWorldPosition(new THREE.Vector3()));
-      const rx=c.x-startStage.x,ry=c.y-startStage.y,proj=rx*vx+ry*vy,perp=Math.abs(rx*vy-ry*vx);
-      if(proj>0&&perp<68)retry.push({room:rooms[i],roomIndex:i,entry:{x:startStage.x+vx*proj,y:startStage.y+vy*proj,t:proj/1900},source:'retry',perp,proj});
-    }
-    retry.sort((a,b)=>a.proj-b.proj);hits.push(...retry.slice(0,maxCompartments));
-    diag('SOLAR RAYCAST RETRY',`candidates=${retry.length} rooms=${retry.slice(0,maxCompartments).map(h=>h.roomIndex+1).join('>')||'MISS'}`);
-  }
-  const path=[];
-  for(const h of hits){
-    const occ=warriors.find(w=>w.roomIndex===h.roomIndex&&w.hp>0)||null;
-    const openEmpty=h.room.armor<=0&&h.room.breach>=96&&!occ;
-    if(openEmpty)continue;
-    const world=stagePointToRoomWorld(h.entry,h.room);
-    path.push({room:h.room,roomIndex:h.roomIndex,end:world,warrior:occ,direct:!!occ,source:h.source});
-    if(path.length>=maxCompartments)break;
-  }
-  // A line can intersect only already-open empty rooms while visibly crossing intact exterior armor.
-  // Route that exterior contact to a remaining compartment so the beam stops on the hull instead of
-  // drawing through the screen while reporting "0 COMPARTMENTS".
-  if(!path.length&&rooms.some(r=>r.armor>0)){
-    const hullHit=visibleHullLineHit(attacker,startStage,farStage);
-    if(hullHit){const idx=nearestDamageableRoomToStagePoint(rooms,hullHit.hit),room=rooms[idx],world=stagePointToRoomWorld(hullHit.hit,room),occ=warriors.find(w=>w.roomIndex===idx&&w.hp>0)||null;path.push({room,roomIndex:idx,end:world,warrior:occ,direct:!!occ,source:'visible-hull'});diag('SOLAR HULL FALLBACK',`room=${idx+1}`)}
-  }
-  const frontPath=path.length?solarFrontFacePath(attacker,path[0]):[],end=frontPath.length?solarPathCenter(frontPath,start):start.clone().add(targetPlanePointForOpponent(attacker,pt).sub(start).normalize().multiplyScalar(125));
-  diag('SOLAR LOCK',`front=${frontPath.map(x=>x.roomIndex+1).join('>')||'MISS'} primary=${frontPath.find(x=>x.primary)?.roomIndex+1||'-'} source=${path[0]?.source||hits[0]?.source||'none'}`);
-  return {start,end,path:frontPath};
+  hits.sort((a,b)=>a.entry.t-b.entry.t);const path=hits.slice(0,maxCompartments).map(h=>{const warrior=warriors.find(w=>w.roomIndex===h.roomIndex&&w.hp>0)||null;return{room:h.room,roomIndex:h.roomIndex,end:stagePointToRoomWorld(h.entry,h.room),warrior,direct:!!warrior,source:'exact-ray'}});
+  const missEnd=targetPlanePointForOpponent(attacker,farStage),end=path.length?path[path.length-1].end:missEnd;
+  diag('SOLAR FREE AIM',`result=${path.length?`RAY ${path.map(h=>h.roomIndex+1).join('>')}`:'MISS'} assist=NONE release=${Math.round(pt.x)},${Math.round(pt.y)}`);
+  return{start,end,path,exactHit:path[0]||null};
 }
 function ensureSolarBurnHole(room,point,intensity=0){
   if(room.solarHoleFx){room.solarHole=true;const fx=room.solarHoleFx,grow=1+Math.min(9,intensity)*.075;fx.group.scale.setScalar(grow);fx.dark.material.opacity=Math.min(.99,.80+intensity*.02);fx.rim.material.opacity=Math.min(.96,.68+intensity*.035);fx.hot.material.opacity=Math.min(.72,.28+intensity*.045);return fx}
@@ -3770,13 +3740,14 @@ function resolveSolarBurnTick(attacker,path,weapon,tickIndex){
   let totalArmor=0,totalUnit=0;
   for(const hit of path){
     const room=hit.room,index=hit.roomIndex,before=room.armor;
-    const shield=absorbShieldHit(attacker,index,weapon.armorDamage||4,hit.primary?'SOLAR FAN • CENTER':'SOLAR FAN • FRONT WALL',hit.end);if(shield.blocked)continue;
+    const shield=absorbShieldHit(attacker,index,weapon.armorDamage||4,'SOLAR EXACT RAY',hit.end);if(shield.blocked)break;
     ensureSolarBurnHole(room,hit.end,tickIndex);
     const armorTick=Math.min(room.armor,shield.passed);room.armor=Math.max(0,room.armor-armorTick);room.breach=Math.min(100,100-room.armor);totalArmor+=before-room.armor;
     damageRoomVisual(room);applyStructureDamage(attacker,before-room.armor,'SOLAR BURN');spawnImpactBurst(hit.end,tickIndex%2?0x6ddfff:0xfff0a8);if(tickIndex===0||tickIndex===4||tickIndex===9)spawnDebris(hit.end,0x5b5147,tickIndex===9?18:10,.06,tickIndex===9?.34:.22);if(matchEnded)return;
     const occ=opposing(attacker).find(w=>w.roomIndex===index&&w.hp>0);
-    if(occ){const dealt=applyWarriorDamage(occ,weapon.damage||6,'SOLAR LANCER BURN',attacker);totalUnit+=dealt;}
+    if(occ){occ.exposedBySolar=true;syncWarriorConcealment(occ);const dealt=applyWarriorDamage(occ,weapon.damage||6,'SOLAR LANCER BURN',attacker);totalUnit+=dealt;if(occ.hp<=0)diag('SOLAR CREW KILL',`room=${index+1}`)}
     updateDamageMonitor(room,index,occ?occ.lastAaDamage+occ.lastHpDamage:0,attacker);if(matchEnded)return;
+    if(room.armor>0)break;
   }
   statusEl.textContent=`SOLAR LANCER • BURN ${tickIndex+1}/10 • ${path.length} COMPARTMENT${path.length===1?'':'S'}${totalUnit?` • UNIT -${totalUnit}`:''}`;
   diag('SOLAR BURN TICK',`tick=${tickIndex+1} rooms=${path.map(x=>x.roomIndex+1).join('>')||'-'} armor=${totalArmor} unit=${totalUnit}`);checkMatchEnd();
@@ -3832,6 +3803,14 @@ function checkMatchEnd(){
   if(multiplayer){if(!earthAlive){endMatch(localSide==='aurelian'?'VICTORY':'DEFEAT',`${(FACTION_META[factionForSide('earth')]||FACTION_META.earth).short} CREW ELIMINATED`);return}if(!aurelianAlive)endMatch(localSide==='earth'?'VICTORY':'DEFEAT',`${(FACTION_META[factionForSide('aurelian')]||FACTION_META.aurelian).short} CREW ELIMINATED`);return}
   if(!earthAlive){endMatch('VICTORY',`${(FACTION_META[factionForSide('earth')]||FACTION_META.earth).short} CREW ELIMINATED`);return;}if(!aurelianAlive)endMatch('DEFEAT','YOUR CREW WAS ELIMINATED');
 }
+function turnLimitScore(side){const crew=(side==='aurelian'?aCrew:eCrew).filter(w=>w.active&&w.hp>0);return{structure:Math.max(0,structureHp[side]),shield:Math.max(0,shieldHp[side]),crew:crew.reduce((n,w)=>n+w.hp+w.aa,0)}}
+function resolveTurnLimit(){
+  if(matchEnded)return true;checkMatchEnd();if(matchEnded)return true;
+  const a=turnLimitScore('aurelian'),e=turnLimitScore('earth'),cmp=a.structure-e.structure||a.shield-e.shield||a.crew-e.crew;
+  const reason=`28 TURN LIMIT • STRUCTURE ${Math.round(a.structure)}-${Math.round(e.structure)} • SHIELD ${Math.round(a.shield)}-${Math.round(e.shield)} • CREW ${Math.round(a.crew)}-${Math.round(e.crew)}`;
+  if(!cmp){endMatch('DRAW',reason,true);return true}const winner=cmp>0?'aurelian':'earth';endMatch(multiplayer?(winner===localSide?'VICTORY':'DEFEAT'):(winner==='aurelian'?'VICTORY':'DEFEAT'),reason,true);return true;
+}
+function completeTurn(){turnsTaken=Math.min(TURN_LIMIT,turnsTaken+1);diag('TURN COMPLETE',`${turnsTaken}/${TURN_LIMIT}`);return turnsTaken>=TURN_LIMIT&&resolveTurnLimit()}
 function resetRoom(room){
   if(room.smokeFx?.particles)for(const p of room.smokeFx.particles)scene.remove(p.mesh);
   if(room.rubbleFx){room.rubbleFx.parent?.remove(room.rubbleFx);room.rubbleFx=null}
@@ -3982,7 +3961,7 @@ function primeSoloBattleSelection(){
 }
 function resetBattleWorld(nextPhase=null){
   if(aiming)clearAim();closePrivateXray('battle reset');xrayTurnKey='';xrayInitialSelectionShown=false;solarActionLock=false;barrageActionLock=false;clearAllEffects();if(multiplayer)mpBattleStartKey='';diag('RESET OK','effects cleared');
-  clearSoloAiTimer();soloTurn='aurelian';soloRound=1;aure.position.set(-31,selectedFaction==='earth'?EARTH_GROUND_Y:18,-2);earth.position.set(28,EARTH_GROUND_Y,2);for(const side of ['aurelian','earth']){vesselVisualMotion[side].offset.set(0,0,0);vesselVisualMotion[side].vel.set(0,0,0);const skin=visualSkinForSide(side);if(skin)skin.position.set(0,0,0)}moveRemaining=5;movePending=false;movePad.classList.remove('show');
+  clearSoloAiTimer();soloTurn='aurelian';soloRound=1;turnsTaken=0;aure.position.set(-31,selectedFaction==='earth'?EARTH_GROUND_Y:18,-2);earth.position.set(28,EARTH_GROUND_Y,2);for(const side of ['aurelian','earth']){vesselVisualMotion[side].offset.set(0,0,0);vesselVisualMotion[side].vel.set(0,0,0);const skin=visualSkinForSide(side);if(skin)skin.position.set(0,0,0)}moveRemaining=5;movePending=false;movePad.classList.remove('show');
   const resolvedPhase=nextPhase||(gameFlowPhase==='battle'?'deployment':gameFlowPhase);
   gameFlowPhase=resolvedPhase;
   diag('FLOW RESET',`phase=${resolvedPhase}`);
@@ -4448,8 +4427,7 @@ function acidBallisticStagePath(attacker,startStage,aimPt,profile,resolveHit=tru
     };
     points.push(p);
     if(resolveHit&&i>1){
-      const prev=points[i-1],fanHalf=Math.min(104,Math.max(0,p.distance*.12));let h=acidSweptHullHit(attacker,prev,p);
-      if(!h&&fanHalf>8)for(const lane of [-1,-.66,.66,1]){h=acidSweptHullHit(attacker,{x:prev.x,y:prev.y+fanHalf*lane*.94},{x:p.x,y:p.y+fanHalf*lane});if(h){h.acidFanLane=lane;break}}
+      const prev=points[i-1],h=acidSweptHullHit(attacker,prev,p);
       if(h?.room){hit=h;impactAim={x:p.x,y:p.y};break}
     }
     if(p.x<-120||p.x>1400||p.y>735||p.y<-300)break;
@@ -4467,18 +4445,15 @@ function stageBoundsForRooms(rooms,pad=0){
   return{x1:Math.min(...rects.map(r=>r.x1)),y1:Math.min(...rects.map(r=>r.y1)),x2:Math.max(...rects.map(r=>r.x2)),y2:Math.max(...rects.map(r=>r.y2))};
 }
 function solarFanAimGuide(attacker,a,b){
-  const own=stageBoundsForRooms(attacker.roomGroup.userData.rooms,20),enemy=stageBoundsForRooms(opposingRooms(attacker).userData.rooms,20),toward=attacker.side==='aurelian'?1:-1,dx=b.x-a.x,dy=b.y-a.y;
-  if(Math.abs(dx)<1)return{d:''};const launchX=(toward>0?own.x2:own.x1)+toward*10,targetX=(toward>0?enemy.x1:enemy.x2)-toward*18,lineY=x=>a.y+dy*((x-a.x)/dx),sy=lineY(launchX),ey=lineY(targetX),spread=Math.max(46,(enemy.y2-enemy.y1)*.48);
-  return{d:`M ${launchX.toFixed(2)} ${sy.toFixed(2)} L ${targetX.toFixed(2)} ${(ey-spread).toFixed(2)} M ${launchX.toFixed(2)} ${sy.toFixed(2)} L ${targetX.toFixed(2)} ${ey.toFixed(2)} M ${launchX.toFixed(2)} ${sy.toFixed(2)} L ${targetX.toFixed(2)} ${(ey+spread).toFixed(2)}`};
+  const dx=b.x-a.x,dy=b.y-a.y,mag=Math.hypot(dx,dy)||1,len=Math.min(132,mag),ex=a.x+dx/mag*len,ey=a.y+dy/mag*len;
+  return{d:`M ${a.x.toFixed(2)} ${a.y.toFixed(2)} L ${ex.toFixed(2)} ${ey.toFixed(2)}`};
 }
 function acidPressureFanGuide(attacker,points){
   if(!points?.length)return{d:'',end:{x:0,y:0}};
-  const own=stageBoundsForRooms(attacker.roomGroup.userData.rooms,20),enemy=stageBoundsForRooms(opposingRooms(attacker).userData.rooms,20),toward=attacker.side==='aurelian'?1:-1;
-  const launchEdge=(toward>0?own.x2:own.x1)+toward*10,targetEdge=(toward>0?enemy.x1:enemy.x2)-toward*18,visible=[];
-  for(const p of points){const afterLaunch=(p.x-launchEdge)*toward>=0,beforeTarget=(p.x-targetEdge)*toward<=0;if(afterLaunch&&beforeTarget)visible.push(p);if(afterLaunch&&!beforeTarget)break}
+  const own=stageBoundsForRooms(attacker.roomGroup.userData.rooms,20),toward=attacker.side==='aurelian'?1:-1,launchEdge=(toward>0?own.x2:own.x1)+toward*10,visible=[];
+  let distance=0,previous=null;for(const p of points){if((p.x-launchEdge)*toward<0)continue;if(previous)distance+=Math.hypot(p.x-previous.x,p.y-previous.y);if(distance>132)break;visible.push(p);previous=p}
   if(visible.length<2)return{d:'',end:points[0]};
-  const lanes=[-42,0,42],d=lanes.map(lane=>acidFanPathD(visible,lane)).join(' ');
-  return{d,end:visible[visible.length-1]};
+  return{d:acidStagePathD(visible),end:visible[visible.length-1]};
 }
 function acidStagePathD(points){
   if(!points?.length)return '';
@@ -4610,7 +4585,7 @@ function spawnArc(attacker,start,end,power,weapon){
   const trail=new THREE.Group();for(const [i,m] of missiles.entries()){const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(m.curve.getPoints(72)),new THREE.LineBasicMaterial({color:m.plan.color,transparent:true,opacity:i===2?.28:.16,depthWrite:false}));trail.add(line)}scene.add(trail);
   effects.push({barrage:true,missiles,trail,t:0,speed:.62,gap:.14,damageResolved:false,attacker,weapon,damageEnd:end.clone()});
 }
-function fireWarriorFromStage(w,pt,power,remote=false,routeOverride=null){if(!w||w.hp<=0)return;const routed=routeOverride||enforceAttackRoute(w.side,w,null,null,remote?'remote final guard':'local final guard')||w.weaponKey;if(routeOverride&&w.weaponKey!==routeOverride)applyProfileToWarrior(w,routeOverride);const weapon=WEAPONS[routed];if(!weapon){diag('ATTACK ROUTE ERROR',`missing weapon ${routed}`);statusEl.textContent='ATTACK ROUTE ERROR • OPEN DEBUG';return}weaponFireSfx(weapon.kind);diag('FIRE',`${STARTER_PROFILES[routed]?.name||routed} kind=${weapon.kind} x=${Math.round(pt.x)} y=${Math.round(pt.y)} power=${Math.round(power)} remote=${remote?'Y':'N'}`);if(weapon.kind==='disintegrator'){spawnSpatialVolley(w,pt,weapon)}else{const start=weapon.kind==='acid'&&aimOriginWorld?aimOriginWorld.clone():muzzleWorld(w,pt);if(weapon.kind==='laser'){const beamPath=solarBeamPathFromStage(w,pt,weapon.maxCompartments||2);spawnSolarLancerBeam(w,start,beamPath,weapon)}else if(weapon.kind==='acid'){spawnAcidFlood(w,start,pt,power,weapon)}else if(weapon.kind==='explosive'){const end=targetWorldFromStage(pt);spawnArc(w,start,end,power,weapon)}else{diag('ATTACK ROUTE ERROR',`unsupported kind ${weapon.kind}`);statusEl.textContent='UNKNOWN ATTACK TYPE • OPEN DEBUG';return}}shots++;shotMetric.textContent=`SHOTS ${shots}`}
+function fireWarriorFromStage(w,pt,power,remote=false,routeOverride=null){if(!w||w.hp<=0)return;const routed=routeOverride||enforceAttackRoute(w.side,w,null,null,remote?'remote final guard':'local final guard')||w.weaponKey;if(routeOverride&&w.weaponKey!==routeOverride)applyProfileToWarrior(w,routeOverride);const weapon=WEAPONS[routed];if(!weapon){diag('ATTACK ROUTE ERROR',`missing weapon ${routed}`);statusEl.textContent='ATTACK ROUTE ERROR • OPEN DEBUG';return}weaponFireSfx(weapon.kind);diag('FIRE',`${STARTER_PROFILES[routed]?.name||routed} kind=${weapon.kind} x=${Math.round(pt.x)} y=${Math.round(pt.y)} power=${Math.round(power)} remote=${remote?'Y':'N'}`);if(weapon.kind==='disintegrator'){spawnSpatialVolley(w,pt,weapon)}else{const start=aimOriginWorld?aimOriginWorld.clone():muzzleWorld(w,pt);if(weapon.kind==='laser'){const beamPath=solarBeamPathFromStage(w,pt,weapon.maxCompartments||2);spawnSolarLancerBeam(w,start,beamPath,weapon)}else if(weapon.kind==='acid'){spawnAcidFlood(w,start,pt,power,weapon)}else if(weapon.kind==='explosive'){const end=targetWorldFromStage(pt);spawnArc(w,start,end,power,weapon)}else{diag('ATTACK ROUTE ERROR',`unsupported kind ${weapon.kind}`);statusEl.textContent='UNKNOWN ATTACK TYPE • OPEN DEBUG';return}}shots++;shotMetric.textContent=`SHOTS ${shots}`}
 function fireSelectedFromStage(pt,power){
   if(multiplayer){
     if(!multiplayerInputReady()){diag('FIRE BLOCK',`input rearming ${Math.max(0,mpInputArmAt-Date.now())}ms`);statusEl.textContent='CONTROL SYNC • TOUCH AGAIN';return}
@@ -4743,7 +4718,7 @@ let battleSceneWatch=0;const clock=new THREE.Clock();function animate(){requestA
 }else if(q.acid){const t=performance.now()*.001,center=q.room.hitPlane.getWorldPosition(new THREE.Vector3()),stacks=Math.max(1,q.acid.stacks||1),violence=1+stacks*.16;for(const p of q.acid.pools){p.mesh.position.x=p.base.x+Math.sin(t*2.5*violence+p.seed)*(.28+stacks*.05);p.mesh.position.y=p.base.y+Math.abs(Math.sin(t*3.4*violence+p.seed))*(.08+stacks*.035);p.mesh.position.z=p.base.z+Math.cos(t*2.2+p.seed)*.18;p.mesh.scale.set(1.45+stacks*.14,.22+.10*Math.abs(Math.sin(t*4.4+p.seed)),1.02+stacks*.08);p.mesh.material.opacity=.38+.07*stacks+.15*Math.abs(Math.sin(t*3.4+p.seed))}for(const d of q.acid.drips||[]){const fall=((t*.34*violence+d.seed)%1.25);d.mesh.position.set(d.base.x,d.base.y-fall*(.75+stacks*.12),d.base.z);d.mesh.scale.set(.45,.9+fall*2.8,.45);d.mesh.material.opacity=Math.max(.10,.82-fall*.45)}for(const f of q.acid.fumes||[]){const rise=((t*.27+f.seed)%1.5);f.mesh.position.set(center.x+Math.sin(t+f.seed)*(.4+stacks*.08),center.y+.25+rise*(.6+stacks*.12),center.z+Math.cos(t*.8+f.seed)*.35);f.mesh.scale.setScalar(.7+rise*.7);f.mesh.material.opacity=Math.max(.04,.28+stacks*.025-rise*.15)}continue}else if(q.smoke){const t=performance.now()*.001,center=q.room.hitPlane.getWorldPosition(new THREE.Vector3());for(const p of q.smoke.particles){const rise=(t+p.seed)%2.2;p.mesh.position.set(center.x+Math.sin(t*1.3+p.seed)*.35,center.y+.25+rise*1.15,center.z+Math.cos(t+p.seed)*.28);p.mesh.scale.setScalar(1+rise*.42);p.mesh.material.opacity=Math.max(.05,.42-rise*.12)}continue}else if(q.fire){const t=performance.now()*.001,center=q.room.hitPlane.getWorldPosition(new THREE.Vector3());for(const p of q.fire.particles){const pulse=.75+.35*Math.sin(t*9+p.seed);p.mesh.position.set(center.x+Math.sin(t*5+p.seed)*.25,center.y+Math.abs(Math.sin(t*6+p.seed))*.7,center.z+Math.cos(t*4+p.seed)*.18);p.mesh.scale.setScalar(pulse);p.mesh.material.opacity=.55+.3*Math.abs(Math.sin(t*7+p.seed))}continue}else if(q.solarBeam){
   q.life-=dt;const b=q.solarBeam;
   // Live anchors: camera reframing or vessel visual motion can never leave a Solar beam hanging in old world space.
-  const liveEnd=solarPathCenter(b.path,b.end);
+  const liveEnd=b.end.clone();
   const liveAim=worldToStage(liveEnd),liveStart=muzzleWorld(b.attacker,liveAim),liveDir=liveEnd.clone().sub(liveStart),liveLen=Math.max(.001,liveDir.length()),liveUnit=liveDir.clone().normalize();
   b.start.copy(liveStart);b.end.copy(liveEnd);b.dir.copy(liveDir);b.len=liveLen;
   b.muzzleOuter.position.copy(liveStart);b.muzzleCore.position.copy(liveStart);

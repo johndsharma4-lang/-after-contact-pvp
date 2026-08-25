@@ -17,6 +17,7 @@ const factionMovementMode=faction=>String(faction||'').toLowerCase()==='earth'?'
 const factionAllowsVerticalMovement=faction=>factionMovementMode(faction)!=='ground';
 const verticalBoundsForFaction=faction=>String(faction||'').toLowerCase()==='lizard'?{min:6,max:27.5}:String(faction||'').toLowerCase()==='earth'?{min:4.2,max:4.2}:{min:8,max:58};
 const positionForSide=(side,faction)=>({x:side==='aurelian'?-31:28,y:String(faction||'').toLowerCase()==='earth'?4.2:18});
+const TURN_LIMIT=28;
 
 export default {
   async fetch(request, env) {
@@ -75,11 +76,11 @@ export default {
 export class MyDurableObject extends DurableObject {
   constructor(ctx, env){
     super(ctx,env);this.ctx=ctx;this.env=env;
-    this.ready={aurelian:null,earth:null};this.factions={aurelian:null,earth:null};this.playReady={aurelian:false,earth:false};this.turn='aurelian';this.round=1;this.status='lobby';this.hostToken='';this.guestToken='';this.roomCode='';
+    this.ready={aurelian:null,earth:null};this.factions={aurelian:null,earth:null};this.playReady={aurelian:false,earth:false};this.turn='aurelian';this.round=1;this.turnCount=0;this.status='lobby';this.hostToken='';this.guestToken='';this.roomCode='';
     this.positions={aurelian:{x:-31,y:18},earth:{x:28,y:4.2}};this.moveUsed={aurelian:0,earth:0};this.actionLockUntil=0;
     ctx.blockConcurrencyWhile(async()=>{const s=await ctx.storage.get('state');if(s)Object.assign(this,s);if(!this.playReady)this.playReady={aurelian:false,earth:false};if(!this.positions)this.positions={aurelian:{x:-31,y:18},earth:{x:28,y:4.2}};if(!this.moveUsed)this.moveUsed={aurelian:0,earth:0}});
   }
-  state(){return{ready:this.ready,factions:this.factions,playReady:this.playReady,turn:this.turn,round:this.round,status:this.status,hostToken:this.hostToken,guestToken:this.guestToken,roomCode:this.roomCode,positions:this.positions,moveUsed:this.moveUsed}}
+  state(){return{ready:this.ready,factions:this.factions,playReady:this.playReady,turn:this.turn,round:this.round,turnCount:this.turnCount||0,status:this.status,hostToken:this.hostToken,guestToken:this.guestToken,roomCode:this.roomCode,positions:this.positions,moveUsed:this.moveUsed}}
   async persist(){await this.ctx.storage.put('state',this.state())}
   roleFor(t){if(t&&t===this.hostToken)return'aurelian';if(t&&t===this.guestToken)return'earth';return null}
   sockets(){return this.ctx.getWebSockets()}
@@ -115,7 +116,7 @@ export class MyDurableObject extends DurableObject {
       const side=this.roleFor(url.searchParams.get('token')||'');
       if(!side)return json({error:'Invalid room token'},403);
       return json({
-        ok:true,side,status:this.status,turn:this.turn,round:this.round,players:this.countPlayers(),
+        ok:true,side,status:this.status,turn:this.turn,round:this.round,turnCount:this.turnCount||0,players:this.countPlayers(),
         playReady:{aurelian:!!this.playReady.aurelian,earth:!!this.playReady.earth},
         ready:{aurelian:!!this.ready.aurelian,earth:!!this.ready.earth},
         deployments:this.ready,factions:this.factions,positions:this.positions,moveUsed:this.moveUsed
@@ -143,7 +144,7 @@ export class MyDurableObject extends DurableObject {
       this.ready[side]=dep;await this.persist();
       this.broadcast({type:'deployment_state',ready:{aurelian:!!this.ready.aurelian,earth:!!this.ready.earth},deployments:this.ready,factions:this.factions,status:this.status});
       if(this.ready.aurelian&&this.ready.earth){
-        this.actionLockUntil=0;this.status='battle';this.turn='aurelian';this.round=1;this.positions={aurelian:positionForSide('aurelian',this.factions?.aurelian?.faction||'aurelian'),earth:positionForSide('earth',this.factions?.earth?.faction||'earth')};this.moveUsed={aurelian:0,earth:0};await this.persist();
+        this.actionLockUntil=0;this.status='battle';this.turn='aurelian';this.round=1;this.turnCount=0;this.positions={aurelian:positionForSide('aurelian',this.factions?.aurelian?.faction||'aurelian'),earth:positionForSide('earth',this.factions?.earth?.faction||'earth')};this.moveUsed={aurelian:0,earth:0};await this.persist();
         this.broadcast({type:'start',deployments:this.ready,factions:this.factions,turn:this.turn,round:this.round,positions:this.positions,moveUsed:this.moveUsed});
       }
       return json({
@@ -192,7 +193,7 @@ export class MyDurableObject extends DurableObject {
       this.send(ws,{type:'ready_ack',side,deployment:dep,faction,warrior:allowed[faction]});
       this.broadcast({type:'deployment_state',ready:{aurelian:!!this.ready.aurelian,earth:!!this.ready.earth},deployments:this.ready,factions:this.factions,status:this.status});
       if(this.ready.aurelian&&this.ready.earth){
-        this.status='battle';this.turn='aurelian';this.round=1;this.positions={aurelian:positionForSide('aurelian',this.factions?.aurelian?.faction||'aurelian'),earth:positionForSide('earth',this.factions?.earth?.faction||'earth')};this.moveUsed={aurelian:0,earth:0};await this.persist();
+        this.status='battle';this.turn='aurelian';this.round=1;this.turnCount=0;this.positions={aurelian:positionForSide('aurelian',this.factions?.aurelian?.faction||'aurelian'),earth:positionForSide('earth',this.factions?.earth?.faction||'earth')};this.moveUsed={aurelian:0,earth:0};await this.persist();
         this.broadcast({type:'start',deployments:this.ready,factions:this.factions,turn:this.turn,round:this.round,positions:this.positions,moveUsed:this.moveUsed})
       }else{
         this.send(ws,{type:'waiting'})
@@ -234,23 +235,25 @@ export class MyDurableObject extends DurableObject {
         this.broadcast({type:'fire',side,faction:identity.faction,warrior:identity.warrior,point:{x:pt.x,y:pt.y},power,nextTurn:side,round:this.round,actionLock:actionName});
         setTimeout(async()=>{
           if(this.status!=='battle'||this.turn!==side)return;
-          if(side==='earth'){this.round+=1;if(this.round>15){this.status='ended';this.actionLockUntil=0;await this.persist();this.broadcast({type:'draw',reason:'15 ROUNDS COMPLETE'});return}}
-          this.turn=next;this.moveUsed[next]=0;this.actionLockUntil=0;await this.persist();this.broadcast({type:'turn',turn:next,round:this.round,reason:actionName+'_complete'});
+          this.turnCount=(this.turnCount||0)+1;if(side==='earth')this.round+=1;
+          if(this.turnCount>=TURN_LIMIT){this.status='ended';this.actionLockUntil=0;await this.persist();this.broadcast({type:'turn_limit',turnCount:this.turnCount,reason:'28 TURN LIMIT'});return}
+          this.turn=next;this.moveUsed[next]=0;this.actionLockUntil=0;await this.persist();this.broadcast({type:'turn',turn:next,round:this.round,turnCount:this.turnCount,reason:actionName+'_complete'});
         },actionMs);
         return;
       }
-      if(side==='earth'){this.round+=1;if(this.round>15){this.status='ended';await this.persist();this.broadcast({type:'draw',reason:'15 ROUNDS COMPLETE'});return}}
-      this.turn=next;this.moveUsed[next]=0;await this.persist();this.broadcast({type:'fire',side,faction:identity.faction,warrior:identity.warrior,point:{x:pt.x,y:pt.y},power,nextTurn:next,round:this.round});return;
+      this.turnCount=(this.turnCount||0)+1;if(side==='earth')this.round+=1;
+      const limitReached=this.turnCount>=TURN_LIMIT;if(limitReached)this.status='ended';else{this.turn=next;this.moveUsed[next]=0}await this.persist();
+      this.broadcast({type:'fire',side,faction:identity.faction,warrior:identity.warrior,point:{x:pt.x,y:pt.y},power,nextTurn:limitReached?side:next,round:this.round,turnCount:this.turnCount});if(limitReached)this.broadcast({type:'turn_limit',turnCount:this.turnCount,reason:'28 TURN LIMIT'});return;
     }
     if(m.type==='match_end'){
       if(this.status==='ended')return;this.status='ended';await this.persist();const winner=m.winner==='earth'?'earth':'aurelian';this.broadcast({type:'match_end',winner,reason:String(m.reason||'MATCH COMPLETE').slice(0,120)});return;
     }
     if(m.type==='reset'){
       const mode=m.mode==='faction'?'faction':(m.mode==='redeploy'?'redeploy':'rematch');
-      if(mode==='faction'){this.actionLockUntil=0;this.status='lobby';this.ready={aurelian:null,earth:null};this.factions={aurelian:null,earth:null};this.turn='aurelian';this.round=1;this.positions={aurelian:{x:-31,y:18},earth:{x:28,y:4.2}};this.moveUsed={aurelian:0,earth:0};await this.persist();this.broadcast({type:'reset',mode:'faction'});return}
-      if(mode==='redeploy'){this.actionLockUntil=0;this.status='lobby';this.ready={aurelian:null,earth:null};this.turn='aurelian';this.round=1;this.positions={aurelian:{x:-31,y:18},earth:{x:28,y:4.2}};this.moveUsed={aurelian:0,earth:0};this.actionLockUntil=0;await this.persist();this.broadcast({type:'reset',mode:'redeploy'});return}
+      if(mode==='faction'){this.actionLockUntil=0;this.status='lobby';this.ready={aurelian:null,earth:null};this.factions={aurelian:null,earth:null};this.turn='aurelian';this.round=1;this.turnCount=0;this.positions={aurelian:{x:-31,y:18},earth:{x:28,y:4.2}};this.moveUsed={aurelian:0,earth:0};await this.persist();this.broadcast({type:'reset',mode:'faction'});return}
+      if(mode==='redeploy'){this.actionLockUntil=0;this.status='lobby';this.ready={aurelian:null,earth:null};this.turn='aurelian';this.round=1;this.turnCount=0;this.positions={aurelian:{x:-31,y:18},earth:{x:28,y:4.2}};this.moveUsed={aurelian:0,earth:0};this.actionLockUntil=0;await this.persist();this.broadcast({type:'reset',mode:'redeploy'});return}
       if(!this.ready.aurelian||!this.ready.earth)return this.send(ws,{type:'error',message:'Both deployments are required'});
-      this.status='battle';this.turn='aurelian';this.round=1;this.positions={aurelian:positionForSide('aurelian',this.factions?.aurelian?.faction||'aurelian'),earth:positionForSide('earth',this.factions?.earth?.faction||'earth')};this.moveUsed={aurelian:0,earth:0};await this.persist();this.broadcast({type:'reset',mode:'rematch',deployments:this.ready,factions:this.factions,turn:this.turn,round:this.round,positions:this.positions,moveUsed:this.moveUsed});return;
+      this.status='battle';this.turn='aurelian';this.round=1;this.turnCount=0;this.positions={aurelian:positionForSide('aurelian',this.factions?.aurelian?.faction||'aurelian'),earth:positionForSide('earth',this.factions?.earth?.faction||'earth')};this.moveUsed={aurelian:0,earth:0};await this.persist();this.broadcast({type:'reset',mode:'rematch',deployments:this.ready,factions:this.factions,turn:this.turn,round:this.round,turnCount:this.turnCount,positions:this.positions,moveUsed:this.moveUsed});return;
     }
     if(m.type==='leave'){try{ws.close(1000,'left match')}catch{}}
   }
