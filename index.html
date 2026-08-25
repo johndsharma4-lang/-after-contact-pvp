@@ -3764,7 +3764,7 @@ function resetRoom(room){
   if(room.smokeFx?.particles)for(const p of room.smokeFx.particles)scene.remove(p.mesh);
   if(room.rubbleFx){room.rubbleFx.parent?.remove(room.rubbleFx);room.rubbleFx=null}
   if(room.fireFx?.particles)for(const p of room.fireFx.particles)scene.remove(p.mesh);
-  if(room.acidFx){for(const p of room.acidFx.pools||[])scene.remove(p.mesh)}if(room.solarHoleFx){for(const o of room.solarHoleFx.objects||[])room.hitPlane.remove(o)}room.solarHoleFx=null;room.solarHole=false;room.acidFx=null;room.smokeFx=null;room.fireFx=null;room.erased=false;room.fallLevels=0;setRoomVerticalOffset(room,0);room.hitPlane.visible=true;room.armor=100;room.breach=0;room.lastStage=0;room.structuralFireScheduled=false;room.fireIntensity=0;room.collapseDone=false;room.corrosionTurns=0;room.corroded=false;room.acidStacks=0;room.acidStackSeq=(room.acidStackSeq||0)+1;
+  if(room.acidFx){for(const p of room.acidFx.pools||[])scene.remove(p.mesh);for(const p of room.acidFx.drips||[])scene.remove(p.mesh);for(const p of room.acidFx.fumes||[])scene.remove(p.mesh);for(const line of room.acidFx.trails||[])scene.remove(line)}if(room.solarHoleFx){for(const o of room.solarHoleFx.objects||[])room.hitPlane.remove(o)}room.solarHoleFx=null;room.solarHole=false;room.acidFx=null;room.smokeFx=null;room.fireFx=null;room.erased=false;room.fallLevels=0;setRoomVerticalOffset(room,0);room.hitPlane.visible=true;room.armor=100;room.breach=0;room.lastStage=0;room.structuralFireScheduled=false;room.fireIntensity=0;room.collapseDone=false;room.corrosionTurns=0;room.corroded=false;room.acidStacks=0;room.acidStackSeq=(room.acidStackSeq||0)+1;
   room.frame.visible=true;room.frame.scale.set(1,1,1);room.frame.rotation.set(0,0,0);room.frame.material.roughness=.3;
   room.cavity.visible=true;room.cavity.scale.set(1,1,1);room.cavity.material.color.setHex(0x06101b);
   room.edge.visible=true;room.edge.material.emissiveIntensity=.35;
@@ -4136,15 +4136,32 @@ function fireLoadedSingularity(attacker,drift,weapon){
 }
 function acidNeighbors(index){return [...new Set([index,index-1,index+1,index-3,index+3])].filter(i=>i>=0&&i<9&&((Math.abs(i-index)===1&&Math.floor(i/3)===Math.floor(index/3))||Math.abs(i-index)===3||i===index))}
 function spawnAcidResidue(room,point){
-  if(room.acidFx)return;const pools=[];for(let i=0;i<10;i++){const m=glowSphere(.16+Math.random()*.28,i%2?0x63ff2f:0xc8ff57,5);m.material.transparent=true;m.material.opacity=.58;m.position.copy(point).add(new THREE.Vector3((Math.random()-.5)*2.0,(Math.random()-.5)*.65,(Math.random()-.5)*1.0));scene.add(m);pools.push({mesh:m,seed:Math.random()*6.28})}room.acidFx={pools};effects.push({acid:room.acidFx,room,persistent:true})
+  if(room.acidFx){room.acidFx.stacks=room.acidStacks||1;return room.acidFx}
+  const pools=[],drips=[],fumes=[],trails=[];
+  for(let i=0;i<16;i++){const m=glowSphere(.16+Math.random()*.34,i%3?0x63ff2f:0xc8ff57,5);m.material.transparent=true;m.material.opacity=.48;m.scale.set(1.8,.35,1.25);m.position.copy(point).add(new THREE.Vector3((Math.random()-.5)*2.6,(Math.random()-.5)*.72,(Math.random()-.5)*1.35));scene.add(m);pools.push({mesh:m,seed:Math.random()*6.28,base:m.position.clone()})}
+  for(let i=0;i<7;i++){const m=glowSphere(.10+Math.random()*.12,i%2?0x65ff31:0xbaff62,5);m.material.transparent=true;m.material.opacity=.70;m.scale.set(.55,2.8,.55);m.position.copy(point).add(new THREE.Vector3((Math.random()-.5)*2.0,-.25-Math.random()*.9,(Math.random()-.5)*.9));scene.add(m);drips.push({mesh:m,seed:Math.random()*6.28,base:m.position.clone()})}
+  for(let i=0;i<6;i++){const m=glowSphere(.12+Math.random()*.18,0x9aff72,2);m.material.transparent=true;m.material.opacity=.22;m.position.copy(point);scene.add(m);fumes.push({mesh:m,seed:Math.random()*6.28})}
+  room.acidFx={pools,drips,fumes,trails,stacks:room.acidStacks||1};effects.push({acid:room.acidFx,room,persistent:true});return room.acidFx
 }
-function scheduleRoomAcidStacks(attacker,room,index,addStacks){
-  room.acidStacks=Math.min(5,(room.acidStacks||0)+addStacks);const seq=room.acidStackSeq=(room.acidStackSeq||0)+1,stacks=room.acidStacks;room.corroded=true;room.corrosionTurns=3;
-  room.edge.material.emissive.setHex(0x72ff35);room.edge.material.emissiveIntensity=1.5+stacks*.55;spawnAcidResidue(room,room.hitPlane.getWorldPosition(new THREE.Vector3()));diag('ACID STACK',`room=${index+1} stacks=${stacks}`);
-  [650,1300,1950].forEach((delay,tick)=>setTimeout(()=>{if(!battleStarted||matchEnded||room.acidStackSeq!==seq)return;const s=room.acidStacks||0;if(s<=0)return;const armorDmg=Math.min(room.armor,2+s*2),before=room.armor;room.armor=Math.max(0,room.armor-armorDmg);room.breach=100-room.armor;damageRoomVisual(room);applyStructureDamage(attacker,before-room.armor,'ACID STACK');spawnImpactBurst(room.hitPlane.getWorldPosition(new THREE.Vector3()),0x83ff42);
-    const occ=nearestWarriorInRoom(attacker,index,room.hitPlane.getWorldPosition(new THREE.Vector3()));if(occ&&room.breach>=30){const burn=Math.min(12,2+Math.min(4,s)*2);applyWarriorDamage(occ.w,burn,'ACID BURN',attacker);}
+function spawnAcidSpreadTrail(fromRoom,toRoom){
+  const from=fromRoom.hitPlane.getWorldPosition(new THREE.Vector3()),to=toRoom.hitPlane.getWorldPosition(new THREE.Vector3()),points=[];for(let i=0;i<=12;i++){const t=i/12,p=from.clone().lerp(to,t);p.y-=Math.sin(Math.PI*t)*.45;points.push(p)}
+  const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color:0x72ff35,transparent:true,opacity:.72,linewidth:2,blending:THREE.AdditiveBlending}));scene.add(line);const fx=spawnAcidResidue(fromRoom,from);fx.trails.push(line);return line
+}
+function spreadAcidCorrosion(attacker,room,index,spreadDepth){
+  if(!room||room.erased||(room.acidStacks||0)<3||spreadDepth>=1)return false;const rooms=opposingRooms(attacker).userData.rooms,down=index+3;let target=-1;
+  if(down<rooms.length&&!rooms[down].erased&&(rooms[down].acidStacks||0)<5)target=down;
+  const sideCandidates=[index-1,index+1].filter(i=>i>=0&&i<rooms.length&&Math.floor(i/3)===Math.floor(index/3)&&!rooms[i].erased&&(rooms[i].acidStacks||0)<5);
+  if(target<0&&(down>=rooms.length||rooms[down]?.erased||(rooms[down]?.acidStacks||0)>=5)&&sideCandidates.length)target=sideCandidates.sort((a,b)=>(rooms[a].acidStacks||0)-(rooms[b].acidStacks||0)||a-b)[0];
+  if(target<0)return false;spawnAcidSpreadTrail(room,rooms[target]);scheduleRoomAcidStacks(attacker,rooms[target],target,1,spreadDepth+1);diag('ACID SPREAD',`room=${index+1} -> room=${target+1} direction=${target===down?'DOWN':'SIDE'}`);return true
+}
+function scheduleRoomAcidStacks(attacker,room,index,addStacks,spreadDepth=0){
+  if(!room||room.erased)return;room.acidStacks=Math.min(5,(room.acidStacks||0)+addStacks);const seq=room.acidStackSeq=(room.acidStackSeq||0)+1,stacks=room.acidStacks;room.corroded=true;room.corrosionTurns=3;
+  room.edge.material.emissive.setHex(0x72ff35);room.edge.material.emissiveIntensity=1.5+stacks*.55;const acidFx=spawnAcidResidue(room,room.hitPlane.getWorldPosition(new THREE.Vector3()));acidFx.stacks=stacks;diag('ACID STACK',`room=${index+1} stacks=${stacks}`);
+  [650,1300,1950].forEach((delay,tick)=>setTimeout(()=>{if(!battleStarted||matchEnded||room.acidStackSeq!==seq||room.erased)return;const s=room.acidStacks||0;if(s<=0)return;const armorDmg=Math.min(room.armor,2+s*2),before=room.armor;room.armor=Math.max(0,room.armor-armorDmg);room.breach=100-room.armor;damageRoomVisual(room);room.frame.material.color.setHex(s>=5?0x17220d:s>=3?0x30451d:0x4d5935);if(room.exteriorScar){room.exteriorScar.material.color.setHex(s>=4?0x142006:0x365b16);room.exteriorScar.material.opacity=Math.min(.96,.45+s*.10)}applyStructureDamage(attacker,before-room.armor,'ACID STACK');spawnImpactBurst(room.hitPlane.getWorldPosition(new THREE.Vector3()),0x83ff42);
+    const occ=nearestWarriorInRoom(attacker,index,room.hitPlane.getWorldPosition(new THREE.Vector3()));if(occ&&room.breach>=30){const burn=Math.min(12,2+Math.min(4,s)*2);applyWarriorDamage(occ.w,burn,'ACID BURN',attacker)}
+    if(tick===1&&spreadDepth<1)spreadAcidCorrosion(attacker,room,index,spreadDepth);
     if(before!==room.armor){statusEl.textContent=`CORROSIVE STACK x${s} • ROOM ${index+1} • -${before-room.armor} ARMOR`;flashDamage(`ACID x${s}`)}
-    if(tick===2){room.acidStacks=Math.max(0,s-1);room.edge.material.emissiveIntensity=.35+room.acidStacks*.5}
+    if(tick===2){room.acidStacks=Math.max(0,s-1);room.edge.material.emissiveIntensity=.35+room.acidStacks*.5;if(room.acidFx)room.acidFx.stacks=room.acidStacks}
   },delay));
 }
 function scheduleWarriorAcidStacks(w,addStacks,attacker=null){
@@ -4158,6 +4175,7 @@ function nearestAcidHit(attacker,aimPt){
   // Small forgiveness only. Acid is no longer magnetically pulled hundreds of pixels into a room.
   const rooms=opposingRooms(attacker).userData.rooms;let best=null,bestD=Infinity;
   for(let i=0;i<rooms.length;i++){
+    if(rooms[i].erased)continue;
     const c=worldToStage(rooms[i].hitPlane.getWorldPosition(new THREE.Vector3()));
     const d=Math.hypot(c.x-aimPt.x,c.y-aimPt.y);
     if(d<bestD&&d<42){bestD=d;best={room:rooms[i],roomIndex:i,end:stagePointToRoomWorld(aimPt,rooms[i]),direct:false,acidSnap:false}}
@@ -4177,7 +4195,7 @@ function resolveCorrosiveFlood(attacker,aimPt,weapon,preHit=undefined){
   if(!hit){statusEl.textContent='CORROSIVE FLOOD • SPLASH MISSED';flashDamage('ACID MISS');diag('ACID MISS','trajectory did not intersect visible fortress hull');return}
   weaponImpactSfx('acid',true);
   const rooms=opposingRooms(attacker).userData.rooms,center=hit.roomIndex;let totalArmor=0;
-  for(const i of acidNeighbors(center)){const room=rooms[i],primary=i===center,initial=primary?weapon.armorDamage:8,before=room.armor;room.armor=Math.max(0,room.armor-initial);room.breach=100-room.armor;totalArmor+=before-room.armor;damageRoomVisual(room);const p=room.hitPlane.getWorldPosition(new THREE.Vector3());spawnImpactBurst(p,primary?0xcaff82:0x72ff35);spawnDebris(p,0x557a38,primary?8:3,.05,.18);scheduleRoomAcidStacks(attacker,room,i,primary?2:1);
+  for(const i of acidNeighbors(center)){const room=rooms[i];if(room.erased)continue;const primary=i===center,initial=primary?weapon.armorDamage:8,before=room.armor;room.armor=Math.max(0,room.armor-initial);room.breach=100-room.armor;totalArmor+=before-room.armor;damageRoomVisual(room);const p=room.hitPlane.getWorldPosition(new THREE.Vector3());spawnImpactBurst(p,primary?0xcaff82:0x72ff35);spawnDebris(p,0x557a38,primary?8:3,.05,.18);scheduleRoomAcidStacks(attacker,room,i,primary?2:1);
     const occ=nearestWarriorInRoom(attacker,i,p);if(primary&&occ&&(hit.warrior===occ.w||room.breach>=40)){applyWarriorDamage(occ.w,weapon.damage,'CORROSIVE FLOOD',attacker);scheduleWarriorAcidStacks(occ.w,2,attacker)}
   }
   applyStructureDamage(attacker,totalArmor,'CORROSIVE FLOOD');spawnExplosionVisual(hit.end,0x75ff3a,.62);spawnImpactBurst(hit.end,0xcaff82);spawnImpactBurst(hit.end,0x5cff2f);kickCamera(.28,.18);updateDamageMonitor(hit.room,center,0,attacker);statusEl.textContent=`CORROSIVE FLOOD • LOCALIZED CORROSION • ACID STACKS BUILDING`;flashDamage(`-${totalArmor} CORROSIVE ARMOR`);checkMatchEnd();
@@ -4527,7 +4545,7 @@ let battleSceneWatch=0;const clock=new THREE.Clock();function animate(){requestA
     if(localAction&&!multiplayer&&battleStarted&&!matchEnded&&soloTurn==='aurelian')setTimeout(()=>{if(battleStarted&&!matchEnded&&soloTurn==='aurelian')endSoloPlayerTurnAfterShot()},420);
     effects.splice(i,1);
   }
-}else if(q.acid){const t=performance.now()*.001,center=q.room.hitPlane.getWorldPosition(new THREE.Vector3());for(const p of q.acid.pools){p.mesh.position.x=center.x+Math.sin(t*2.5+p.seed)*.42;p.mesh.position.y=center.y-.05+Math.abs(Math.sin(t*3+p.seed))*.18;p.mesh.position.z=center.z+Math.cos(t*2+p.seed)*.30;p.mesh.scale.setScalar(.85+.35*Math.abs(Math.sin(t*4+p.seed)));p.mesh.material.opacity=.35+.24*Math.abs(Math.sin(t*3.4+p.seed))}continue}else if(q.smoke){const t=performance.now()*.001,center=q.room.hitPlane.getWorldPosition(new THREE.Vector3());for(const p of q.smoke.particles){const rise=(t+p.seed)%2.2;p.mesh.position.set(center.x+Math.sin(t*1.3+p.seed)*.35,center.y+.25+rise*1.15,center.z+Math.cos(t+p.seed)*.28);p.mesh.scale.setScalar(1+rise*.42);p.mesh.material.opacity=Math.max(.05,.42-rise*.12)}continue}else if(q.fire){const t=performance.now()*.001,center=q.room.hitPlane.getWorldPosition(new THREE.Vector3());for(const p of q.fire.particles){const pulse=.75+.35*Math.sin(t*9+p.seed);p.mesh.position.set(center.x+Math.sin(t*5+p.seed)*.25,center.y+Math.abs(Math.sin(t*6+p.seed))*.7,center.z+Math.cos(t*4+p.seed)*.18);p.mesh.scale.setScalar(pulse);p.mesh.material.opacity=.55+.3*Math.abs(Math.sin(t*7+p.seed))}continue}else if(q.solarBeam){
+}else if(q.acid){const t=performance.now()*.001,center=q.room.hitPlane.getWorldPosition(new THREE.Vector3()),stacks=Math.max(1,q.acid.stacks||1),violence=1+stacks*.16;for(const p of q.acid.pools){p.mesh.position.x=p.base.x+Math.sin(t*2.5*violence+p.seed)*(.28+stacks*.05);p.mesh.position.y=p.base.y+Math.abs(Math.sin(t*3.4*violence+p.seed))*(.08+stacks*.035);p.mesh.position.z=p.base.z+Math.cos(t*2.2+p.seed)*.18;p.mesh.scale.set(1.45+stacks*.14,.22+.10*Math.abs(Math.sin(t*4.4+p.seed)),1.02+stacks*.08);p.mesh.material.opacity=.38+.07*stacks+.15*Math.abs(Math.sin(t*3.4+p.seed))}for(const d of q.acid.drips||[]){const fall=((t*.34*violence+d.seed)%1.25);d.mesh.position.set(d.base.x,d.base.y-fall*(.75+stacks*.12),d.base.z);d.mesh.scale.set(.45,.9+fall*2.8,.45);d.mesh.material.opacity=Math.max(.10,.82-fall*.45)}for(const f of q.acid.fumes||[]){const rise=((t*.27+f.seed)%1.5);f.mesh.position.set(center.x+Math.sin(t+f.seed)*(.4+stacks*.08),center.y+.25+rise*(.6+stacks*.12),center.z+Math.cos(t*.8+f.seed)*.35);f.mesh.scale.setScalar(.7+rise*.7);f.mesh.material.opacity=Math.max(.04,.28+stacks*.025-rise*.15)}continue}else if(q.smoke){const t=performance.now()*.001,center=q.room.hitPlane.getWorldPosition(new THREE.Vector3());for(const p of q.smoke.particles){const rise=(t+p.seed)%2.2;p.mesh.position.set(center.x+Math.sin(t*1.3+p.seed)*.35,center.y+.25+rise*1.15,center.z+Math.cos(t+p.seed)*.28);p.mesh.scale.setScalar(1+rise*.42);p.mesh.material.opacity=Math.max(.05,.42-rise*.12)}continue}else if(q.fire){const t=performance.now()*.001,center=q.room.hitPlane.getWorldPosition(new THREE.Vector3());for(const p of q.fire.particles){const pulse=.75+.35*Math.sin(t*9+p.seed);p.mesh.position.set(center.x+Math.sin(t*5+p.seed)*.25,center.y+Math.abs(Math.sin(t*6+p.seed))*.7,center.z+Math.cos(t*4+p.seed)*.18);p.mesh.scale.setScalar(pulse);p.mesh.material.opacity=.55+.3*Math.abs(Math.sin(t*7+p.seed))}continue}else if(q.solarBeam){
   q.life-=dt;const b=q.solarBeam;
   // Live anchors: camera reframing or vessel visual motion can never leave a Solar beam hanging in old world space.
   const liveEnd=(b.path?.length?b.path[b.path.length-1].room.hitPlane.getWorldPosition(new THREE.Vector3()):b.end.clone());
