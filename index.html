@@ -2356,18 +2356,23 @@ function updateReptilianBiomeVisibility(lf=factionForWorldSide('aurelian'),rf=fa
 function animateReptilianBiome(dt){const time=performance.now()*.001;for(const side of ['aurelian','earth']){const b=reptilianBiomeState[side];if(!b?.group.visible)continue;
     for(const s of b.shafts||[]){s.mesh.material.opacity=.022+.012*(.5+.5*Math.sin(time*.55+s.phase));}b.water.material.opacity=.09+.025*Math.sin(time*1.1);for(const w of b.waveBands||[]){w.mesh.position.y=REPTILIAN_WATER_SURFACE_Y+.05+Math.sin(time*1.35+w.phase)*.13;w.mesh.position.z=w.baseZ+Math.sin(time*.72+w.phase)*.7;w.mesh.material.opacity=.07+.06*(.5+.5*Math.sin(time*1.1+w.phase));}for(const c of b.whiteCaps||[]){c.mesh.position.x=c.baseX+Math.sin(time*.58+c.phase)*1.3;c.mesh.position.z=c.baseZ+Math.cos(time*.42+c.phase)*.9;c.mesh.position.y=REPTILIAN_WATER_SURFACE_Y+.12+Math.sin(time*1.55+c.phase)*.10;c.mesh.material.opacity=.08+.10*(.5+.5*Math.sin(time*1.35+c.phase));}for(const c of b.caustics){c.mesh.material.opacity=.055+.05*(.5+.5*Math.sin(time*1.7+c.phase));c.mesh.rotation.z+=dt*.04}for(const k of b.kelp){k.stalk.rotation.z=k.baseRot+Math.sin(time*1.15+k.phase)*.09;k.leaf.rotation.z=k.leafBase+Math.sin(time*1.45+k.phase)*.14}const a=b.bubbles.geometry.attributes.position.array,base=b.bubbleBase;for(let i=0;i<a.length;i+=3){const phase=(i/3)*.37;a[i]=base[i]+Math.sin(time*.48+phase)*.16;a[i+1]=1+((base[i+1]-1+time*(.34+(i%9)*.02))%27);a[i+2]=base[i+2]+Math.cos(time*.43+phase)*.12}b.bubbles.geometry.attributes.position.needsUpdate=true}}
 
-function roomGrid(frameColor,emissive,scale=.9){const group=new THREE.Group(),rooms=[];for(let row=0;row<3;row++)for(let col=0;col<3;col++){const idx=rooms.length;const frame=box(4.2*scale,3.15*scale,.75*scale,frameColor,.72,.3);frame.position.set((col-1)*4.45*scale,(1-row)*3.35*scale,0);const cavity=box(3.55*scale,2.55*scale,.85*scale,0x06101b,.22,.85);cavity.position.copy(frame.position);cavity.position.z=.47*scale;const edgeMat=new THREE.MeshStandardMaterial({color:emissive,emissive,emissiveIntensity:.35,metalness:.65,roughness:.25});const edge=new THREE.Mesh(new THREE.BoxGeometry(3.9*scale,.12*scale,.65*scale),edgeMat);edge.position.set(frame.position.x,frame.position.y-1.02*scale,.46*scale);const hitPlane=new THREE.Mesh(new THREE.PlaneGeometry(3.9*scale,2.9*scale),new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide}));hitPlane.position.copy(frame.position);hitPlane.position.z=.96*scale;const breachMask=new THREE.Mesh(new THREE.PlaneGeometry(3.52*scale,2.52*scale),new THREE.MeshBasicMaterial({color:0x080605,transparent:true,opacity:0,depthWrite:false,depthTest:false,side:THREE.DoubleSide}));breachMask.position.copy(frame.position);breachMask.position.z=1.02*scale;breachMask.renderOrder=20;for(const obj of [frame,cavity,edge,hitPlane,breachMask])obj.userData.roomIndex=idx;group.add(frame,cavity,edge,hitPlane,breachMask);rooms.push({frame,cavity,edge,hitPlane,breachMask,local:frame.position.clone(),armor:100,breach:0,lastStage:0,smokeFx:null,fireFx:null})}group.userData.rooms=rooms;return group}
+function roomGrid(frameColor,emissive,scale=.9){const group=new THREE.Group(),rooms=[];for(let row=0;row<3;row++)for(let col=0;col<3;col++){const idx=rooms.length;const frame=box(4.2*scale,3.15*scale,.75*scale,frameColor,.72,.3);frame.position.set((col-1)*4.45*scale,(1-row)*3.35*scale,0);const cavity=box(3.55*scale,2.55*scale,.85*scale,0x06101b,.22,.85);cavity.position.copy(frame.position);cavity.position.z=.47*scale;const edgeMat=new THREE.MeshStandardMaterial({color:emissive,emissive,emissiveIntensity:.35,metalness:.65,roughness:.25});const edge=new THREE.Mesh(new THREE.BoxGeometry(3.9*scale,.12*scale,.65*scale),edgeMat);edge.position.set(frame.position.x,frame.position.y-1.02*scale,.46*scale);const hitPlane=new THREE.Mesh(new THREE.PlaneGeometry(3.9*scale,2.9*scale),new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide}));hitPlane.position.copy(frame.position);hitPlane.position.z=.96*scale;const breachMask=new THREE.Mesh(new THREE.PlaneGeometry(3.52*scale,2.52*scale),new THREE.MeshBasicMaterial({color:0x080605,transparent:true,opacity:0,depthWrite:false,depthTest:false,side:THREE.DoubleSide}));breachMask.position.copy(frame.position);breachMask.position.z=1.02*scale;breachMask.renderOrder=20;for(const obj of [frame,cavity,edge,hitPlane,breachMask])obj.userData.roomIndex=idx;group.add(frame,cavity,edge,hitPlane,breachMask);rooms.push({frame,cavity,edge,hitPlane,breachMask,local:frame.position.clone(),baseLocal:frame.position.clone(),fallOffsetY:0,fallLevels:0,erased:false,rubbleFx:null,armor:100,breach:0,lastStage:0,smokeFx:null,fireFx:null})}group.userData.rooms=rooms;return group}
 function setRoomLayout(group,coords){
   const rooms=group.userData.rooms;
   rooms.forEach((room,i)=>{
     const [x,y]=coords[i];
-    room.local.set(x,y,0);
+    room.local.set(x,y,0);room.baseLocal=room.local.clone();room.fallOffsetY=0;room.fallLevels=0;room.erased=false;
     room.frame.position.set(x,y,0);
     room.cavity.position.set(x,y,.47*.8);
     room.edge.position.set(x,y-1.02*.8,.46*.8);
     room.hitPlane.position.set(x,y,.96*.8);
     if(room.breachMask)room.breachMask.position.set(x,y,1.02*.8);
   });
+}
+function setRoomVerticalOffset(room,offsetY){
+  if(!room)return;const base=room.baseLocal||room.local;room.fallOffsetY=offsetY;room.local.set(base.x,base.y+offsetY,base.z||0);
+  room.frame.position.set(room.local.x,room.local.y,0);room.cavity.position.set(room.local.x,room.local.y,.47*.8);room.edge.position.set(room.local.x,room.local.y-1.02*.8,.46*.8);room.hitPlane.position.set(room.local.x,room.local.y,.96*.8);if(room.breachMask)room.breachMask.position.set(room.local.x,room.local.y,1.02*.8);
+  syncRoomStructuralDamage(room)
 }
 
 function applyFactionRoomStyle(group,faction){
@@ -3571,11 +3576,12 @@ function exactAcidRoomHitAtStagePoint(attacker,pt){
   return best;
 }
 function nearestRoomToStagePoint(rooms,stagePt){let best=0,bestD=Infinity;for(let i=0;i<rooms.length;i++){const c=worldToStage(rooms[i].hitPlane.getWorldPosition(new THREE.Vector3())),d=Math.hypot(c.x-stagePt.x,c.y-stagePt.y);if(d<bestD){bestD=d;best=i}}return best}
-function nearestDamageableRoomToStagePoint(rooms,stagePt){let best=-1,bestD=Infinity;for(let i=0;i<rooms.length;i++){if(rooms[i].armor<=0)continue;const c=worldToStage(rooms[i].hitPlane.getWorldPosition(new THREE.Vector3())),d=Math.hypot(c.x-stagePt.x,c.y-stagePt.y);if(d<bestD){bestD=d;best=i}}return best>=0?best:nearestRoomToStagePoint(rooms,stagePt)}
+function nearestDamageableRoomToStagePoint(rooms,stagePt){let best=-1,bestD=Infinity;for(let i=0;i<rooms.length;i++){if(rooms[i].erased||rooms[i].armor<=0)continue;const c=worldToStage(rooms[i].hitPlane.getWorldPosition(new THREE.Vector3())),d=Math.hypot(c.x-stagePt.x,c.y-stagePt.y);if(d<bestD){bestD=d;best=i}}return best>=0?best:nearestRoomToStagePoint(rooms,stagePt)}
 // v0.31.8 AIM TRUTH: direct visible pointer placement wins before projected beam-line fallback.
 function directVisibleAimHit(attacker,pt){
   const rooms=opposingRooms(attacker).userData.rooms,warriors=opposing(attacker),candidates=[];
   for(let i=0;i<rooms.length;i++){
+    if(rooms[i].erased)continue;
     const rect=objectScreenRect(rooms[i].hitPlane,14);
     if(!pointInRect(pt,rect))continue;
     const c=worldToStage(rooms[i].hitPlane.getWorldPosition(new THREE.Vector3()));
@@ -3601,12 +3607,13 @@ function laserHitFromStage(attacker,pt){
   const farStage={x:startStage.x+vx*1900,y:startStage.y+vy*1900};
   const roomHits=[];
   for(let i=0;i<rooms.length;i++){
+    if(rooms[i].erased)continue;
     const rect=objectScreenRect(rooms[i].hitPlane,5),hit=lineRectEntry(startStage,farStage,rect);
     if(hit)roomHits.push({type:'room',roomIndex:i,room:rooms[i],hit});
   }
   // Exposed warriors can be hit directly. Their screen intersection wins only inside their own opened room.
   const warriorHits=[];
-  for(const w of warriors){const room=rooms[w.roomIndex];if((room.breach<EXPOSURE_THRESHOLDS.targetable&&!w.exposedBySolar)||w.hp<=0||!w.marker.visible)continue;const rect=objectScreenRect(w.marker,2),hit=lineRectEntry(startStage,farStage,rect);if(hit)warriorHits.push({w,room,roomIndex:w.roomIndex,hit})}
+  for(const w of warriors){const room=rooms[w.roomIndex];if(room.erased||(room.breach<EXPOSURE_THRESHOLDS.targetable&&!w.exposedBySolar)||w.hp<=0||!w.marker.visible)continue;const rect=objectScreenRect(w.marker,2),hit=lineRectEntry(startStage,farStage,rect);if(hit)warriorHits.push({w,room,roomIndex:w.roomIndex,hit})}
   roomHits.sort((a,b)=>a.hit.t-b.hit.t);warriorHits.sort((a,b)=>a.hit.t-b.hit.t);
   if(HIT_DEBUG){for(const r of rooms)r.hitPlane.material.opacity=.08;setTimeout(()=>{for(const r of rooms)r.hitPlane.material.opacity=0},260)}
   if(roomHits.length){
@@ -3755,8 +3762,9 @@ function checkMatchEnd(){
 }
 function resetRoom(room){
   if(room.smokeFx?.particles)for(const p of room.smokeFx.particles)scene.remove(p.mesh);
+  if(room.rubbleFx){room.rubbleFx.parent?.remove(room.rubbleFx);room.rubbleFx=null}
   if(room.fireFx?.particles)for(const p of room.fireFx.particles)scene.remove(p.mesh);
-  if(room.acidFx){for(const p of room.acidFx.pools||[])scene.remove(p.mesh)}if(room.solarHoleFx){for(const o of room.solarHoleFx.objects||[])room.hitPlane.remove(o)}room.solarHoleFx=null;room.solarHole=false;room.acidFx=null;room.smokeFx=null;room.fireFx=null;room.armor=100;room.breach=0;room.lastStage=0;room.structuralFireScheduled=false;room.fireIntensity=0;room.collapseDone=false;room.corrosionTurns=0;room.corroded=false;room.acidStacks=0;room.acidStackSeq=(room.acidStackSeq||0)+1;
+  if(room.acidFx){for(const p of room.acidFx.pools||[])scene.remove(p.mesh)}if(room.solarHoleFx){for(const o of room.solarHoleFx.objects||[])room.hitPlane.remove(o)}room.solarHoleFx=null;room.solarHole=false;room.acidFx=null;room.smokeFx=null;room.fireFx=null;room.erased=false;room.fallLevels=0;setRoomVerticalOffset(room,0);room.hitPlane.visible=true;room.armor=100;room.breach=0;room.lastStage=0;room.structuralFireScheduled=false;room.fireIntensity=0;room.collapseDone=false;room.corrosionTurns=0;room.corroded=false;room.acidStacks=0;room.acidStackSeq=(room.acidStackSeq||0)+1;
   room.frame.visible=true;room.frame.scale.set(1,1,1);room.frame.rotation.set(0,0,0);room.frame.material.roughness=.3;
   room.cavity.visible=true;room.cavity.scale.set(1,1,1);room.cavity.material.color.setHex(0x06101b);
   room.edge.visible=true;room.edge.material.emissiveIntensity=.35;
@@ -3948,8 +3956,8 @@ function syncRoomStructuralDamage(room){
   const module=skin?.userData?.damageModules?.[room.hitPlane.userData.roomIndex];
   if(!module)return;
   const breach=Math.max(0,Math.min(100,room.breach||0)),r=breach/100;
-  module.visible=breach<100;
-  module.position.z=module.position.z; // retain authoritative alignment
+  module.visible=!room.erased&&breach<100;
+  if(!module.userData.damageBasePosition)module.userData.damageBasePosition=module.position.clone();module.position.y=module.userData.damageBasePosition.y+(room.fallOffsetY||0);module.position.z=module.userData.damageBasePosition.z;
   module.rotation.z=(room.local.x>=0?1:-1)*r*.075;
   module.scale.set(1,Math.max(.28,1-r*.48),Math.max(.35,1-r*.35));
   const face=module.userData.face,core=module.userData.core,braces=module.userData.braces||[],service=module.userData.service;
@@ -3998,10 +4006,27 @@ function scheduleStructuralFire(attacker,room,index){
   room.structuralFireScheduled=true;room.fireIntensity=Math.max(1,room.fireIntensity||0);ensureFire(room,room.hitPlane.getWorldPosition(new THREE.Vector3()));diag('STRUCTURAL FIRE',`room=${index+1} intensity=${room.fireIntensity}`);
   [1200,2400,3600].forEach((delay,tick)=>setTimeout(()=>{if(!battleStarted||matchEnded||!room.structuralFireScheduled)return;room.fireIntensity=Math.min(4,(room.fireIntensity||1)+(tick>0?1:0));const burn=Math.min(room.armor,1+room.fireIntensity);if(burn>0){room.armor=Math.max(0,room.armor-burn);room.breach=100-room.armor;damageRoomVisual(room);applyStructureDamage(attacker,burn,'STRUCTURAL FIRE')}const p=room.hitPlane.getWorldPosition(new THREE.Vector3());spawnImpactBurst(p,0xff7b25);diag('FIRE GROWTH',`room=${index+1} intensity=${room.fireIntensity} armor=${Math.round(room.armor)}`);if(room.breach>=100)resolveVerticalCollapse(attacker,room,index)},delay));
 }
-function resolveVerticalCollapse(attacker,room,index){
-  if(!room||room.collapseDone||room.breach<100)return;room.collapseDone=true;const below=index+3,rooms=opposingRooms(attacker).userData.rooms;if(below>=rooms.length)return;const p=room.hitPlane.getWorldPosition(new THREE.Vector3());spawnDebris(p,0x5a554d,28,.24,.78);diag('VERTICAL COLLAPSE',`room=${index+1} -> room=${below+1}`);const w=opposing(attacker).find(x=>x.active&&x.hp>0&&x.roomIndex===below);if(w){const dmg=applyWarriorDamage(w,6,'FALLING DEBRIS',attacker);diag('DEBRIS DAMAGE',`room=${below+1} unit=${dmg}`)}const lower=rooms[below];if(lower&&lower.armor>0){const chip=Math.min(5,lower.armor);lower.armor-=chip;lower.breach=100-lower.armor;damageRoomVisual(lower);applyStructureDamage(attacker,chip,'COLLAPSE IMPACT')}
+function ensurePersistentRubble(room,point,color=0x514b44){
+  if(!room||room.rubbleFx)return room?.rubbleFx||null;const parent=room.hitPlane.parent,group=new THREE.Group();group.position.copy(parent.worldToLocal(point.clone()));group.position.z+=.35;
+  for(let i=0;i<8;i++){const m=box(.28+Math.random()*.52,.18+Math.random()*.34,.22+Math.random()*.48,color,.30,.82);m.position.set((Math.random()-.5)*2.4,-1.05+Math.random()*.40,(Math.random()-.5)*1.2);m.rotation.set(Math.random()*2,Math.random()*2,Math.random()*2);group.add(m)}
+  parent.add(group);room.rubbleFx=group;return group
 }
-function resolveHit(attacker,hit,weapon){if(!hit||!hit.room){diag('HIT RESULT',`${weapon.name} MISS`);statusEl.textContent=`${weapon.name} • MISS • NO DAMAGE`;updateDamageMonitor(null,-1,0,attacker);flashDamage('MISS');return{armorDamage:0,unitDamage:0}}weaponImpactSfx(weapon.kind,weapon.kind==='explosive');const room=hit.room,index=hit.roomIndex,beforeArmor=room.armor;diag('HIT',`${weapon.name} room=${index+1} armorBefore=${Math.round(beforeArmor)}`);let armorStrike=weapon.armorDamage;if(room.corrosionTurns>0&&weapon.kind!=='acid'){armorStrike=Math.round(armorStrike*1.28);room.corrosionTurns--;if(room.corrosionTurns<=0)room.corroded=false;}room.armor=Math.max(0,room.armor-armorStrike);room.breach=Math.min(100,100-room.armor);damageRoomVisual(room);scheduleStructuralFire(attacker,room,index);if(room.breach>=100)resolveVerticalCollapse(attacker,room,index);let unitDamage=0;let occ=hit.warrior?{w:hit.warrior,dist:0}:nearestWarriorInRoom(attacker,index,hit.end);const exposure=room.breach/100;
+function collapseUnsupportedCompartment(attacker,erasedIndex){
+  const rooms=opposingRooms(attacker).userData.rooms,aboveIndex=erasedIndex-3;if(aboveIndex<0)return 0;const room=rooms[aboveIndex];if(!room||room.erased)return 0;
+  const base=room.baseLocal||room.local,erasedBase=rooms[erasedIndex]?.baseLocal||rooms[erasedIndex]?.local,step=Math.max(2.2,Math.abs((base?.y||0)-(erasedBase?.y||0)));room.fallLevels=(room.fallLevels||0)+1;const levels=room.fallLevels;setRoomVerticalOffset(room,(room.fallOffsetY||0)-step);
+  const p=room.hitPlane.getWorldPosition(new THREE.Vector3());spawnDebris(p,0x69615a,34,.22,.82);ensurePersistentRubble(room,p,0x4d4743);
+  const w=opposing(attacker).find(x=>x.active&&x.hp>0&&x.roomIndex===aboveIndex);let dealt=0;if(w){setWarriorRoom(w,aboveIndex);const fallDamage=Math.round(w.maxHp*(.10+.05*Math.max(0,levels-1)));dealt=applyWarriorDamage(w,fallDamage,`COMPARTMENT FALL ${levels} LEVEL${levels===1?'':'S'}`,attacker)}
+  diag('COMPARTMENT FALL',`room=${aboveIndex+1} levels=${levels} unit=${dealt} actionLock=N`);return levels
+}
+function eraseCompartment(attacker,room,index){
+  if(!room||room.erased)return false;room.erased=true;room.armor=0;room.breach=100;room.structuralFireScheduled=false;
+  for(const o of [room.frame,room.cavity,room.edge,room.breachMask])if(o)o.visible=false;room.hitPlane.visible=false;syncRoomStructuralDamage(room);if(room.exteriorScar){room.exteriorScar.visible=true;room.exteriorScar.material.color.setHex(0x020104);room.exteriorScar.material.opacity=.96}
+  collapseUnsupportedCompartment(attacker,index);diag('COMPARTMENT ERASED',`room=${index+1} geometry=REMOVED shotPath=OPEN`);return true
+}
+function resolveVerticalCollapse(attacker,room,index){
+  if(!room||room.collapseDone||room.breach<100||room.erased)return;room.collapseDone=true;const below=index+3,rooms=opposingRooms(attacker).userData.rooms,p=room.hitPlane.getWorldPosition(new THREE.Vector3());spawnDebris(p,0x5a554d,28,.24,.78);ensurePersistentRubble(room,p);if(below>=rooms.length)return;diag('VERTICAL COLLAPSE',`room=${index+1} -> room=${below+1}`);const w=opposing(attacker).find(x=>x.active&&x.hp>0&&x.roomIndex===below);if(w){const dmg=applyWarriorDamage(w,6,'FALLING DEBRIS',attacker);diag('DEBRIS DAMAGE',`room=${below+1} unit=${dmg}`)}const lower=rooms[below];if(lower&&!lower.erased&&lower.armor>0){const chip=Math.min(5,lower.armor);lower.armor-=chip;lower.breach=100-lower.armor;damageRoomVisual(lower);applyStructureDamage(attacker,chip,'COLLAPSE IMPACT')}
+}
+function resolveHit(attacker,hit,weapon){if(!hit||!hit.room||hit.room.erased){diag('HIT RESULT',`${weapon.name} MISS`);statusEl.textContent=`${weapon.name} • MISS • NO DAMAGE`;updateDamageMonitor(null,-1,0,attacker);flashDamage('MISS');return{armorDamage:0,unitDamage:0}}weaponImpactSfx(weapon.kind,weapon.kind==='explosive');const room=hit.room,index=hit.roomIndex,beforeArmor=room.armor;diag('HIT',`${weapon.name} room=${index+1} armorBefore=${Math.round(beforeArmor)}`);let armorStrike=weapon.armorDamage;if(room.corrosionTurns>0&&weapon.kind!=='acid'){armorStrike=Math.round(armorStrike*1.28);room.corrosionTurns--;if(room.corrosionTurns<=0)room.corroded=false;}room.armor=Math.max(0,room.armor-armorStrike);room.breach=Math.min(100,100-room.armor);damageRoomVisual(room);scheduleStructuralFire(attacker,room,index);if(room.breach>=100)resolveVerticalCollapse(attacker,room,index);let unitDamage=0;let occ=hit.warrior?{w:hit.warrior,dist:0}:nearestWarriorInRoom(attacker,index,hit.end);const exposure=room.breach/100;
   if(occ){if(hit.direct){unitDamage+=weapon.damage}else if(room.breach>=30){unitDamage+=Math.max(1,weapon.damage*weapon.exposureScale*exposure)}if(weapon.kind==='laser'&&room.breach>=20)unitDamage+=weapon.damage*weapon.penetration*exposure;if(weapon.kind==='explosive'&&!hit.direct&&occ.dist<5.5)unitDamage+=weapon.splash*(1-Math.min(1,occ.dist/5.5));unitDamage=applyWarriorDamage(occ.w,unitDamage,weapon.name,attacker)}
   if(weapon.kind==='explosive'){for(const w of opposing(attacker)){if(w.roomIndex===index||w.hp<=0)continue;const ri=w.roomGroup.userData.rooms[w.roomIndex],gap=Math.abs(w.roomIndex-index);if(gap===1||gap===3){ri.armor=Math.max(0,ri.armor-weapon.splash*.60);ri.breach=Math.min(100,100-ri.armor);damageRoomVisual(ri);if(ri.breach>=40)applyWarriorDamage(w,weapon.splash*.25*(ri.breach/100),'SPLASH',attacker)}}}
   const armorDamage=Math.round(beforeArmor-room.armor);applyStructureDamage(attacker,armorDamage,weapon.name);const unitBreakdown=occ?.w?unitDamageLabel(occ.w,unitDamage):'';diag('DAMAGE RESULT',`${weapon.name} room=${index+1} armor=${armorDamage} unit=${Math.round(unitDamage)}${occ?.w?` aa=${occ.w.lastAaDamage||0} hp=${occ.w.lastHpDamage||0}`:''} breach=${Math.round(room.breach)}%`);updateDamageMonitor(room,index,unitDamage,attacker);statusEl.textContent=`${weapon.name} • ROOM ${index+1} • -${armorDamage} ARMOR • BREACH ${Math.round(room.breach)}%${unitBreakdown?` • ${unitBreakdown}`:''}`;flashDamage(`-${armorDamage} ARMOR${unitBreakdown?`  •  ${unitBreakdown}`:''}`);checkMatchEnd();return{armorDamage,unitDamage}
@@ -4089,10 +4114,10 @@ function resolveDisintegratorHit(attacker,hit,weapon){
   room.armor=0;room.breach=100;damageRoomVisual(room);applyStructureDamage(attacker,before,'MATTER COLLAPSE');spawnDebris(hit.end,0x6d5a7e,42,.08,.62);
   let unitDamage=0;const occ=hit.warrior?{w:hit.warrior}:nearestWarriorInRoom(attacker,index,hit.end);
   if(occ){unitDamage=applyWarriorDamage(occ.w,weapon.damage,'MATTER COLLAPSE',attacker);diag('AA IMPACT',`Matter Collapse AA=${occ.w.lastAaDamage||0} HP=${occ.w.lastHpDamage||0}`)}
-  updateDamageMonitor(room,index,unitDamage,attacker);statusEl.textContent=`MATTER COLLAPSE • ROOM ${index+1} ERASED${unitDamage?` • AA/HP -${unitDamage}`:''}`;flashDamage(`ROOM ${index+1} ERASED`);kickCamera(.54,.36);checkMatchEnd();return{armorDamage:before,unitDamage};
+  eraseCompartment(attacker,room,index);updateDamageMonitor(room,index,unitDamage,attacker);statusEl.textContent=`MATTER COLLAPSE • ROOM ${index+1} ERASED${unitDamage?` • AA/HP -${unitDamage}`:''}`;flashDamage(`ROOM ${index+1} ERASED`);kickCamera(.54,.36);checkMatchEnd();return{armorDamage:before,unitDamage};
 }
 function applySpatialGraze(attacker,hit){
-  if(!hit?.room)return;const room=hit.room,before=room.armor;room.armor=Math.max(0,room.armor-5);room.breach=100-room.armor;damageRoomVisual(room);applyStructureDamage(attacker,before-room.armor,'SPATIAL GRAZE');const occ=nearestWarriorInRoom(attacker,hit.roomIndex,hit.end);if(occ&&room.breach>=45)applyWarriorDamage(occ.w,6,'SPATIAL GRAZE',attacker);spawnImpactBurst(hit.end,0x9e66ff);if(before!==room.armor)updateDamageMonitor(room,hit.roomIndex,0,attacker)
+  if(!hit?.room||hit.room.erased)return;const room=hit.room,before=room.armor;room.armor=Math.max(0,room.armor-5);room.breach=100-room.armor;damageRoomVisual(room);applyStructureDamage(attacker,before-room.armor,'SPATIAL GRAZE');const occ=nearestWarriorInRoom(attacker,hit.roomIndex,hit.end);if(occ&&room.breach>=45)applyWarriorDamage(occ.w,6,'SPATIAL GRAZE',attacker);spawnImpactBurst(hit.end,0x9e66ff);if(before!==room.armor)updateDamageMonitor(room,hit.roomIndex,0,attacker)
 }
 function spawnSpatialVolley(attacker,aimPt,weapon){
   const drift=spatialDriftPoint(aimPt),start=muzzleWorld(attacker,aimPt);
