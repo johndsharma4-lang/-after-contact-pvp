@@ -4315,6 +4315,12 @@ function spawnAcidFlood(attacker,start,aimPt,power,weapon){
   diag('CORROSIVE FLOOD',`mode=${profile.mode} elevation=${Math.round(profile.elevation)} release=${Math.round(aimPt.x)},${Math.round(aimPt.y)} impact=${Math.round(impactAim.x)},${Math.round(impactAim.y)} hit=${hit?.roomIndex!=null?hit.roomIndex+1:'MISS'} screenVfx=Y`);
 }
 function spatialDriftPoint(pt){const seed=(shots+1)*17.319+pt.x*.019+pt.y*.027;const sx=Math.sin(seed*2.31),sy=Math.cos(seed*1.83);return{x:pt.x+sx*96,y:pt.y+sy*72}}
+function barrageRoomTargets(attacker,end){
+  const rooms=opposingRooms(attacker).userData.rooms,primary=explosiveHitFromEnd(attacker,end);if(!primary?.room)return null;const index=primary.roomIndex,chosen=[index];
+  const candidates=[];for(let i=0;i<rooms.length;i++){const room=rooms[i];if(i===index||room.erased||room.armor<=0)continue;const rowGap=Math.abs(Math.floor(i/3)-Math.floor(index/3)),colGap=Math.abs(i%3-index%3),priority=rowGap+colGap;const p=room.hitPlane.getWorldPosition(new THREE.Vector3());candidates.push({i,p,priority,d:p.distanceTo(primary.end)})}
+  candidates.sort((a,b)=>a.priority-b.priority||a.d-b.d||a.i-b.i);for(const c of candidates){if(chosen.length>=4)break;chosen.push(c.i)}
+  while(chosen.length<4)chosen.push(index);return{primary,index,points:chosen.map(i=>rooms[i].hitPlane.getWorldPosition(new THREE.Vector3()))}
+}
 function spawnArc(attacker,start,end,power,weapon){
   const localAction=(!multiplayer&&attacker.side==='aurelian')||(multiplayer&&attacker.side===localSide);
   if(localAction){barrageActionLock=true;diag('ACTION LOCK','HE9_BARRAGE_RESOLUTION');refreshMovePad()}
@@ -4326,13 +4332,14 @@ function spawnArc(attacker,start,end,power,weapon){
   const right=new THREE.Vector3(-attackDir.z,0,attackDir.x);
   if(right.lengthSq()<.0001)right.set(1,0,0);
   right.normalize();
-  const lift=new THREE.Vector3(0,1,0);
+  const lift=new THREE.Vector3(0,1,0),roomTargets=barrageRoomTargets(attacker,end);
+  // Two missiles converge on the selected compartment; three spread across distinct nearby intact compartments.
   const strikePlan=[
-    {forward:-1.45,side:-1.15,up:.12,color:0xff6f22,scale:.88},
-    {forward:-.58,side:-.28,up:.03,color:0xff7a24,scale:.94},
-    {forward:0,side:0,up:0,color:0xff8a36,scale:1.00,main:true},
-    {forward:.60,side:.30,up:-.03,color:0xffb044,scale:.94},
-    {forward:1.42,side:1.12,up:.10,color:0xffc15a,scale:.88}
+    {center:true,targetSlot:0,forward:-.24,side:-.22,up:.08,color:0xff7a24,scale:1.02,main:true},
+    {center:true,targetSlot:0,forward:.24,side:.22,up:.02,color:0xff8a36,scale:1.02,main:true},
+    {center:false,targetSlot:1,forward:-.20,side:0,up:.05,color:0xff6f22,scale:.90},
+    {center:false,targetSlot:2,forward:0,side:0,up:.10,color:0xffb044,scale:.90},
+    {center:false,targetSlot:3,forward:.20,side:0,up:.04,color:0xffc15a,scale:.90}
   ];
   function makeHe9Rocket(scale=1){
     const g=new THREE.Group();
@@ -4347,7 +4354,7 @@ function spawnArc(attacker,start,end,power,weapon){
   }
   const missiles=[];
   strikePlan.forEach((plan,i)=>{
-    const target=end.clone().add(attackDir.clone().multiplyScalar(plan.forward)).add(right.clone().multiplyScalar(plan.side)).add(lift.clone().multiplyScalar(plan.up));
+    const baseTarget=roomTargets?.points?.[plan.targetSlot]?.clone()||end.clone();const target=baseTarget.add(attackDir.clone().multiplyScalar(plan.forward)).add(right.clone().multiplyScalar(plan.side)).add(lift.clone().multiplyScalar(plan.up));
     const mid=start.clone().lerp(target,.5);mid.y+=8+power*.11;
     const curve=new THREE.QuadraticBezierCurve3(start,mid,target);
     const mesh=makeHe9Rocket(plan.scale);
@@ -4591,15 +4598,16 @@ let battleSceneWatch=0;const clock=new THREE.Clock();function animate(){requestA
     if(localT>=1&&!m.impacted){
       m.impacted=true;
       const impact=m.curve.getPoint(1);
-      spawnExplosionVisual(impact,m.plan.color,m.plan.main?1.48:.92);
+      spawnExplosionVisual(impact,m.plan.color,m.plan.center?1.48:.92);
       spawnImpactBurst(impact,m.plan.color);
-      spawnDebris(impact,0x5e6267,m.plan.main?30:13,.10,m.plan.main?.68:.36);
-      kickCamera(m.plan.main?.22:.10,m.plan.main?.16:.08);
+      spawnDebris(impact,0x5e6267,m.plan.center?30:13,.10,m.plan.center?.68:.36);
+      kickCamera(m.plan.center?.22:.10,m.plan.center?.16:.08);
       if(!m.damageResolved){
         m.damageResolved=true;
         const hit=explosiveHitFromEnd(q.attacker,m.target);
-        const mini={...q.weapon,name:'HE-9 MISSILE '+(mi+1),armorDamage:Math.max(1,q.weapon.armorDamage*.20),damage:Math.max(1,q.weapon.damage*.20),splash:Math.max(1,q.weapon.splash*.20)};
-        if(m.plan.main){spawnExplosionVisual(impact,0xffd06a,1.52);kickCamera(.30,.22)}
+        const armorShare=m.plan.center?.30:.18,crewShare=m.plan.center?.14:.07,splashShare=m.plan.center?.22:.14;
+        const mini={...q.weapon,name:'HE-9 MISSILE '+(mi+1),armorDamage:Math.max(1,q.weapon.armorDamage*armorShare),damage:Math.max(1,q.weapon.damage*crewShare),splash:Math.max(1,q.weapon.splash*splashShare)};
+        if(m.plan.center){spawnExplosionVisual(impact,0xffd06a,1.52);kickCamera(.30,.22)}
         if(hit)resolveHit(q.attacker,hit,mini);else resolveHit(q.attacker,null,mini);
       }
     }
