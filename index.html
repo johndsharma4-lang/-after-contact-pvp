@@ -796,7 +796,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <button id="moveDown" aria-label="Move down">▼</button>
 </div>
   <div class="hud"><div class="side"><div class="name" id="leftFactionName">AURELIAN ACCORD</div><div class="sub" id="leftFactionSub">SOLAR LANCER • PENETRATION TEST</div></div><div class="side right"><div class="name" id="rightFactionName">EARTH COMMAND</div><div class="sub" id="rightFactionSub">BOMBARDIER • FORTRESS LV.1</div></div></div>
-  <div class="lab">3D LAB • MOBILE PVP TEST • v0.31.48</div>
+  <div class="lab">3D LAB • MOBILE PVP TEST • v0.31.49</div>
   <div id="structureHud"><div class="structureSide"><div class="structureLabel" id="leftStructureLabel">VESSEL STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="leftStructureFill"></div></div></div><div class="structureSide right"><div class="structureLabel" id="rightStructureLabel">FORTRESS STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="rightStructureFill"></div></div></div></div>
   <div id="rangeBadge">RANGE 885m</div>
   <svg id="aimSvg" viewBox="0 0 1280 720" preserveAspectRatio="none"><g id="acidShotLayer" pointer-events="none"></g><path id="aimPath"/><circle id="aimDot" r="4"/><circle id="muzzleDot" r="6"/></svg>
@@ -813,7 +813,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <div style="font:900 8px system-ui;color:#9fffc8;margin-bottom:6px">OWNER • NDA LEDGER</div>
 <div id="ownerNdaLedgerText" style="white-space:pre-wrap;max-height:180px;overflow:auto;user-select:text!important;-webkit-user-select:text!important">NOT LOADED</div>
 </div>
-<div id="ownerBuildCard" style="display:none;margin:8px 0;padding:9px;border:1px solid rgba(116,217,255,.35);border-radius:10px;background:rgba(4,18,29,.92);font:800 8px/1.45 system-ui;color:#d9f5ff"><div style="color:#82e7ff;letter-spacing:.12em;margin-bottom:5px">LATEST BUILD • v0.31.48</div><div>WET LIQUID ACID • HP-MATCHED SILHOUETTE • TORN OPENINGS • FOUNDATION WRECK</div><div style="margin-top:5px;opacity:.7">RUN BUILD SHOWCASE stages the enemy vessel at 100%, 50%, 10%, and 0% structure without changing combat data.</div></div>
+<div id="ownerBuildCard" style="display:none;margin:8px 0;padding:9px;border:1px solid rgba(116,217,255,.35);border-radius:10px;background:rgba(4,18,29,.92);font:800 8px/1.45 system-ui;color:#d9f5ff"><div style="color:#82e7ff;letter-spacing:.12em;margin-bottom:5px">LATEST BUILD • v0.31.49</div><div>WET LIQUID ACID • HP-MATCHED SILHOUETTE • TORN OPENINGS • FOUNDATION WRECK</div><div style="margin-top:5px;opacity:.7">RUN BUILD SHOWCASE stages the enemy vessel at 100%, 50%, 10%, and 0% structure without changing combat data.</div></div>
 <div class="dbgActions"><button id="ownerBuildShowcase" class="wide" type="button">RUN BUILD SHOWCASE</button><button id="ownerBuildNotes" class="wide" type="button">LATEST BUILD NOTES</button><button id="ownerDestructionDemo" class="wide" type="button">ROOM DESTRUCTION DEMO</button><button id="ownerNdaLedgerBtn" class="wide" type="button">NDA LEDGER</button><button id="ownerNdaLedgerCopy" class="wide" type="button">COPY NDA LEDGER</button><button id="ownerDbgCopy" class="wide" type="button">COPY MATCH LOG</button><button id="ownerDbgRefresh" type="button">REFRESH SNAPSHOT</button><button id="ownerDbgShare" type="button">SHARE</button><button id="ownerDbgSelectAll" class="wide" type="button">SELECT ALL LOG</button><button id="ownerDbgClear" class="wide" type="button">CLEAR LOG</button></div></div>
 
 
@@ -824,7 +824,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
   <div id="mpOverlay" aria-live="polite">
     <div class="mpCard">
       <div class="mpKicker">AFTER CONTACT • MAIN MENU</div>
-      <div class="mpTitle">PRIVATE PVP TEST • v0.31.48</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
+      <div class="mpTitle">PRIVATE PVP TEST • v0.31.49</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
       <div class="mpText">Choose Solo Game or Multiplayer. Multiplayer creates a private room you can share with another tester.</div>
       <div class="mpActions"><button class="mpBtn primary" id="mpHostBtn">MULTIPLAYER</button><button class="mpBtn" id="mpSoloBtn">SOLO GAME</button><button class="mpBtn" id="replayStoryBtn" type="button">REPLAY STORY INTRO</button></div>
       <div class="mpJoin"><input id="mpCodeInput" maxlength="6" inputmode="text" autocomplete="off" placeholder="ROOM CODE"><button class="mpBtn" id="mpJoinBtn">JOIN</button></div>
@@ -1391,9 +1391,9 @@ const baseOwnerDebugReport=ownerDebugReport;
 ownerDebugReport=function(){
   const crewState=(label,crew)=>`${label} CREW ${crew.filter(w=>w.active).map(w=>`${w.isCaptain?'CAPTAIN':`S${w.index+1}`}@R${Number.isInteger(w.roomIndex)?w.roomIndex+1:'-'} HP${Math.round(w.hp)}/${w.maxHp} AA${Math.round(w.aa)}/${w.maxAa}`).join(' | ')}`;
   let leftCrew=[],rightCrew=[];try{leftCrew=aCrew;rightCrew=eCrew}catch{}
-  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.31.48').replace('build=2026-08-20_01-58PM_PT','build=2026-08-25_CURVED_DISC_DECALS_REPTILIAN_CREST').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT').replace('vfxWatchdog=8s','vfxWatchdog=3s/acid8s/barrage12s/solar15s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
+  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.31.49').replace('build=2026-08-20_01-58PM_PT','build=2026-08-25_CLEAN_REPTILIAN_CREST_AURELIAN_TOP_DECAL').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT').replace('vfxWatchdog=8s','vfxWatchdog=3s/acid8s/barrage12s/solar15s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
 };
-const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.31.48';
+const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.31.49';
 function debugButtonAllowed(){return true}
 function updateDebugButtonVisibility(){if(!ownerDbgBtn)return;ownerDbgBtn.classList.toggle('debugVisible',debugButtonAllowed())}
 function refreshOwnerDebug(){if(!ownerDbgText)return;ownerDbgText.textContent=ownerDebugReport()}
@@ -2786,12 +2786,34 @@ function makeDiscCrestTexture(faction){
 function addCurvedDiscCrest(skin,faction,side){
   const cy=side==='aurelian'?0:5,isGray=faction==='gray',w=isGray?9.2:9.0,h=isGray?4.5:5.4,geo=new THREE.PlaneGeometry(w,h,36,24),p=geo.attributes.position;
   for(let i=0;i<p.count;i++){const px=p.getX(i),py=p.getY(i),curve=isGray?.012*px*px+.543*py*py:.013*px*px+.284*py*py;p.setZ(i,-curve)}geo.computeVertexNormals();
-  const mesh=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({map:makeDiscCrestTexture(faction),transparent:true,depthTest:true,depthWrite:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));
+  const mesh=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({map:makeDiscCrestTexture(faction),transparent:true,depthTest:false,depthWrite:false,side:THREE.DoubleSide}));
   mesh.name=`FACTION_EMBLEM_${faction.toUpperCase()}_CURVED_DECAL`;mesh.position.set(0,isGray?cy+1.3:cy,isGray?11.96:10.24);mesh.renderOrder=31;skin.add(mesh)
+}
+function makeReptilianCrestTexture(){
+  const c=document.createElement('canvas');c.width=512;c.height=360;const x=c.getContext('2d'),cx=256;
+  x.clearRect(0,0,c.width,c.height);x.save();
+  const shield=x.createLinearGradient(95,50,415,310);shield.addColorStop(0,'rgba(12,39,32,.98)');shield.addColorStop(.52,'rgba(3,17,14,.98)');shield.addColorStop(1,'rgba(18,57,40,.98)');
+  x.shadowColor='#20ff72';x.shadowBlur=22;x.fillStyle=shield;x.strokeStyle='#b9ffb0';x.lineWidth=13;x.lineJoin='round';
+  x.beginPath();x.moveTo(256,32);x.bezierCurveTo(350,45,414,78,421,142);x.bezierCurveTo(423,224,361,291,256,331);x.bezierCurveTo(151,291,89,224,91,142);x.bezierCurveTo(98,78,162,45,256,32);x.closePath();x.fill();x.stroke();
+  x.shadowBlur=0;x.strokeStyle='rgba(69,255,126,.22)';x.lineWidth=5;
+  for(let i=0;i<3;i++){x.beginPath();x.moveTo(150+i*43,89);x.lineTo(111+i*43,232);x.stroke()}
+  x.shadowColor='#31ff72';x.shadowBlur=18;x.strokeStyle='#78ff9f';x.lineWidth=28;x.lineCap='round';x.lineJoin='round';
+  x.beginPath();x.moveTo(313,91);x.bezierCurveTo(196,67,172,135,270,164);x.bezierCurveTo(365,193,329,271,209,257);x.stroke();
+  x.shadowBlur=5;x.fillStyle='#bfff9c';x.beginPath();x.moveTo(298,70);x.lineTo(357,84);x.lineTo(321,121);x.lineTo(286,104);x.closePath();x.fill();
+  x.fillStyle='#07140d';x.beginPath();x.ellipse(329,89,8,5,-.2,0,Math.PI*2);x.fill();
+  x.strokeStyle='#d9ffba';x.lineWidth=8;x.beginPath();x.moveTo(211,257);x.quadraticCurveTo(190,279,215,296);x.stroke();
+  x.fillStyle='#dfff8d';x.shadowColor='#76ff35';x.shadowBlur=16;x.beginPath();x.moveTo(256,218);x.bezierCurveTo(238,246,229,261,229,278);x.bezierCurveTo(229,302,246,315,256,315);x.bezierCurveTo(266,315,283,302,283,278);x.bezierCurveTo(283,261,274,246,256,218);x.closePath();x.fill();
+  x.restore();const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;return t
+}
+function addCurvedReptilianCrest(skin,side){
+  const cy=side==='aurelian'?0:5,geo=new THREE.PlaneGeometry(8.4,5.9,36,24),p=geo.attributes.position;
+  for(let i=0;i<p.count;i++){const px=p.getX(i),py=p.getY(i);p.setZ(i,-(.016*px*px+.14*py*py))}geo.computeVertexNormals();
+  const mesh=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({map:makeReptilianCrestTexture(),transparent:true,depthTest:false,depthWrite:false,side:THREE.DoubleSide}));
+  mesh.name='FACTION_EMBLEM_LIZARD_CURVED_DECAL';mesh.position.set(0,cy+.9,7.82);mesh.renderOrder=32;skin.add(mesh)
 }
 function addFactionEmblemAndStandards(skin,faction,side){
   if(!skin)return;const cy=side==='aurelian'?0:5,emblem=new THREE.Group();emblem.name=`FACTION_EMBLEM_${faction.toUpperCase()}`;
-  const colors={earth:[0x102f61,0xe8edf3,0xb21f3d],aurelian:[0x090602,0xffffd0,0xff9d20],lizard:[0x020d09,0xd7ffb8,0x31ff72],gray:[0x050208,0xf2d8ff,0x8c42ff]}[faction];if(faction==='aurelian'||faction==='gray'){addCurvedDiscCrest(skin,faction,side);return}
+  const colors={earth:[0x102f61,0xe8edf3,0xb21f3d],aurelian:[0x090602,0xffffd0,0xff9d20],lizard:[0x020d09,0xd7ffb8,0x31ff72],gray:[0x050208,0xf2d8ff,0x8c42ff]}[faction];if(faction==='aurelian'||faction==='gray'){addCurvedDiscCrest(skin,faction,side);return}if(faction==='lizard'){addCurvedReptilianCrest(skin,side);return}
   const recess=new THREE.Mesh(new THREE.CircleGeometry(3.25,48),new THREE.MeshStandardMaterial({color:colors[0],metalness:.72,roughness:.50}));recess.position.z=-.08;emblem.add(recess);
   const rim=new THREE.Mesh(new THREE.TorusGeometry(3.05,.24,10,48),new THREE.MeshStandardMaterial({color:colors[1],metalness:.86,roughness:.20,emissive:colors[2],emissiveIntensity:(faction==='aurelian'||faction==='gray')?.92:faction==='lizard'?.78:.30}));emblem.add(rim);if(faction==='aurelian'||faction==='gray'||faction==='lizard'){const halo=new THREE.Mesh(new THREE.RingGeometry(2.58,3.45,48),new THREE.MeshBasicMaterial({color:colors[2],transparent:true,opacity:.20,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide}));halo.position.z=-.02;halo.renderOrder=29;emblem.add(halo)}
   if(faction==='earth'){
