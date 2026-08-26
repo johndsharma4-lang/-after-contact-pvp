@@ -796,7 +796,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <button id="moveDown" aria-label="Move down">▼</button>
 </div>
   <div class="hud"><div class="side"><div class="name" id="leftFactionName">AURELIAN ACCORD</div><div class="sub" id="leftFactionSub">SOLAR LANCER • PENETRATION TEST</div></div><div class="side right"><div class="name" id="rightFactionName">EARTH COMMAND</div><div class="sub" id="rightFactionSub">BOMBARDIER • FORTRESS LV.1</div></div></div>
-  <div class="lab">3D LAB • MOBILE PVP TEST • v0.32.2</div>
+  <div class="lab">3D LAB • MOBILE PVP TEST • v0.32.3</div>
   <div id="structureHud"><div class="structureSide"><div class="structureLabel" id="leftStructureLabel">VESSEL STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="leftStructureFill"></div></div></div><div class="structureSide right"><div class="structureLabel" id="rightStructureLabel">FORTRESS STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="rightStructureFill"></div></div></div></div>
   <div id="rangeBadge">RANGE 885m</div>
   <svg id="aimSvg" viewBox="0 0 1280 720" preserveAspectRatio="none"><g id="acidShotLayer" pointer-events="none"></g><path id="aimPath"/><circle id="aimDot" r="4"/><circle id="muzzleDot" r="6"/></svg>
@@ -813,7 +813,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <div style="font:900 8px system-ui;color:#9fffc8;margin-bottom:6px">OWNER • NDA LEDGER</div>
 <div id="ownerNdaLedgerText" style="white-space:pre-wrap;max-height:180px;overflow:auto;user-select:text!important;-webkit-user-select:text!important">NOT LOADED</div>
 </div>
-<div id="ownerBuildCard" style="display:none;margin:8px 0;padding:9px;border:1px solid rgba(116,217,255,.35);border-radius:10px;background:rgba(4,18,29,.92);font:800 8px/1.45 system-ui;color:#d9f5ff"><div style="color:#82e7ff;letter-spacing:.12em;margin-bottom:5px">LATEST BUILD • v0.32.2</div><div>WET LIQUID ACID • HP-MATCHED SILHOUETTE • TORN OPENINGS • FOUNDATION WRECK</div><div style="margin-top:5px;opacity:.7">RUN BUILD SHOWCASE stages the enemy vessel at 100%, 50%, 10%, and 0% structure without changing combat data.</div></div>
+<div id="ownerBuildCard" style="display:none;margin:8px 0;padding:9px;border:1px solid rgba(116,217,255,.35);border-radius:10px;background:rgba(4,18,29,.92);font:800 8px/1.45 system-ui;color:#d9f5ff"><div style="color:#82e7ff;letter-spacing:.12em;margin-bottom:5px">LATEST BUILD • v0.32.3</div><div>WET LIQUID ACID • HP-MATCHED SILHOUETTE • TORN OPENINGS • FOUNDATION WRECK</div><div style="margin-top:5px;opacity:.7">RUN BUILD SHOWCASE stages the enemy vessel at 100%, 50%, 10%, and 0% structure without changing combat data.</div></div>
 <div class="dbgActions"><button id="ownerBuildShowcase" class="wide" type="button">RUN BUILD SHOWCASE</button><button id="ownerBuildNotes" class="wide" type="button">LATEST BUILD NOTES</button><button id="ownerDestructionDemo" class="wide" type="button">ROOM DESTRUCTION DEMO</button><button id="ownerNdaLedgerBtn" class="wide" type="button">NDA LEDGER</button><button id="ownerNdaLedgerCopy" class="wide" type="button">COPY NDA LEDGER</button><button id="ownerDbgCopy" class="wide" type="button">COPY MATCH LOG</button><button id="ownerDbgRefresh" type="button">REFRESH SNAPSHOT</button><button id="ownerDbgShare" type="button">SHARE</button><button id="ownerDbgSelectAll" class="wide" type="button">SELECT ALL LOG</button><button id="ownerDbgClear" class="wide" type="button">CLEAR LOG</button></div></div>
 
 
@@ -824,7 +824,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
   <div id="mpOverlay" aria-live="polite">
     <div class="mpCard">
       <div class="mpKicker">AFTER CONTACT • MAIN MENU</div>
-      <div class="mpTitle">PRIVATE PVP TEST • v0.32.2</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
+      <div class="mpTitle">PRIVATE PVP TEST • v0.32.3</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
       <div class="mpText">Choose Solo Game or Multiplayer. Multiplayer creates a private room you can share with another tester.</div>
       <div class="mpActions"><button class="mpBtn primary" id="mpHostBtn">MULTIPLAYER</button><button class="mpBtn" id="mpSoloBtn">SOLO GAME</button><button class="mpBtn" id="replayStoryBtn" type="button">REPLAY STORY INTRO</button></div>
       <div class="mpJoin"><input id="mpCodeInput" maxlength="6" inputmode="text" autocomplete="off" placeholder="ROOM CODE"><button class="mpBtn" id="mpJoinBtn">JOIN</button></div>
@@ -1391,9 +1391,9 @@ const baseOwnerDebugReport=ownerDebugReport;
 ownerDebugReport=function(){
   const crewState=(label,crew)=>`${label} CREW ${crew.filter(w=>w.active).map(w=>`${w.isCaptain?'CAPTAIN':`S${w.index+1}`}@R${Number.isInteger(w.roomIndex)?w.roomIndex+1:'-'} HP${Math.round(w.hp)}/${w.maxHp} AA${Math.round(w.aa)}/${w.maxAa}`).join(' | ')}`;
   let leftCrew=[],rightCrew=[];try{leftCrew=aCrew;rightCrew=eCrew}catch{}
-  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.32.2').replace('build=2026-08-20_01-58PM_PT','build=2026-08-25_VISIBLE_FUNCTIONAL_EARTH_TANK_TRACKS').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT').replace('vfxWatchdog=8s','vfxWatchdog=3s/acid8s/barrage12s/solar15s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
+  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.32.3').replace('build=2026-08-20_01-58PM_PT','build=2026-08-25_CLEAN_L2_SILHOUETTES_CINEMATIC_BACKGROUNDS').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT').replace('vfxWatchdog=8s','vfxWatchdog=3s/acid8s/barrage12s/solar15s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
 };
-const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.32.2';
+const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.32.3';
 function debugButtonAllowed(){return true}
 function updateDebugButtonVisibility(){if(!ownerDbgBtn)return;ownerDbgBtn.classList.toggle('debugVisible',debugButtonAllowed())}
 function refreshOwnerDebug(){if(!ownerDbgText)return;ownerDbgText.textContent=ownerDebugReport()}
@@ -2412,11 +2412,25 @@ function addBackdropSun(x=-72,y=51,z=-105,scale=1){
   const core=new THREE.Mesh(new THREE.SphereGeometry(5.8*scale,28,16),new THREE.MeshBasicMaterial({color:0xfff1bd,transparent:true,opacity:.96,depthWrite:false}));
   halo.position.set(x,y,z);core.position.copy(halo.position);livingStage.add(halo,core);livingStageState.explosions.push({mesh:halo,core,phase:.2,sun:true})
 }
+function makeStageBackdropTexture(mode){
+  const c=document.createElement('canvas');c.width=1024;c.height=512;const x=c.getContext('2d'),g=x.createLinearGradient(0,0,0,512);
+  if(mode==='space'){g.addColorStop(0,'#01030c');g.addColorStop(.48,'#071329');g.addColorStop(1,'#15233a')}else{g.addColorStop(0,'#07131f');g.addColorStop(.48,'#263a4a');g.addColorStop(.73,'#755b49');g.addColorStop(1,'#252f32')}x.fillStyle=g;x.fillRect(0,0,1024,512);
+  if(mode==='space'){for(let i=0;i<9;i++){const px=120+(i*137)%820,py=90+(i*73)%260,r=90+(i%4)*36,n=x.createRadialGradient(px,py,0,px,py,r);n.addColorStop(0,i%2?'rgba(100,62,190,.18)':'rgba(45,118,178,.17)');n.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=n;x.beginPath();x.ellipse(px,py,r*1.7,r*.55,(i%3-.8)*.3,0,Math.PI*2);x.fill()}for(let i=0;i<520;i++){const px=(i*193)%1024,py=(i*83)%390,a=.28+(i%7)*.09;x.fillStyle='rgba(235,244,255,'+a+')';x.fillRect(px,py,i%19===0?2:1,i%19===0?2:1)}}else{const sun=x.createRadialGradient(230,212,0,230,212,165);sun.addColorStop(0,'rgba(255,218,145,.44)');sun.addColorStop(.35,'rgba(255,146,78,.16)');sun.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=sun;x.fillRect(0,0,1024,512);for(let i=0;i<16;i++){x.fillStyle='rgba(24,29,35,'+(.10+(i%4)*.025)+')';x.beginPath();x.ellipse(70+(i*79)%940,110+(i%5)*33,90+(i%3)*34,17+(i%4)*5,(i%2?-.08:.06),0,Math.PI*2);x.fill()}}
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;return t
+}
+function addStageBackdrop(mode){
+  const sky=new THREE.Mesh(new THREE.PlaneGeometry(330,176),new THREE.MeshBasicMaterial({map:makeStageBackdropTexture(mode),depthWrite:false,fog:false,side:THREE.DoubleSide}));sky.position.set(0,48,-158);sky.name='L2_CINEMATIC_'+mode.toUpperCase()+'_BACKDROP';livingStage.add(sky)
+}
 function addLandWarStage(mixed=false){
+  addStageBackdrop(mixed?'mixed':'land');
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(270,115),new THREE.MeshStandardMaterial({color:0x354537,roughness:.92,metalness:.02}));ground.rotation.x=-Math.PI/2;ground.position.set(0,-.35,-36);livingStage.add(ground);
+  const ridgeMat=[new THREE.MeshBasicMaterial({color:0x101a20}),new THREE.MeshBasicMaterial({color:0x18252a}),new THREE.MeshBasicMaterial({color:0x263235})];
+  for(let layer=0;layer<3;layer++){const skyline=new THREE.Group(),z=-112+layer*18;for(let i=0;i<22;i++){const w=5+(i*7+layer*3)%9,h=5+(i*11+layer*5)%18,b=new THREE.Mesh(new THREE.BoxGeometry(w,h,3),ridgeMat[layer]);b.position.set(-126+i*12.2,h*.5-1.2,z);b.rotation.z=(i%7===0?(i%2?-.10:.08):0);skyline.add(b);if(i%5===0){const broken=box(w*.72,.55,3.3,0x090e12,.05,1);broken.position.set(b.position.x,h-1.3,z+.3);broken.rotation.z=i%2?.18:-.14;skyline.add(broken)}}livingStage.add(skyline)}
+  const dustLayers=[];for(let i=0;i<3;i++){const haze=new THREE.Mesh(new THREE.PlaneGeometry(270,18),new THREE.MeshBasicMaterial({color:i===0?0xc78661:0x708086,transparent:true,opacity:.045+i*.025,depthWrite:false,fog:false}));haze.position.set(0,6+i*4,-78+i*12);livingStage.add(haze);dustLayers.push(haze)}
   addBackdropSun(-74,53,-105,1.15);
   const ruin=new THREE.Group();ruin.name='DISTANT_RUINED_WHITE_HOUSE';ruin.position.set(12,6,-54);
-  const stone=new THREE.MeshStandardMaterial({color:0xb6b2a4,roughness:.88}),scorch=new THREE.MeshStandardMaterial({color:0x49443e,roughness:1});
+  const stone=new THREE.MeshStandardMaterial({color:0x8f8b80,roughness:.90}),scorch=new THREE.MeshStandardMaterial({color:0x242321,roughness:1}),windowMat=new THREE.MeshBasicMaterial({color:0x101820});
+  const centralMass=new THREE.Mesh(new THREE.BoxGeometry(21,10.5,5.3),stone);centralMass.position.set(0,6.0,-1.0);ruin.add(centralMass);for(const sx of[-1,1]){const wing=new THREE.Mesh(new THREE.BoxGeometry(12,7.2,4.8),stone);wing.position.set(sx*15,4.2,-1.2);wing.rotation.z=sx*.035;ruin.add(wing)}const pediment=new THREE.Mesh(new THREE.CylinderGeometry(0,8.4,4.0,3),stone);pediment.position.set(0,13.0,.1);pediment.rotation.y=Math.PI/2;ruin.add(pediment);for(const xw of[-13,-9,-4,4,9,13])for(const yw of[4.2,7.2]){const window=new THREE.Mesh(new THREE.PlaneGeometry(1.5,1.8),windowMat);window.position.set(xw,yw,1.78);ruin.add(window)}
   const base=new THREE.Mesh(new THREE.BoxGeometry(34,3.2,5),stone);base.position.y=0;ruin.add(base);
   for(let i=-6;i<=6;i+=2){const h=11-(Math.abs(i)%4)*1.2-(i===2?4:0),c=new THREE.Mesh(new THREE.BoxGeometry(1.35,h,1.35),i===2?scorch:stone);c.position.set(i*2.05,2.0+h*.5,1.7);c.rotation.z=(i===2?.16:(i%4)*.015);ruin.add(c)}
   const roofL=new THREE.Mesh(new THREE.BoxGeometry(14,1.3,4),stone),roofR=new THREE.Mesh(new THREE.BoxGeometry(13,1.3,4),stone);roofL.position.set(-9,13.0,0);roofR.position.set(9,11.8,0);roofL.rotation.z=-.10;roofR.rotation.z=.18;ruin.add(roofL,roofR);
@@ -2430,6 +2444,7 @@ function addLandWarStage(mixed=false){
   if(mixed)addSpaceStage(true)
 }
 function addSpaceStage(overlay=false){
+  if(!overlay)addStageBackdrop('space');
   const starGeo=new THREE.BufferGeometry(),p=[];for(let i=0;i<1800;i++)p.push(-150+Math.random()*300,-12+Math.random()*112,-110-Math.random()*75);starGeo.setAttribute('position',new THREE.Float32BufferAttribute(p,3));const stars=new THREE.Points(starGeo,new THREE.PointsMaterial({color:0xf2f7ff,size:overlay?.34:.56,transparent:true,opacity:overlay?.58:.96,depthWrite:false}));livingStage.add(stars);
   if(!overlay){const earthGlobe=new THREE.Mesh(new THREE.SphereGeometry(78,64,32),new THREE.MeshStandardMaterial({color:0x2a6593,emissive:0x0b2942,emissiveIntensity:.55,roughness:.78,metalness:.02}));earthGlobe.scale.y=.60;earthGlobe.position.set(0,-72,-132);livingStage.add(earthGlobe);const atmosphere=new THREE.Mesh(new THREE.SphereGeometry(80,64,32),new THREE.MeshBasicMaterial({color:0x62c7ff,transparent:true,opacity:.16,depthWrite:false,side:THREE.BackSide,blending:THREE.AdditiveBlending}));atmosphere.scale.y=.60;atmosphere.position.copy(earthGlobe.position);livingStage.add(atmosphere);addBackdropSun(-82,58,-145,1.25)}
   else addBackdropSun(-88,58,-115,.86);
@@ -2438,7 +2453,7 @@ function addSpaceStage(overlay=false){
 function updateLivingStage(lf=factionForWorldSide('aurelian'),rf=factionForWorldSide('earth')){
   const mode=(lf==='lizard'||rf==='lizard')?'ocean':(lf==='earth'&&rf==='earth')?'land':(lf!=='earth'&&rf!=='earth')?'space':'mixed';if(mode===livingStageState.mode)return;
   clearLivingStage();livingStageState.mode=mode;livingStage.visible=mode!=='ocean';
-  const palette={ocean:[0x0b2933,0x10313b,.0042],land:[0x314459,0x394a54,.0036],space:[0x020713,0x050b18,.0013],mixed:[0x20364f,0x263d51,.0030]}[mode];scene.background.setHex(palette[0]);scene.fog.color.setHex(palette[1]);scene.fog.density=palette[2];
+  const palette={ocean:[0x071d27,0x0b2a34,.0042],land:[0x142433,0x2d3b42,.0032],space:[0x01030b,0x050b18,.0011],mixed:[0x102437,0x25343d,.0027]}[mode];scene.background.setHex(palette[0]);scene.fog.color.setHex(palette[1]);scene.fog.density=palette[2];
   if(mode==='land')addLandWarStage();else if(mode==='space')addSpaceStage();else if(mode==='mixed')addLandWarStage(true);diag('LIVING STAGE',mode.toUpperCase())
 }
 function animateLivingStage(){
@@ -2552,14 +2567,10 @@ function makeFactionShipSkin(faction,side){
    }
    // two deep blast scars / missing hull pockets
    for(const [x,y,z,s] of [[-6.4,1.0,4.0,1.6],[5.8,-.9,3.7,1.35]]){const scar=new THREE.Mesh(new THREE.SphereGeometry(s,18,12),woundMat);scar.scale.set(1.5,.55,.30);scar.position.set(x,cy+y,z);g.add(scar)}
-   // one intact phase ring plus a visibly failed offset ring
-   const ring=new THREE.Mesh(new THREE.TorusGeometry(7.7,.30,12,64),new THREE.MeshBasicMaterial({color:0xb15cff,transparent:true,opacity:.72}));ring.rotation.y=Math.PI/2;ring.position.set(isLeft?2.8:-2.8,cy,1.2);g.add(ring);
-   const failedRing=new THREE.Mesh(new THREE.TorusGeometry(5.2,.18,8,40),new THREE.MeshBasicMaterial({color:0x68347f,transparent:true,opacity:.28}));failedRing.rotation.y=Math.PI/2;failedRing.rotation.z=.18;failedRing.position.set(isLeft?-6.0:6.0,cy-1.0,-1.5);g.add(failedRing);
    // broken prow/tail blades and hanging spar
    for(const s of[-1,1]){const blade=new THREE.Mesh(new THREE.ConeGeometry(2.0,s<0?6.8:9.0,5),plateMat);blade.scale.z=.52;blade.rotation.z=s*Math.PI/2;blade.position.set(s*13.5,cy+(s<0?-.8:.25),0);blade.rotation.y=s<0?.28:-.05;g.add(blade)}
    const spar=box(7.5,.24,.24,0x473a52,.84,.44);spar.position.set(-8.5,cy-3.0,-.4);spar.rotation.z=-.28;g.add(spar);
    // v0.28.5: unmistakable wrecked psi-craft silhouette. The crown is torn open and the phase emitters are exposed.
-   const psiCrown=new THREE.Mesh(new THREE.TorusGeometry(4.6,.38,10,46,Math.PI*1.42),glowMat.clone());psiCrown.rotation.x=Math.PI/2;psiCrown.rotation.z=.36;psiCrown.position.set(-1.3,cy+3.25,-.6);g.add(psiCrown);
    for(const [x,z,tilt] of [[-9.5,4.0,-.22],[-3.8,-4.2,.14],[5.4,4.2,.24],[9.6,-3.8,-.18]]){const torn=box(4.5,.42,2.0,0x201927,.82,.48);torn.position.set(x,cy+(x%2?1.0:-1.2),z);torn.rotation.z=tilt;g.add(torn)}
    for(const [x,z] of [[-7.2,-2.4],[0,3.2],[7.0,-2.8]]){const emitter=glowSphere(.68,0xb85cff,3.2);emitter.position.set(x,cy+.3,z);g.add(emitter)}
  }else if(faction==='lizard'){
@@ -2616,18 +2627,10 @@ function makeFactionShipSkin(faction,side){
    // exposed solar spine where hull plating is gone
    const spine=box(18.0,.52,.52,0x5f461e,.76,.44);spine.position.set(-1,cy+.25,0);g.add(spine);
    for(let i=-3;i<=3;i++){const node=glowSphere(.43,0xffd85f,2.8);node.position.set(i*2.7,cy+.25,0);g.add(node)}
-   // damaged ring: intact main ring plus a crooked unpowered secondary ring
-   const ring=new THREE.Mesh(new THREE.TorusGeometry(7,.46,14,60),solarMat);ring.rotation.y=Math.PI/2;ring.position.set(isLeft?3:-3,cy,0);g.add(ring);
-   const deadRing=new THREE.Mesh(new THREE.TorusGeometry(5.3,.25,10,48),darkMat);deadRing.rotation.y=Math.PI/2;deadRing.rotation.z=.24;deadRing.position.set(isLeft?-5.5:5.5,cy-.7,-1.7);g.add(deadRing);
    // battle punctures and exposed glowing reactor pocket
    for(const [x,y,z,s] of [[-6.8,1.2,4.1,1.45],[5.0,-1.0,4.0,1.1]]){const scar=new THREE.Mesh(new THREE.SphereGeometry(s,16,10),darkMat.clone());scar.scale.set(1.45,.48,.25);scar.position.set(x,cy+y,z);g.add(scar)}
    const core=glowSphere(.92,0xffc747,2.4);core.position.set(isLeft?-5.9:5.9,cy-1.0,3.6);g.add(core);
-   // broken solar fins / antenna spires
-   for(let i=-3;i<=3;i++){if(i===-1)continue;const spire=new THREE.Mesh(new THREE.ConeGeometry(.42,3.8,5),brightMat.clone());spire.position.set(i*3.0,cy+4.8-Math.abs(i)*.18,-.4);spire.rotation.z=Math.PI+(i===2?.20:0);g.add(spire)}
-   // v0.28.5: heavier First Contact damage — broken cathedral ribs and torn solar vanes.
-   for(const [x,z,rz] of [[-10,-4.0,-.18],[-4.0,4.0,.16],[3.5,-4.2,-.20],[9.2,3.8,.22]]){const rib=new THREE.Mesh(new THREE.TorusGeometry(3.1,.22,8,24,Math.PI*1.22),brightMat.clone());rib.rotation.y=Math.PI/2;rib.rotation.z=rz;rib.position.set(x,cy,z);g.add(rib)}
    for(const [x,y,z,w,rz] of [[-8.5,3.6,2.8,5.8,-.20],[5.8,-3.5,-2.6,6.6,.24]]){const sail=box(w,.18,3.9,0xb78b2f,.62,.40);sail.position.set(x,cy+y,z);sail.rotation.z=rz;g.add(sail)}
-   for(let i=0;i<6;i++){const conduit=box(2.3,.12,.12,0xffcc55,.56,.35);conduit.position.set(-7+i*2.6,cy-2.1+(i%2)*.42,3.75);conduit.rotation.z=(i%2?-.10:.08);g.add(conduit)}
    const hanging=box(6.8,.28,.30,0x5b3c13,.76,.58);hanging.position.set(-7.0,cy-3.3,-1.4);hanging.rotation.z=-.22;g.add(hanging);
  }else if(faction==='earth'){
    // v0.27.9 EARTH FORTRESS LEVEL 1 — INTEGRATED SURVIVAL OUTPOST
@@ -2879,22 +2882,18 @@ function addLevel2FactionArt(skin,faction,side){
     const radar=new THREE.Group(),dish=new THREE.Mesh(new THREE.TorusGeometry(1.15,.09,8,32),optic),crossH=box(2.05,.10,.12,0x8fcfff,.48,.30),crossV=box(.10,2.05,.12,0x8fcfff,.48,.30);radar.add(dish,crossH,crossV);radar.position.set(-4.1,cy+10.4,3.15);skin.add(radar);registerLevel2Part(radar,'spin',.2,.72);
     for(const x of[-10.5,-5.4,5.4,10.5]){const lamp=glowSphere(.20,0x8fcfff,1.5);lamp.position.set(x,cy+4.2,5.42);skin.add(lamp);registerLevel2Part(lamp,'pulse',x*.1,2.2)}
   }else if(faction==='aurelian'){
-    const solar=standard(0xffdb63,.78,.22,0xff8d16,1.45),ivory=standard(0xfff4c4,.84,.18,0xffb52f,.65);
-    const solarCrown=new THREE.Group();solarCrown.name='L2_AURELIAN_SOLAR_CROWN';
-    for(const [x,rz] of [[-7.5,-.22],[7.5,.22]]){const shoulder=box(5.4,1.0,2.0,0xd39a2c,.86,.26);shoulder.position.set(x,cy+3.25,8.10);shoulder.rotation.z=rz;solarCrown.add(shoulder);const collector=box(3.8,.38,.42,0xffed9a,.74,.22);collector.position.set(x,cy+4.18,8.72);collector.rotation.z=rz;solarCrown.add(collector)}
-    const crownCore=new THREE.Mesh(new THREE.CylinderGeometry(1.0,1.42,2.25,10),solar);crownCore.position.set(0,cy+4.35,7.85);solarCrown.add(crownCore);skin.add(solarCrown);
-    for(let i=0;i<3;i++){const halo=new THREE.Mesh(new THREE.TorusGeometry(4.9+i*1.18,.075+i*.025,8,64),i===1?ivory:solar);halo.scale.y=.48;halo.position.set(0,cy,9.02-i*.08);halo.rotation.z=i*.35;skin.add(halo);registerLevel2Part(halo,'spin',i*.8,(i%2?-.22:.18)*(i+1))}
-    for(let i=0;i<12;i++){const a=i/12*Math.PI*2,r=7.1+(i%2)*.55,fin=box(.20,2.0,.16,i%2?0xffefaa:0xd99a24,.82,.25);fin.position.set(Math.cos(a)*r,cy+Math.sin(a)*r*.45,8.78);fin.rotation.z=-a;skin.add(fin)}
-    for(let i=0;i<6;i++){const a=i/6*Math.PI*2,node=glowSphere(.24,0xffcb4a,2.0);node.position.set(Math.cos(a)*8.2,cy+Math.sin(a)*3.55,8.95);skin.add(node);registerLevel2Part(node,'pulse',i*.65,2.5)}
+    const solar=standard(0xffd75b,.82,.20,0xff981f,1.35),frame=standard(0x9b6718,.88,.28),cell=standard(0xffed9a,.62,.18,0xffbd42,.72);
+    const gyro=new THREE.Mesh(new THREE.TorusGeometry(10.5,.18,10,72),solar);gyro.scale.y=.47;gyro.position.set(0,cy,6.55);gyro.name='L2_AURELIAN_REAR_SOLAR_GYRO';skin.add(gyro);registerLevel2Part(gyro,'spin',0,.10);
+    const crown=new THREE.Group();crown.name='L2_AURELIAN_THREE_PANEL_CROWN';
+    for(let panelIndex=0;panelIndex<3;panelIndex++){const panel=new THREE.Group(),px=(panelIndex-1)*6.0,tilt=(panelIndex-1)*.14,back=box(5.25,2.65,.42,0x5e3c0c,.88,.32);panel.add(back);for(let row=0;row<2;row++)for(let col=0;col<3;col++){const tile=box(1.46,.91,.12,(row+col)%2?0xffd75b:0xf3b538,.68,.22);tile.position.set((col-1)*1.62,(row-.5)*1.08,.29);panel.add(tile)}const rimTop=box(5.38,.15,.18,0xfff0ad,.78,.18);rimTop.position.set(0,1.28,.34);panel.add(rimTop);panel.position.set(px,cy+4.35,8.42);panel.rotation.z=tilt;crown.add(panel);const support=box(.34,2.35,.48,0x8a5b17,.82,.34);support.position.set(px,cy+2.25,7.88);support.rotation.z=tilt*.45;crown.add(support)}
+    const reactor=new THREE.Mesh(new THREE.CylinderGeometry(1.05,1.42,2.1,12),frame);reactor.position.set(0,cy+2.70,7.82);crown.add(reactor);const crownLight=glowSphere(.48,0xffd35a,2.2);crownLight.position.set(0,cy+4.35,8.88);crown.add(crownLight);registerLevel2Part(crownLight,'pulse',.2,2.2);skin.add(crown);
+    for(const x of[-9.1,9.1]){const node=glowSphere(.28,0xffc34a,1.9);node.position.set(x,cy,9.28);skin.add(node);registerLevel2Part(node,'pulse',x*.17,2.0)}
   }else if(faction==='gray'){
-    const phase=standard(0xb96cff,.66,.18,0x7434ff,1.75),pale=standard(0xe7d4ff,.82,.16,0x9553ff,.74);
-    const phaseArmor=new THREE.Group();phaseArmor.name='L2_GRAY_PHASE_ARMOR';
-    for(const [x,y,w] of [[-9,2.15,4.6],[-4.1,2.65,4.3],[4.1,2.65,4.3],[9,2.15,4.6]]){const plate=box(w,.82,1.65,Math.abs(x)>6?0x664184:0x8060a0,.84,.28);plate.position.set(x,cy+y,10.12);plate.rotation.z=x<0?-.07:.07;phaseArmor.add(plate)}
-    for(const x of[-7.6,7.6]){const tower=new THREE.Mesh(new THREE.ConeGeometry(.64,3.3,6),phase);tower.position.set(x,cy+4.0,8.55);tower.rotation.z=x<0?-.18:.18;phaseArmor.add(tower)}
-    skin.add(phaseArmor);
-    for(let i=0;i<3;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(5.1+i*1.25,.085+i*.02,8,72),i===1?pale:phase);ring.scale.y=.42;ring.position.set(0,cy+1.2,10.88-i*.08);ring.rotation.z=i*.52;skin.add(ring);registerLevel2Part(ring,'spin',i*.9,(i%2?-.34:.27)*(i+1))}
-    for(let i=0;i<12;i++){const a=i/12*Math.PI*2,node=glowSphere(.18+(i%3)*.035,i%2?0x66a8ff:0xd65cff,2.2);node.position.set(Math.cos(a)*9.4,cy+1.2+Math.sin(a)*3.45,10.98);skin.add(node);registerLevel2Part(node,'pulse',i*.47,3.2)}
-    for(const x of[-7,-3.5,3.5,7]){const pylon=new THREE.Mesh(new THREE.ConeGeometry(.32,2.7,6),phase);pylon.position.set(x,cy+4.0-(Math.abs(x)>.5?.45:0),7.4);pylon.rotation.z=(x<0?-.18:.18);skin.add(pylon)}
+    const phase=standard(0xba69ff,.68,.18,0x7137ff,1.48),armor=standard(0x6b4a84,.88,.28),pale=standard(0xe4ceff,.72,.16,0x9860ff,.78);
+    const gyroRoot=new THREE.Group();gyroRoot.name='L2_GRAY_DUAL_GYRO';
+    const outer=new THREE.Mesh(new THREE.TorusGeometry(10.7,.19,10,80),phase);outer.scale.y=.43;outer.position.set(0,cy+1.15,6.45);gyroRoot.add(outer);registerLevel2Part(outer,'spin',0,.12);
+    const vertical=new THREE.Mesh(new THREE.TorusGeometry(6.25,.18,10,72),pale);vertical.scale.x=.56;vertical.position.set(0,cy+1.15,6.58);vertical.rotation.z=.18;gyroRoot.add(vertical);registerLevel2Part(vertical,'spin',.4,-.16);skin.add(gyroRoot);
+    const anchors=new THREE.Group();anchors.name='L2_GRAY_GYRO_ANCHORS';for(const [x,y,rz] of [[-8.1,2.25,-.07],[8.1,2.25,.07],[-7.3,-1.15,.05],[7.3,-1.15,-.05]]){const plate=box(4.25,.86,1.55,0x684783,.86,.30);plate.position.set(x,cy+y,9.62);plate.rotation.z=rz;anchors.add(plate)}for(const x of[-8.6,8.6]){const tower=box(1.05,2.8,1.35,0x3a2948,.82,.38);tower.position.set(x,cy+3.55,8.55);anchors.add(tower);const cap=glowSphere(.31,0xc477ff,2.1);cap.position.set(x,cy+5.05,9.00);anchors.add(cap);registerLevel2Part(cap,'pulse',x*.2,2.6)}skin.add(anchors);
   }else if(faction==='lizard'){
     const scaleMat=standard(0x3f6c58,.48,.70),bone=standard(0x9bc99a,.42,.58,0x1d6f43,.32),bio=standard(0x72ff9b,.34,.25,0x20d968,1.55);
     for(let row=0;row<3;row++)for(let i=0;i<7;i++){const plate=new THREE.Mesh(new THREE.SphereGeometry(.72,10,6),row===1?bone:scaleMat);plate.scale.set(1.45,.56,.24);plate.position.set(-10.5+i*3.45,cy-2.2+row*2.05,6.92-(i%2)*.08);plate.rotation.z=(i%2?-.12:.12);skin.add(plate)}
@@ -2916,11 +2915,11 @@ function applyFactionVesselPresentation(){
  aureOriginalHull.forEach(o=>o.visible=false);
  // Level 1 faction art is authoritative on BOTH transport sides in Solo and Multiplayer.
  // LEVEL 1 COMPLETION PASS — unmistakable First Contact damage, art-only geometry, no hit-plane changes.
- function addL1WarTornCompletion(group,faction){const dark=new THREE.MeshStandardMaterial({color:faction==='lizard'?0x102a24:faction==='gray'?0x17131e:faction==='aurelian'?0x46300d:0x23282c,metalness:.72,roughness:.48}),hot=new THREE.MeshStandardMaterial({color:faction==='lizard'?0x61ff9a:faction==='gray'?0xa96dff:faction==='aurelian'?0xffb83e:0xff7145,emissive:faction==='lizard'?0x1a7a55:faction==='gray'?0x5d248c:faction==='aurelian'?0x8a4d08:0x7a1608,emissiveIntensity:1.25,metalness:.35,roughness:.38});for(let i=0;i<7;i++){const plate=new THREE.Mesh(new THREE.BoxGeometry(1.2+((i*7)%5)*.34,.16+.06*(i%3),1.0+.22*(i%4)),dark);plate.position.set(-8+i*2.65,5.1+((i%3)-1)*1.75,2.7+((i%2)?1.5:-1.6));plate.rotation.set((i%2)*.18,(i-3)*.09,(i%3-1)*.22);group.add(plate)}for(let i=0;i<5;i++){const pipe=new THREE.Mesh(new THREE.CylinderGeometry(.10,.15,3.0+i*.28,7),hot);pipe.position.set(-6.5+i*3.1,4.0+(i%2)*3.3,3.3);pipe.rotation.z=Math.PI/2+(i-2)*.06;group.add(pipe)}for(let i=0;i<4;i++){const scar=new THREE.Mesh(new THREE.TorusGeometry(.55+i*.08,.08,7,18,Math.PI*1.45),hot);scar.position.set(-7+i*4.5,6.8-(i%2)*3.0,4.2);scar.rotation.set(.35,.2*i,.7);group.add(scar)}if(faction==='lizard'){for(let i=0;i<3;i++){const fin=new THREE.Mesh(new THREE.ConeGeometry(1.0+i*.18,3.8,5),dark);fin.position.set(-8+i*8,8.6-(i%2)*7,-.3);fin.rotation.z=(i-1)*.45;group.add(fin)}const prop=new THREE.Mesh(new THREE.TorusGeometry(2.1,.26,10,26),hot);prop.position.set(-12.7,5.2,0);prop.rotation.y=Math.PI/2;group.add(prop)}if(faction==='gray'){for(let i=0;i<3;i++){const coil=new THREE.Mesh(new THREE.TorusGeometry(2.4+i*.55,.15,10,36,Math.PI*1.25),hot);coil.position.set(-5+i*5,5.2+(i-1)*1.1,0);coil.rotation.x=Math.PI/2;coil.rotation.z=.5+i*.7;group.add(coil)}}if(faction==='aurelian'){for(let i=0;i<4;i++){const rib=new THREE.Mesh(new THREE.TorusGeometry(3.2+i*.65,.18,8,30,Math.PI*.85),hot);rib.position.set(-7+i*4.6,5.3,0);rib.rotation.set(Math.PI/2,.2,(i%2?1:-1)*.55);group.add(rib)}}if(faction==='earth'){for(let i=0;i<4;i++){const beam=new THREE.Mesh(new THREE.BoxGeometry(.34,3.6+i*.55,.34),dark);beam.position.set(-8+i*5.3,7.1+(i%2)*1.0,3.6);beam.rotation.z=(i%2?1:-1)*.18;group.add(beam)}}}
+ function addL1WarTornCompletion(group,faction){const dark=new THREE.MeshStandardMaterial({color:faction==='lizard'?0x102a24:faction==='gray'?0x17131e:faction==='aurelian'?0x46300d:0x23282c,metalness:.72,roughness:.48}),hot=new THREE.MeshStandardMaterial({color:faction==='lizard'?0x61ff9a:faction==='gray'?0xa96dff:faction==='aurelian'?0xffb83e:0xff7145,emissive:faction==='lizard'?0x1a7a55:faction==='gray'?0x5d248c:faction==='aurelian'?0x8a4d08:0x7a1608,emissiveIntensity:1.25,metalness:.35,roughness:.38});for(let i=0;i<7;i++){const plate=new THREE.Mesh(new THREE.BoxGeometry(1.2+((i*7)%5)*.34,.16+.06*(i%3),1.0+.22*(i%4)),dark);plate.position.set(-8+i*2.65,5.1+((i%3)-1)*1.75,2.7+((i%2)?1.5:-1.6));plate.rotation.set((i%2)*.18,(i-3)*.09,(i%3-1)*.22);group.add(plate)}for(let i=0;i<5;i++){const pipe=new THREE.Mesh(new THREE.CylinderGeometry(.10,.15,3.0+i*.28,7),hot);pipe.position.set(-6.5+i*3.1,4.0+(i%2)*3.3,3.3);pipe.rotation.z=Math.PI/2+(i-2)*.06;group.add(pipe)}for(let i=0;i<4;i++){const scar=new THREE.Mesh(new THREE.TorusGeometry(.55+i*.08,.08,7,18,Math.PI*1.45),hot);scar.position.set(-7+i*4.5,6.8-(i%2)*3.0,4.2);scar.rotation.set(.35,.2*i,.7);group.add(scar)}if(faction==='lizard'){for(let i=0;i<3;i++){const fin=new THREE.Mesh(new THREE.ConeGeometry(1.0+i*.18,3.8,5),dark);fin.position.set(-8+i*8,8.6-(i%2)*7,-.3);fin.rotation.z=(i-1)*.45;group.add(fin)}const prop=new THREE.Mesh(new THREE.TorusGeometry(2.1,.26,10,26),hot);prop.position.set(-12.7,5.2,0);prop.rotation.y=Math.PI/2;group.add(prop)}if(faction==='earth'){for(let i=0;i<4;i++){const beam=new THREE.Mesh(new THREE.BoxGeometry(.34,3.6+i*.55,.34),dark);beam.position.set(-8+i*5.3,7.1+(i%2)*1.0,3.6);beam.rotation.z=(i%2?1:-1)*.18;group.add(beam)}}}
  // Legacy hulls stay hidden so faction silhouettes cannot silently fall back to the old shared prototype.
  earthOriginalHull.forEach(o=>o.visible=false);
- factionSkinA=makeFactionShipSkin(lf,'aurelian');addL1ArtPolish(factionSkinA,lf,0);addL1WarTornCompletion(factionSkinA,lf);addUnifiedExteriorShell(factionSkinA,lf,'aurelian');addLevel2FactionArt(factionSkinA,lf,'aurelian');addFactionEmblemAndStandards(factionSkinA,lf,'aurelian');aure.add(factionSkinA);
- factionSkinE=makeFactionShipSkin(rf,'earth');addL1ArtPolish(factionSkinE,rf,5);addL1WarTornCompletion(factionSkinE,rf);addUnifiedExteriorShell(factionSkinE,rf,'earth');addLevel2FactionArt(factionSkinE,rf,'earth');addFactionEmblemAndStandards(factionSkinE,rf,'earth');earth.add(factionSkinE);
+ factionSkinA=makeFactionShipSkin(lf,'aurelian');addL1ArtPolish(factionSkinA,lf,0);if(lf==='earth'||lf==='lizard')addL1WarTornCompletion(factionSkinA,lf);addUnifiedExteriorShell(factionSkinA,lf,'aurelian');addLevel2FactionArt(factionSkinA,lf,'aurelian');addFactionEmblemAndStandards(factionSkinA,lf,'aurelian');aure.add(factionSkinA);
+ factionSkinE=makeFactionShipSkin(rf,'earth');addL1ArtPolish(factionSkinE,rf,5);if(rf==='earth'||rf==='lizard')addL1WarTornCompletion(factionSkinE,rf);addUnifiedExteriorShell(factionSkinE,rf,'earth');addLevel2FactionArt(factionSkinE,rf,'earth');addFactionEmblemAndStandards(factionSkinE,rf,'earth');earth.add(factionSkinE);
  enforceFactionWorldConstraints('vessel presentation');
  rebuildVesselHealthSilhouettes();for(const room of [...aRooms.userData.rooms,...eRooms.userData.rooms])syncRoomStructuralDamage(room);applyExteriorRoomConcealment();
  diag('VESSEL ROUTE',`L=${lf}/${aRooms.userData.rooms.map(r=>Math.round(r.local.x)).join(',')} R=${rf}/${eRooms.userData.rooms.map(r=>Math.round(r.local.x)).join(',')}`);
