@@ -796,7 +796,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <button id="moveDown" aria-label="Move down">▼</button>
 </div>
   <div class="hud"><div class="side"><div class="name" id="leftFactionName">AURELIAN ACCORD</div><div class="sub" id="leftFactionSub">SOLAR LANCER • PENETRATION TEST</div></div><div class="side right"><div class="name" id="rightFactionName">EARTH COMMAND</div><div class="sub" id="rightFactionSub">BOMBARDIER • FORTRESS LV.1</div></div></div>
-  <div class="lab">3D LAB • MOBILE PVP TEST • v0.32.3</div>
+  <div class="lab">3D LAB • MOBILE PVP TEST • v0.32.4</div>
   <div id="structureHud"><div class="structureSide"><div class="structureLabel" id="leftStructureLabel">VESSEL STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="leftStructureFill"></div></div></div><div class="structureSide right"><div class="structureLabel" id="rightStructureLabel">FORTRESS STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="rightStructureFill"></div></div></div></div>
   <div id="rangeBadge">RANGE 885m</div>
   <svg id="aimSvg" viewBox="0 0 1280 720" preserveAspectRatio="none"><g id="acidShotLayer" pointer-events="none"></g><path id="aimPath"/><circle id="aimDot" r="4"/><circle id="muzzleDot" r="6"/></svg>
@@ -813,7 +813,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <div style="font:900 8px system-ui;color:#9fffc8;margin-bottom:6px">OWNER • NDA LEDGER</div>
 <div id="ownerNdaLedgerText" style="white-space:pre-wrap;max-height:180px;overflow:auto;user-select:text!important;-webkit-user-select:text!important">NOT LOADED</div>
 </div>
-<div id="ownerBuildCard" style="display:none;margin:8px 0;padding:9px;border:1px solid rgba(116,217,255,.35);border-radius:10px;background:rgba(4,18,29,.92);font:800 8px/1.45 system-ui;color:#d9f5ff"><div style="color:#82e7ff;letter-spacing:.12em;margin-bottom:5px">LATEST BUILD • v0.32.3</div><div>WET LIQUID ACID • HP-MATCHED SILHOUETTE • TORN OPENINGS • FOUNDATION WRECK</div><div style="margin-top:5px;opacity:.7">RUN BUILD SHOWCASE stages the enemy vessel at 100%, 50%, 10%, and 0% structure without changing combat data.</div></div>
+<div id="ownerBuildCard" style="display:none;margin:8px 0;padding:9px;border:1px solid rgba(116,217,255,.35);border-radius:10px;background:rgba(4,18,29,.92);font:800 8px/1.45 system-ui;color:#d9f5ff"><div style="color:#82e7ff;letter-spacing:.12em;margin-bottom:5px">LATEST BUILD • v0.32.4</div><div>WET LIQUID ACID • HP-MATCHED SILHOUETTE • TORN OPENINGS • FOUNDATION WRECK</div><div style="margin-top:5px;opacity:.7">RUN BUILD SHOWCASE stages the enemy vessel at 100%, 50%, 10%, and 0% structure without changing combat data.</div></div>
 <div class="dbgActions"><button id="ownerBuildShowcase" class="wide" type="button">RUN BUILD SHOWCASE</button><button id="ownerBuildNotes" class="wide" type="button">LATEST BUILD NOTES</button><button id="ownerDestructionDemo" class="wide" type="button">ROOM DESTRUCTION DEMO</button><button id="ownerNdaLedgerBtn" class="wide" type="button">NDA LEDGER</button><button id="ownerNdaLedgerCopy" class="wide" type="button">COPY NDA LEDGER</button><button id="ownerDbgCopy" class="wide" type="button">COPY MATCH LOG</button><button id="ownerDbgRefresh" type="button">REFRESH SNAPSHOT</button><button id="ownerDbgShare" type="button">SHARE</button><button id="ownerDbgSelectAll" class="wide" type="button">SELECT ALL LOG</button><button id="ownerDbgClear" class="wide" type="button">CLEAR LOG</button></div></div>
 
 
@@ -824,7 +824,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
   <div id="mpOverlay" aria-live="polite">
     <div class="mpCard">
       <div class="mpKicker">AFTER CONTACT • MAIN MENU</div>
-      <div class="mpTitle">PRIVATE PVP TEST • v0.32.3</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
+      <div class="mpTitle">PRIVATE PVP TEST • v0.32.4</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
       <div class="mpText">Choose Solo Game or Multiplayer. Multiplayer creates a private room you can share with another tester.</div>
       <div class="mpActions"><button class="mpBtn primary" id="mpHostBtn">MULTIPLAYER</button><button class="mpBtn" id="mpSoloBtn">SOLO GAME</button><button class="mpBtn" id="replayStoryBtn" type="button">REPLAY STORY INTRO</button></div>
       <div class="mpJoin"><input id="mpCodeInput" maxlength="6" inputmode="text" autocomplete="off" placeholder="ROOM CODE"><button class="mpBtn" id="mpJoinBtn">JOIN</button></div>
@@ -1391,9 +1391,9 @@ const baseOwnerDebugReport=ownerDebugReport;
 ownerDebugReport=function(){
   const crewState=(label,crew)=>`${label} CREW ${crew.filter(w=>w.active).map(w=>`${w.isCaptain?'CAPTAIN':`S${w.index+1}`}@R${Number.isInteger(w.roomIndex)?w.roomIndex+1:'-'} HP${Math.round(w.hp)}/${w.maxHp} AA${Math.round(w.aa)}/${w.maxAa}`).join(' | ')}`;
   let leftCrew=[],rightCrew=[];try{leftCrew=aCrew;rightCrew=eCrew}catch{}
-  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.32.3').replace('build=2026-08-20_01-58PM_PT','build=2026-08-25_CLEAN_L2_SILHOUETTES_CINEMATIC_BACKGROUNDS').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT').replace('vfxWatchdog=8s','vfxWatchdog=3s/acid8s/barrage12s/solar15s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
+  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.32.4').replace('build=2026-08-20_01-58PM_PT','build=2026-08-26_MANUAL_FLIGHT_FOCUSED_SOLAR').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT').replace('vfxWatchdog=8s','vfxWatchdog=3s/acid8s/barrage12s/solar15s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
 };
-const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.32.3';
+const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.32.4';
 function debugButtonAllowed(){return true}
 function updateDebugButtonVisibility(){if(!ownerDbgBtn)return;ownerDbgBtn.classList.toggle('debugVisible',debugButtonAllowed())}
 function refreshOwnerDebug(){if(!ownerDbgText)return;ownerDbgText.textContent=ownerDebugReport()}
@@ -2956,7 +2956,7 @@ function ensureBattleSceneVisible(reason='watchdog'){
 
 const textureLoader=new THREE.TextureLoader();const [lancerTex,bombTex]=await Promise.all([textureLoader.loadAsync("/solar-lancer.webp"),textureLoader.loadAsync("/bombardier.webp")]);lancerTex.colorSpace=THREE.SRGBColorSpace;bombTex.colorSpace=THREE.SRGBColorSpace;
 const WEAPONS={
-  solar_lancer:{name:'SOLAR LANCER',kind:'laser',aim:'straight',damage:6,armorDamage:4,penetration:.62,exposureScale:.22,color:0xffd65a,duration:5,tickInterval:.5,maxCompartments:3,description:'5s widening solar fan • full front-column pressure • exposes survivors'},
+  solar_lancer:{name:'SOLAR LANCER',kind:'laser',aim:'straight',damage:6,armorDamage:4,penetration:.62,exposureScale:.22,color:0xffd65a,duration:5,tickInterval:.5,maxCompartments:3,description:'5s focused coherent laser • surgical three-compartment burn • exposes survivors'},
   bombardier:{name:'EARTH BOMBARDIER',kind:'explosive',aim:'arc',damage:34,armorDamage:34,splash:32,penetration:0,exposureScale:.24,color:0xff7a32,description:'HE-9 five-missile barrage • heavy blast • strong AOE splash'},
   acid_brute:{name:'CORROSIVE FLOOD',kind:'acid',aim:'hose',damage:28,armorDamage:32,penetration:0,exposureScale:.34,color:0x78ff3b,description:'Hydro-pack acid hose • wide AOE • stacking corrosive burn'},
   spatial_disintegrator:{name:'MATTER COLLAPSE',kind:'disintegrator',aim:'straight',damage:85,armorDamage:100,penetration:1,exposureScale:.90,color:0xb06cff,description:'Singularity Core • unstable multi-beam array • compartment erasure'}
@@ -3705,6 +3705,25 @@ function pointHitsLocalVessel(pt){
 }
 function warriorAtStagePoint(pt){let best=null,bestDist=Infinity;const pool=localSide==='earth'?eWarriors:aWarriors.filter(w=>w.active);for(const w of pool){if(w.hp<=0||!w.sprite.visible)continue;const p=worldToStage(warriorWorld(w)),d=Math.hypot(pt.x-p.x,pt.y-p.y);if(d<bestDist&&d<=90){best=w;bestDist=d}}return best}
 function withinSelectedStart(pt){if(!selected)return false;const p=worldToStage(warriorWorld(selected));return Math.hypot(pt.x-p.x,pt.y-p.y)<=95}
+function bombardierTrajectoryProfile(a,b){
+  const dx=b.x-a.x,dy=b.y-a.y,dist=Math.hypot(dx,dy)||1;
+  const elevation=Math.atan2(a.y-b.y,Math.max(1,Math.abs(dx)))*180/Math.PI;
+  const towardOpponent=selected?.side==='aurelian'?1:-1;
+  const forward=dx*towardOpponent>12;
+  // A nearly level release is a direct shot. Raising the release point deliberately transitions
+  // into artillery flight; there is no target lock or hidden angle correction.
+  const mode=elevation>8?'LOB':'DIRECT';
+  const power=Math.max(18,Math.min(100,dist/5.1));
+  return{elevation,dist,power,forward,towardOpponent,mode};
+}
+function bombardierAimGuide(a,b){
+  const p=bombardierTrajectoryProfile(a,b),dx=b.x-a.x,dy=b.y-a.y,mag=Math.hypot(dx,dy)||1;
+  const len=Math.min(420,mag)*.5,end={x:a.x+dx/mag*len,y:a.y+dy/mag*len};
+  if(p.mode==='DIRECT')return{d:`M ${a.x.toFixed(2)} ${a.y.toFixed(2)} L ${end.x.toFixed(2)} ${end.y.toFixed(2)}`,end,profile:p};
+  // The short tail communicates gravity without drawing a full auto-solved trajectory.
+  const mx=a.x+(end.x-a.x)*.58,my=a.y+(end.y-a.y)*.58-12;
+  return{d:`M ${a.x.toFixed(2)} ${a.y.toFixed(2)} Q ${mx.toFixed(2)} ${my.toFixed(2)} ${end.x.toFixed(2)} ${end.y.toFixed(2)}`,end,profile:p};
+}
 function setAimVisual(a,b){
   if(!selected)return;
   a=aimOriginStage?{x:aimOriginStage.x,y:aimOriginStage.y}:worldToStage(muzzleWorld(selected,b));startPx=a;
@@ -3728,8 +3747,10 @@ function setAimVisual(a,b){
     aimPath.style.stroke=profile.forward?'#86ff58':'#ff5a4d';aimDot.style.fill=profile.forward?'#d9ffc8':'#ff9288';
     aimPath.style.strokeDasharray='13 9';aimPath.style.opacity='.72';aimDot.style.opacity='0';muzzleDot.style.opacity='0';
   }else{
-    const mag=Math.max(1,dist),len=Math.min(420,mag)*.5,gx=a.x+dx/mag*len,gy=a.y+dy/mag*len;
-    aimPath.setAttribute('d',`M ${a.x} ${a.y} L ${gx} ${gy}`);aimDot.setAttribute('cx',gx);aimDot.setAttribute('cy',gy);aimPath.style.strokeDasharray='12 9';aimPath.style.opacity='.78';aimDot.style.opacity='.55';
+    const guide=bombardierAimGuide(a,b),gx=guide.end.x,gy=guide.end.y;
+    aimPath.setAttribute('d',guide.d);aimDot.setAttribute('cx',gx);aimDot.setAttribute('cy',gy);
+    aimPath.style.stroke=guide.profile.forward?(guide.profile.mode==='DIRECT'?'#ffcf6e':'#ff9d42'):'#ff5a4d';
+    aimPath.style.strokeDasharray=guide.profile.mode==='DIRECT'?'14 10':'10 8';aimPath.style.opacity='.82';aimDot.style.opacity='.52';
   }
   const angle=Math.max(-86,Math.min(86,Math.atan2(a.y-b.y,Math.max(1,Math.abs(b.x-a.x)))*180/Math.PI));
   const power=Math.max(18,Math.min(100,dist/5.1));angleMetric.textContent=`ANGLE ${Math.round(angle)}°`;powerMetric.textContent=`POWER ${Math.round(power)}%`;
@@ -3978,16 +3999,16 @@ function resolveSolarBurnTick(attacker,path,weapon,tickIndex,beam=null){
 function spawnSolarLancerBeam(attacker,start,beamPath,weapon){
   const localAction=(!multiplayer&&attacker.side==='aurelian')||(multiplayer&&attacker.side===localSide);solarActionLock=true;diag('ACTION LOCK',`${localAction?'LOCAL':'REMOTE'} SOLAR_LANCER_BURN`);refreshMovePad()
   beamPath.path.forEach((h,i)=>h.reached=i===0);const end=(beamPath.path[0]?.end||beamPath.end).clone(),dir=end.clone().sub(start),len=dir.length(),unit=dir.clone().normalize();
-  // A tapered solar pressure fan, not a constant-width beam. CylinderGeometry's top radius becomes
-  // the target face after the local Y axis is aligned with the firing direction.
-  const outer=new THREE.Mesh(new THREE.CylinderGeometry(5.6,.18,1,28,1,true),new THREE.MeshBasicMaterial({color:0xffc24a,transparent:true,opacity:.20,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
-  const core=new THREE.Mesh(new THREE.CylinderGeometry(2.5,.045,1,24,1,true),new THREE.MeshBasicMaterial({color:0xfff7cf,transparent:true,opacity:.48,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+  // Focused coherent laser: constant width from emitter to contact. The dim amber sheath only
+  // separates the needle-white core from the scene; there is no cone, fan, or flashlight spread.
+  const outer=new THREE.Mesh(new THREE.CylinderGeometry(.24,.24,1,16,1,true),new THREE.MeshBasicMaterial({color:0xffb52e,transparent:true,opacity:.36,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+  const core=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,1,12,1,true),new THREE.MeshBasicMaterial({color:0xfffff2,transparent:true,opacity:.96,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
   for(const beam of [outer,core]){beam.scale.y=.001;beam.position.copy(start);beam.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),unit);scene.add(beam)}
-  const muzzleOuter=glowSphere(.70,weapon.color,8);muzzleOuter.material.transparent=true;muzzleOuter.material.opacity=.95;muzzleOuter.position.copy(start);scene.add(muzzleOuter);
-  const muzzleCore=glowSphere(.25,0xffffe0,10);muzzleCore.material.transparent=true;muzzleCore.position.copy(start);scene.add(muzzleCore);
+  const muzzleOuter=glowSphere(.34,weapon.color,8);muzzleOuter.material.transparent=true;muzzleOuter.material.opacity=.78;muzzleOuter.position.copy(start);scene.add(muzzleOuter);
+  const muzzleCore=glowSphere(.12,0xffffff,10);muzzleCore.material.transparent=true;muzzleCore.material.opacity=1;muzzleCore.position.copy(start);scene.add(muzzleCore);
   const burns=beamPath.path.map(h=>({hit:h,rig:makeSolarContactDrillRig(h.end,unit)}));
   effects.push({solarBeam:{outer,core,muzzleOuter,muzzleCore,burns,start:start.clone(),end:end.clone(),dir,len,progress:0,hold:0,path:beamPath.path,weapon,attacker,aimStage:worldToStage(end),nextTick:.5,tick:0},life:(weapon.duration||5)+.28,max:(weapon.duration||5)+.28});
-  statusEl.textContent=`SOLAR PRESSURE FAN • ${beamPath.path.length||0}/3 FRONT SECTIONS`;diag('SOLAR LANCER',`vfx=WIDENING_FRONT_WALL 5s burn rooms=${beamPath.path.map(x=>x.roomIndex+1).join('>')||'MISS'}`);
+  statusEl.textContent=`SOLAR LANCER • FOCUSED BEAM • ${beamPath.path.length||0}/3 CONTACTS`;diag('SOLAR LANCER',`vfx=FOCUSED_COHERENT_LASER 5s burn rooms=${beamPath.path.map(x=>x.roomIndex+1).join('>')||'MISS'}`);
 }
 
 function explosiveHitFromEnd(attacker,end){
@@ -4717,11 +4738,10 @@ function solarFanAimGuide(attacker,a,b){
 function acidLaunchVectorGuide(attacker,a,b){
   const enemy=stageBoundsForRooms(opposingRooms(attacker).userData.rooms,14),toward=attacker.side==='aurelian'?1:-1;
   const dx=b.x-a.x,dy=b.y-a.y,mag=Math.hypot(dx,dy)||1,ux=dx/mag,uy=dy/mag;
-  // Continue the manual launch line through the opponent and five 22px dash/gap segments beyond it.
-  const beyondX=(toward>0?enemy.x2:enemy.x1)+toward*110;
-  const travel=(beyondX-a.x)/(Math.abs(ux)<.001?toward*.001:ux);
-  const len=dx*toward>1&&travel>0?Math.min(1800,Math.max(360,travel)):900;
-  const end={x:a.x+ux*len*.5,y:a.y+uy*len*.5};
+  // Keep the manual vector attached to the player's drag. Half-length guidance stays readable
+  // without pretending to solve the landing point; gravity takes over only after release.
+  const len=Math.min(420,mag)*.5;
+  const end={x:a.x+ux*len,y:a.y+uy*len};
   return{d:`M ${a.x.toFixed(2)} ${a.y.toFixed(2)} L ${end.x.toFixed(2)} ${end.y.toFixed(2)}`,end};
 }
 function acidPressureFanGuide(attacker,points){
@@ -4816,11 +4836,15 @@ function barrageRoomTargets(attacker,end){
 function spawnArc(attacker,start,end,power,weapon){
   const localAction=(!multiplayer&&attacker.side==='aurelian')||(multiplayer&&attacker.side===localSide);
   if(localAction){barrageActionLock=true;diag('ACTION LOCK','HE9_BARRAGE_RESOLUTION');refreshMovePad()}
-  // Five readable guided missiles: a high formation rise, visible crest, then a decisive guided
-  // descent. The large arc is intentional anticipation, inspired by classic angle/power artillery.
-  const attackDir=end.clone().sub(start);
-  if(attackDir.lengthSq()<.0001)attackDir.set(1,0,0);
-  attackDir.normalize();
+  // Five missiles preserve the captain's release angle. A level release flies directly; lifting
+  // the release creates the artillery crest. No fixed arc and no target-angle correction.
+  const attackVector=end.clone().sub(start);
+  if(attackVector.lengthSq()<.0001)attackVector.set(1,0,0);
+  const attackDir=attackVector.clone().normalize();
+  const startStage=worldToStage(start),endStage=worldToStage(end);
+  const releaseElevation=Math.atan2(startStage.y-endStage.y,Math.max(1,Math.abs(endStage.x-startStage.x)))*180/Math.PI;
+  const flightMode=releaseElevation>8?'LOB':'DIRECT';
+  diag('HE9 FLIGHT',`mode=${flightMode} elevation=${Math.round(releaseElevation)} gravity=${flightMode==='LOB'?'ARTILLERY':'MINIMAL'} barrage=5`);
   const right=new THREE.Vector3(-attackDir.z,0,attackDir.x);
   if(right.lengthSq()<.0001)right.set(1,0,0);
   right.normalize();
@@ -4847,9 +4871,11 @@ function spawnArc(attacker,start,end,power,weapon){
   const missiles=[];
   strikePlan.forEach((plan,i)=>{
     const target=end.clone();
-    const crest=18+power*.16+i*.65;
-    const rise=start.clone().lerp(target,.27).add(lift.clone().multiplyScalar(crest)).add(right.clone().multiplyScalar((i-2)*.24));
-    const descend=start.clone().lerp(target,.72).add(lift.clone().multiplyScalar(crest*.72)).add(right.clone().multiplyScalar((2-i)*.16));
+    const elevationLift=Math.max(0,releaseElevation-8);
+    const crest=flightMode==='LOB'?Math.min(35,5+elevationLift*.46+power*.075):0;
+    const formation=(i-2)*.12;
+    const rise=start.clone().lerp(target,.30).add(lift.clone().multiplyScalar(crest)).add(right.clone().multiplyScalar(formation));
+    const descend=start.clone().lerp(target,.70).add(lift.clone().multiplyScalar(crest*(flightMode==='LOB'?.62:0))).add(right.clone().multiplyScalar(-formation*.55));
     const curve=new THREE.CubicBezierCurve3(start,rise,descend,target);
     const mesh=makeHe9Rocket(plan.scale);
     mesh.position.copy(start).add(attackDir.clone().multiplyScalar(-i*1.45)).add(right.clone().multiplyScalar((i-2)*.06));
@@ -5005,7 +5031,7 @@ let battleSceneWatch=0;const clock=new THREE.Clock();function animate(){requestA
   b.progress=Math.min(1,b.progress+dt/.12);const visibleLen=liveLen*b.progress;
   for(const beam of [b.outer,b.core]){beam.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),liveUnit);beam.scale.y=Math.max(.001,visibleLen);beam.position.copy(liveStart).add(liveUnit.clone().multiplyScalar(visibleLen*.5))}
   if(b.progress>=1){
-    b.hold+=dt;b.outer.material.opacity=.12+.16*Math.abs(Math.sin(b.hold*34));b.core.material.opacity=.34+.24*Math.abs(Math.sin(b.hold*46));
+    b.hold+=dt;b.outer.material.opacity=.24+.12*Math.abs(Math.sin(b.hold*34));b.core.material.opacity=.82+.18*Math.abs(Math.sin(b.hold*46));
     b.muzzleOuter.material.opacity=.72+.22*Math.abs(Math.sin(b.hold*30));b.muzzleCore.material.opacity=.88+.12*Math.abs(Math.sin(b.hold*38));
     for(const item of b.burns){
       if(!item.hit.reached){for(const o of item.rig.objects)o.material.opacity=0;for(const e of item.rig.embers)e.mesh.material.opacity=0;for(const d of item.rig.molten||[])d.mesh.material.opacity=0;continue}
