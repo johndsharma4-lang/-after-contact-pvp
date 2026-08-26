@@ -796,7 +796,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <button id="moveDown" aria-label="Move down">▼</button>
 </div>
   <div class="hud"><div class="side"><div class="name" id="leftFactionName">AURELIAN ACCORD</div><div class="sub" id="leftFactionSub">SOLAR LANCER • PENETRATION TEST</div></div><div class="side right"><div class="name" id="rightFactionName">EARTH COMMAND</div><div class="sub" id="rightFactionSub">BOMBARDIER • FORTRESS LV.1</div></div></div>
-  <div class="lab">3D LAB • MOBILE PVP TEST • v0.31.37</div>
+  <div class="lab">3D LAB • MOBILE PVP TEST • v0.31.38</div>
   <div id="structureHud"><div class="structureSide"><div class="structureLabel" id="leftStructureLabel">VESSEL STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="leftStructureFill"></div></div></div><div class="structureSide right"><div class="structureLabel" id="rightStructureLabel">FORTRESS STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="rightStructureFill"></div></div></div></div>
   <div id="rangeBadge">RANGE 885m</div>
   <svg id="aimSvg" viewBox="0 0 1280 720" preserveAspectRatio="none"><g id="acidShotLayer" pointer-events="none"></g><path id="aimPath"/><circle id="aimDot" r="4"/><circle id="muzzleDot" r="6"/></svg>
@@ -813,7 +813,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <div style="font:900 8px system-ui;color:#9fffc8;margin-bottom:6px">OWNER • NDA LEDGER</div>
 <div id="ownerNdaLedgerText" style="white-space:pre-wrap;max-height:180px;overflow:auto;user-select:text!important;-webkit-user-select:text!important">NOT LOADED</div>
 </div>
-<div id="ownerBuildCard" style="display:none;margin:8px 0;padding:9px;border:1px solid rgba(116,217,255,.35);border-radius:10px;background:rgba(4,18,29,.92);font:800 8px/1.45 system-ui;color:#d9f5ff"><div style="color:#82e7ff;letter-spacing:.12em;margin-bottom:5px">LATEST BUILD • v0.31.37</div><div>WET LIQUID ACID • HP-MATCHED SILHOUETTE • TORN OPENINGS • FOUNDATION WRECK</div><div style="margin-top:5px;opacity:.7">RUN BUILD SHOWCASE stages the enemy vessel at 100%, 50%, 10%, and 0% structure without changing combat data.</div></div>
+<div id="ownerBuildCard" style="display:none;margin:8px 0;padding:9px;border:1px solid rgba(116,217,255,.35);border-radius:10px;background:rgba(4,18,29,.92);font:800 8px/1.45 system-ui;color:#d9f5ff"><div style="color:#82e7ff;letter-spacing:.12em;margin-bottom:5px">LATEST BUILD • v0.31.38</div><div>WET LIQUID ACID • HP-MATCHED SILHOUETTE • TORN OPENINGS • FOUNDATION WRECK</div><div style="margin-top:5px;opacity:.7">RUN BUILD SHOWCASE stages the enemy vessel at 100%, 50%, 10%, and 0% structure without changing combat data.</div></div>
 <div class="dbgActions"><button id="ownerBuildShowcase" class="wide" type="button">RUN BUILD SHOWCASE</button><button id="ownerBuildNotes" class="wide" type="button">LATEST BUILD NOTES</button><button id="ownerDestructionDemo" class="wide" type="button">ROOM DESTRUCTION DEMO</button><button id="ownerNdaLedgerBtn" class="wide" type="button">NDA LEDGER</button><button id="ownerNdaLedgerCopy" class="wide" type="button">COPY NDA LEDGER</button><button id="ownerDbgCopy" class="wide" type="button">COPY MATCH LOG</button><button id="ownerDbgRefresh" type="button">REFRESH SNAPSHOT</button><button id="ownerDbgShare" type="button">SHARE</button><button id="ownerDbgSelectAll" class="wide" type="button">SELECT ALL LOG</button><button id="ownerDbgClear" class="wide" type="button">CLEAR LOG</button></div></div>
 
 
@@ -824,7 +824,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
   <div id="mpOverlay" aria-live="polite">
     <div class="mpCard">
       <div class="mpKicker">AFTER CONTACT • MAIN MENU</div>
-      <div class="mpTitle">PRIVATE PVP TEST • v0.31.37</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
+      <div class="mpTitle">PRIVATE PVP TEST • v0.31.38</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
       <div class="mpText">Choose Solo Game or Multiplayer. Multiplayer creates a private room you can share with another tester.</div>
       <div class="mpActions"><button class="mpBtn primary" id="mpHostBtn">MULTIPLAYER</button><button class="mpBtn" id="mpSoloBtn">SOLO GAME</button><button class="mpBtn" id="replayStoryBtn" type="button">REPLAY STORY INTRO</button></div>
       <div class="mpJoin"><input id="mpCodeInput" maxlength="6" inputmode="text" autocomplete="off" placeholder="ROOM CODE"><button class="mpBtn" id="mpJoinBtn">JOIN</button></div>
@@ -1391,9 +1391,9 @@ const baseOwnerDebugReport=ownerDebugReport;
 ownerDebugReport=function(){
   const crewState=(label,crew)=>`${label} CREW ${crew.filter(w=>w.active).map(w=>`${w.isCaptain?'CAPTAIN':`S${w.index+1}`}@R${Number.isInteger(w.roomIndex)?w.roomIndex+1:'-'} HP${Math.round(w.hp)}/${w.maxHp} AA${Math.round(w.aa)}/${w.maxAa}`).join(' | ')}`;
   let leftCrew=[],rightCrew=[];try{leftCrew=aCrew;rightCrew=eCrew}catch{}
-  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.31.37').replace('build=2026-08-20_01-58PM_PT','build=2026-08-25_BUILD_SHOWCASE_WET_ACID_WRECK_FOUNDATION').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT').replace('vfxWatchdog=8s','vfxWatchdog=3s/solar6.5s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
+  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.31.38').replace('build=2026-08-20_01-58PM_PT','build=2026-08-25_BUILD_SHOWCASE_WET_ACID_WRECK_FOUNDATION').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT').replace('vfxWatchdog=8s','vfxWatchdog=3s/solar6.5s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
 };
-const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.31.37';
+const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.31.38';
 function debugButtonAllowed(){return true}
 function updateDebugButtonVisibility(){if(!ownerDbgBtn)return;ownerDbgBtn.classList.toggle('debugVisible',debugButtonAllowed())}
 function refreshOwnerDebug(){if(!ownerDbgText)return;ownerDbgText.textContent=ownerDebugReport()}
@@ -2187,7 +2187,7 @@ function box(w,h,d,color,metal=.4,rough=.45){const m=new THREE.Mesh(new THREE.Bo
 function glowSphere(r,color,intensity=4){return new THREE.Mesh(new THREE.SphereGeometry(r,18,12),new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:intensity,roughness:.22}))}
 
 // v0.31.8 REPTILIAN OCEAN BIOME — layered underwater volume; no visible rectangular aquarium slab.
-const REPTILIAN_WATER_SURFACE_Y=30.0,REPTILIAN_MIN_DEPTH_Y=6.0,REPTILIAN_MAX_DEPTH_Y=27.5;
+const REPTILIAN_WATER_SURFACE_Y=30.0,REPTILIAN_MIN_DEPTH_Y=-14.0,REPTILIAN_MAX_DEPTH_Y=28.5;
 const reptilianBiomeState={aurelian:null,earth:null};
 function buildReptilianOceanBiome(side){
   const g=new THREE.Group();g.name=`REPTILIAN_OCEAN_${side.toUpperCase()}`;g.visible=false;
@@ -2200,22 +2200,23 @@ function buildReptilianOceanBiome(side){
   // one continuous battlefield — dry Earth shelf -> severe coastal drop -> deep Reptilian ocean.
   // No screen-wide blue overlay and no giant translucent "glass" plane over the Earth side.
   const deepWall=new THREE.Mesh(
-    new THREE.PlaneGeometry(116,86),
-    new THREE.MeshBasicMaterial({color:0x031923,transparent:true,opacity:.88,depthWrite:false,side:THREE.DoubleSide})
+    new THREE.PlaneGeometry(116,70),
+    new THREE.MeshBasicMaterial({color:0x031923,transparent:true,opacity:.82,depthWrite:false,side:THREE.DoubleSide})
   );
-  deepWall.position.set(centerX,13,-52);g.add(deepWall);
+  // Keep the underwater backdrop entirely below the waterline so the sky never turns into a blue wall.
+  deepWall.position.set(centerX,-5,-52);g.add(deepWall);
 
   // Underwater volume is built from depth layers that exist ONLY on the ocean side.
   const curtains=[];
   for(let i=0;i<6;i++){
     const m=new THREE.Mesh(
-      new THREE.PlaneGeometry(108,62),
+      new THREE.PlaneGeometry(108,58),
       new THREE.MeshBasicMaterial({
         color:i<2?0x0b5260:i<4?0x073b49:0x042935,
         transparent:true,opacity:.055+i*.018,depthWrite:false,side:THREE.DoubleSide
       })
     );
-    m.position.set(centerX,13,-30+i*12);m.renderOrder=2+i;g.add(m);curtains.push(m);
+    m.position.set(centerX,0,-30+i*12);m.renderOrder=2+i;g.add(m);curtains.push(m);
   }
 
   // A soft ceiling glow suggests the distant water surface without drawing a flat sheet through the battlefield.
@@ -2258,7 +2259,7 @@ function buildReptilianOceanBiome(side){
     const nearCoast=Math.max(0,1-Math.min(1,oceanDistance/55));
     const trench=Math.max(0,Math.min(1,(oceanDistance-58)/50));
     const ridge=Math.sin(wx*.115)*.72+Math.cos(z*.145)*.62+Math.sin((wx+z)*.065)*.38;
-    pos.setY(i,-10.5+nearCoast*5.8-trench*7.5+ridge);
+    pos.setY(i,-24+nearCoast*8.5-trench*10.5+ridge);
   }
   geo.computeVertexNormals();
   const seabed=new THREE.Mesh(
@@ -2268,7 +2269,7 @@ function buildReptilianOceanBiome(side){
   seabed.position.set(centerX,0,0);seabed.receiveShadow=true;g.add(seabed);
 
   // Actual continental drop. Land ends near the center and falls sharply into the Reptilian abyss.
-  const slopeWidth=22,slopeGeo=new THREE.PlaneGeometry(slopeWidth,96,28,24);slopeGeo.rotateX(-Math.PI/2);
+  const slopeWidth=12,slopeGeo=new THREE.PlaneGeometry(slopeWidth,96,28,24);slopeGeo.rotateX(-Math.PI/2);
   const sp=slopeGeo.attributes.position;
   for(let i=0;i<sp.count;i++){
     const lx=sp.getX(i),z=sp.getZ(i);
@@ -2276,7 +2277,7 @@ function buildReptilianOceanBiome(side){
     const t=Math.max(0,Math.min(1,towardLand));
     const eased=t*t*(3-2*t);
     const rockNoise=Math.sin(z*.17+lx*.11)*.45+Math.cos(z*.09-lx*.16)*.28;
-    sp.setY(i,-12.6+eased*17.2+rockNoise*(1-t*.35));
+    sp.setY(i,-25.5+eased*30.1+rockNoise*(1-t*.25));
   }
   slopeGeo.computeVertexNormals();
   const divideSlope=new THREE.Mesh(
@@ -2310,7 +2311,7 @@ function buildReptilianOceanBiome(side){
     );
     const along=-42+(i*13.7)%84;
     const t=(i%7)/6;
-    r.position.set(coastX+dir*(3+t*20),-6.5+t*9.5,along);
+    r.position.set(coastX+dir*(1.5+t*10.5),-20.5+t*24.5,along);
     r.scale.set(1.5,.7+(i%4)*.2,1.1);r.rotation.set(i*.21,i*.37,i*.13);
     g.add(r);cliffRocks.push(r);
   }
@@ -2320,7 +2321,7 @@ function buildReptilianOceanBiome(side){
     new THREE.CylinderGeometry(18,25,3.2,32),
     new THREE.MeshStandardMaterial({color:0x020b10,roughness:1,metalness:0})
   );
-  abyss.scale.z=1.8;abyss.position.set(centerX-dir*34,-18.5,-10);g.add(abyss);
+  abyss.scale.z=1.8;abyss.position.set(centerX-dir*34,-35,-10);g.add(abyss);
 
   // Volumetric light shafts stay wholly inside the ocean territory.
   const shafts=[];
@@ -3528,7 +3529,7 @@ function setAimVisual(a,b){
     aimDot.setAttribute('cx',b.x);aimDot.setAttribute('cy',b.y);aimPath.style.strokeDasharray='none';aimPath.style.opacity='1';aimDot.style.opacity='1';
   }
   const angle=Math.max(-86,Math.min(86,Math.atan2(a.y-b.y,Math.max(1,Math.abs(b.x-a.x)))*180/Math.PI));
-  const power=Math.max(18,Math.min(100,dist/5.1));angleMetric.textContent=`ANGLE ${Math.round(angle)}°`;powerMetric.textContent=wp.kind==='acid'?'PRESSURE 100%':`POWER ${Math.round(power)}%`;
+  const power=Math.max(18,Math.min(100,dist/5.1));angleMetric.textContent=`ANGLE ${Math.round(angle)}°`;powerMetric.textContent=`POWER ${Math.round(power)}%`;
 }
 function clearAim(){aimPath.style.opacity='0';aimPath.style.stroke='';aimPath.style.strokeWidth='';aimPath.style.filter='';aimDot.style.opacity='0';aimDot.style.fill='';muzzleDot.style.opacity='0';rangeBadge?.classList.remove('rangeLive');aiming=false;startPx=currentPx=null;aimOriginWorld=aimOriginStage=null;pointerId=null}
 function stageRay(pt){const ndc=new THREE.Vector2(pt.x/640-1,1-pt.y/360);raycaster.setFromCamera(ndc,camera);return raycaster.ray.clone()}
@@ -3612,12 +3613,12 @@ function acidSweptHullHit(attacker,fromStage,toStage){
   const exact=acidVisibleHullHitAtStagePoint(attacker,toStage);if(exact)return exact;
   const rooms=opposingRooms(attacker).userData.rooms,warriors=opposing(attacker),candidates=[];
   for(let i=0;i<rooms.length;i++){
-    const room=rooms[i],contact=lineRectEntry(fromStage,toStage,objectScreenRect(room.hitPlane,4));
+    const room=rooms[i],contact=lineRectEntry(fromStage,toStage,objectScreenRect(room.hitPlane,14));
     if(contact)candidates.push({i,room,contact});
   }
   candidates.sort((a,b)=>a.contact.t-b.contact.t);if(!candidates.length)return null;
   const c=candidates[0],occ=warriors.find(w=>w.roomIndex===c.i&&w.hp>0)||null;
-  diag('ACID SWEPT CONTACT',`room=${c.i+1} tolerance=4px x=${Math.round(c.contact.x)} y=${Math.round(c.contact.y)}`);
+  diag('ACID SWEPT CONTACT',`room=${c.i+1} tolerance=14px x=${Math.round(c.contact.x)} y=${Math.round(c.contact.y)}`);
   return{end:stagePointToRoomWorld(c.contact,c.room),roomIndex:c.i,room:c.room,warrior:occ,direct:!!occ,acidSwept:true,impactStage:{x:c.contact.x,y:c.contact.y}};
 }
 function exactAcidRoomHitAtStagePoint(attacker,pt){
@@ -4452,17 +4453,16 @@ function acidTrajectoryProfile(start,aimPt){
   const dist=Math.hypot(dx,aimPt.y-a.y);
   const elevation=Math.atan2(dy,Math.max(1,Math.abs(dx)))*180/Math.PI;
   const towardOpponent=start.x<0?1:-1,forward=dx*towardOpponent>12;
-  return{elevation,dist,mode:'MANUAL',forward,towardOpponent};
+  const power=Math.max(18,Math.min(100,dist/5.1));
+  return{elevation,dist,power,mode:'MANUAL_ANGLE_POWER',forward,towardOpponent};
 }
 function acidBallisticStagePath(attacker,startStage,aimPt,profile,resolveHit=true){
-  // Fully manual ballistics. Direction is the unmodified drag vector; pressure stays at 100%.
-  // Gravity changes smoothly with elevation: low shots stay nearly straight while higher pulls lob.
+  // Fully manual ballistics. The unmodified drag direction controls angle and drag distance controls power.
+  // The same sampled curve drives both the sight and the released acid, so preview and projectile stay truthful.
   const dx=aimPt.x-startStage.x,dy=aimPt.y-startStage.y,dragDist=Math.hypot(dx,dy)||1;
   const dirX=dx/dragDist,dirY=dy/dragDist;
-  // The three-wave pressure cannon is always fully charged. Drag distance no longer changes range
-  // behind the player's back; the gesture controls only the displayed and released launch angle.
-  const power=1;
-  const speed=240+power*600;
+  const power=Math.max(.18,Math.min(1,(profile.power||18)/100));
+  const speed=250+power*760;
   const vx=dirX*speed;
   const launchVy=dirY*speed;
   const elevated=Math.max(0,Math.min(1,profile.elevation/75));
@@ -4504,8 +4504,11 @@ function solarFanAimGuide(attacker,a,b){
 }
 function acidPressureFanGuide(attacker,points){
   if(!points?.length)return{d:'',end:{x:0,y:0}};
-  const own=stageBoundsForRooms(attacker.roomGroup.userData.rooms,20),toward=attacker.side==='aurelian'?1:-1,launchEdge=(toward>0?own.x2:own.x1)+toward*10,visible=[];
-  let distance=0,previous=null;for(const p of points){if((p.x-launchEdge)*toward<0)continue;if(previous)distance+=Math.hypot(p.x-previous.x,p.y-previous.y);if(distance>132)break;visible.push(p);previous=p}
+  const own=stageBoundsForRooms(attacker.roomGroup.userData.rooms,20),enemy=stageBoundsForRooms(opposingRooms(attacker).userData.rooms,14),toward=attacker.side==='aurelian'?1:-1;
+  const launchEdge=(toward>0?own.x2:own.x1)+toward*10;
+  // Five extra 22px dash/gap segments beyond the far edge of the enemy vessel.
+  const beyondEnemy=(toward>0?enemy.x2:enemy.x1)+toward*110,visible=[];
+  for(const p of points){if((p.x-launchEdge)*toward<0)continue;visible.push(p);if((p.x-beyondEnemy)*toward>=0)break}
   if(visible.length<2)return{d:'',end:points[0]};
   return{d:acidStagePathD(visible),end:visible[visible.length-1]};
 }
@@ -4578,7 +4581,7 @@ function spawnAcidFlood(attacker,start,aimPt,power,weapon){
   if(localAction){acidActionLock=true;diag('ACTION LOCK','ACID_HOSE_RESOLUTION');refreshMovePad()}
   const screenShot=createAcidScreenShot({...screenPath,releaseDistance:profile.dist});
   effects.push({acidFlood:{screenShot,attacker,aimPt,impactAim,spreadImpactAims,spreadHits,weapon,profile,hit,end:end.clone(),localAction},life:1.55,max:1.55,impacted:false});
-  statusEl.textContent=`ACID PRESSURE FAN • ${pressure.label} • MANUAL ${Math.round(profile.elevation)}°`;
+  statusEl.textContent=`ACID BALLISTIC FLOOD • ${pressure.label} • ${Math.round(profile.elevation)}° • POWER ${Math.round(profile.power)}%`;
   diag('CORROSIVE FLOOD',`control=BALLISTIC_FAN_GRAVITY_TRUE pressure=${pressure.multiplier.toFixed(2)} vfx=FULL_HEIGHT_FRONT_WALL elevation=${Math.round(profile.elevation)} direction=${aimPt.y>worldToStage(start).y?'DESCENDING':'RISING_THEN_FALLING'} impact=${Math.round(impactAim.x)},${Math.round(impactAim.y)} fanLane=${hit?.acidFanLane??0} front=${spreadHits.map(h=>h.roomIndex+1).join(',')||'MISS'} screenVfx=Y`);
 }
 function spatialDriftPoint(pt){const seed=(shots+1)*17.319+pt.x*.019+pt.y*.027;const sx=Math.sin(seed*2.31),sy=Math.cos(seed*1.83);return{x:pt.x+sx*96,y:pt.y+sy*72}}
@@ -4707,9 +4710,10 @@ function finishPointer(e,cancel=false){
   const pt=currentPx||eventStagePoint(e),dist=startPx?Math.hypot(pt.x-startPx.x,pt.y-startPx.y):0;
   try{if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId)}catch{}
   const acidManual=selected&&WEAPONS[selected.weaponKey]?.kind==='acid';
-  const forward=!acidManual||acidTrajectoryProfile(aimOriginWorld||muzzleWorld(selected,pt),pt).forward;
+  const acidProfile=acidManual?acidTrajectoryProfile(aimOriginWorld||muzzleWorld(selected,pt),pt):null;
+  const forward=!acidManual||acidProfile.forward;
   if(!cancel&&dist>45&&forward){
-    const power=acidManual?100:Math.max(18,Math.min(100,dist/5.1));diag('AIM RELEASE',`distance=${Math.round(dist)} power=${Math.round(power)} control=${acidManual?'FROZEN_ORIGIN_ANGLE_ONLY':'STANDARD'}`);fireSelectedFromStage(pt,power)
+    const power=acidManual?acidProfile.power:Math.max(18,Math.min(100,dist/5.1));diag('AIM RELEASE',`distance=${Math.round(dist)} power=${Math.round(power)} control=${acidManual?'MANUAL_ANGLE_POWER':'STANDARD'}`);fireSelectedFromStage(pt,power)
   }else{
     diag('AIM CANCEL',`cancel=${cancel?'Y':'N'} distance=${Math.round(dist)} forward=${forward?'Y':'N'}`);
     statusEl.textContent=!forward?'CORROSIVE FLOOD • AIM TOWARD ENEMY':'SHOT CANCELLED'
