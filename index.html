@@ -796,7 +796,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <button id="moveDown" aria-label="Move down">▼</button>
 </div>
   <div class="hud"><div class="side"><div class="name" id="leftFactionName">AURELIAN ACCORD</div><div class="sub" id="leftFactionSub">SOLAR LANCER • PENETRATION TEST</div></div><div class="side right"><div class="name" id="rightFactionName">EARTH COMMAND</div><div class="sub" id="rightFactionSub">BOMBARDIER • FORTRESS LV.1</div></div></div>
-  <div class="lab">3D LAB • MOBILE PVP TEST • v0.32.7</div>
+  <div class="lab">3D LAB • MOBILE PVP TEST • v0.32.8</div>
   <div id="structureHud"><div class="structureSide"><div class="structureLabel" id="leftStructureLabel">VESSEL STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="leftStructureFill"></div></div></div><div class="structureSide right"><div class="structureLabel" id="rightStructureLabel">FORTRESS STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="rightStructureFill"></div></div></div></div>
   <div id="rangeBadge">RANGE 885m</div>
   <svg id="aimSvg" viewBox="0 0 1280 720" preserveAspectRatio="none"><g id="acidShotLayer" pointer-events="none"></g><path id="aimPath"/><path id="aimDropPath"/><circle id="aimDot" r="4"/><circle id="muzzleDot" r="6"/></svg>
@@ -813,7 +813,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <div style="font:900 8px system-ui;color:#9fffc8;margin-bottom:6px">OWNER • NDA LEDGER</div>
 <div id="ownerNdaLedgerText" style="white-space:pre-wrap;max-height:180px;overflow:auto;user-select:text!important;-webkit-user-select:text!important">NOT LOADED</div>
 </div>
-<div id="ownerBuildCard" style="display:none;margin:8px 0;padding:9px;border:1px solid rgba(116,217,255,.35);border-radius:10px;background:rgba(4,18,29,.92);font:800 8px/1.45 system-ui;color:#d9f5ff"><div style="color:#82e7ff;letter-spacing:.12em;margin-bottom:5px">LATEST BUILD • v0.32.7</div><div>SEPARATE RANGE/HEIGHT CONTROL • ANGLE % REFERENCE • HE-9 AI RECOVERY</div><div style="margin-top:5px;opacity:.7">RUN BUILD SHOWCASE stages the enemy vessel at 100%, 50%, 10%, and 0% structure without changing combat data.</div></div>
+<div id="ownerBuildCard" style="display:none;margin:8px 0;padding:9px;border:1px solid rgba(116,217,255,.35);border-radius:10px;background:rgba(4,18,29,.92);font:800 8px/1.45 system-ui;color:#d9f5ff"><div style="color:#82e7ff;letter-spacing:.12em;margin-bottom:5px">LATEST BUILD • v0.32.8</div><div>SEPARATE RANGE/HEIGHT CONTROL • ANGLE % REFERENCE • HE-9 AI RECOVERY</div><div style="margin-top:5px;opacity:.7">RUN BUILD SHOWCASE stages the enemy vessel at 100%, 50%, 10%, and 0% structure without changing combat data.</div></div>
 <div class="dbgActions"><button id="ownerBuildShowcase" class="wide" type="button">RUN BUILD SHOWCASE</button><button id="ownerBuildNotes" class="wide" type="button">LATEST BUILD NOTES</button><button id="ownerDestructionDemo" class="wide" type="button">ROOM DESTRUCTION DEMO</button><button id="ownerNdaLedgerBtn" class="wide" type="button">NDA LEDGER</button><button id="ownerNdaLedgerCopy" class="wide" type="button">COPY NDA LEDGER</button><button id="ownerDbgCopy" class="wide" type="button">COPY MATCH LOG</button><button id="ownerDbgRefresh" type="button">REFRESH SNAPSHOT</button><button id="ownerDbgShare" type="button">SHARE</button><button id="ownerDbgSelectAll" class="wide" type="button">SELECT ALL LOG</button><button id="ownerDbgClear" class="wide" type="button">CLEAR LOG</button></div></div>
 
 
@@ -824,7 +824,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
   <div id="mpOverlay" aria-live="polite">
     <div class="mpCard">
       <div class="mpKicker">AFTER CONTACT • MAIN MENU</div>
-      <div class="mpTitle">PRIVATE PVP TEST • v0.32.7</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
+      <div class="mpTitle">PRIVATE PVP TEST • v0.32.8</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
       <div class="mpText">Choose Solo Game or Multiplayer. Multiplayer creates a private room you can share with another tester.</div>
       <div class="mpActions"><button class="mpBtn primary" id="mpHostBtn">MULTIPLAYER</button><button class="mpBtn" id="mpSoloBtn">SOLO GAME</button><button class="mpBtn" id="replayStoryBtn" type="button">REPLAY STORY INTRO</button></div>
       <div class="mpJoin"><input id="mpCodeInput" maxlength="6" inputmode="text" autocomplete="off" placeholder="ROOM CODE"><button class="mpBtn" id="mpJoinBtn">JOIN</button></div>
@@ -1391,9 +1391,9 @@ const baseOwnerDebugReport=ownerDebugReport;
 ownerDebugReport=function(){
   const crewState=(label,crew)=>`${label} CREW ${crew.filter(w=>w.active).map(w=>`${w.isCaptain?'CAPTAIN':`S${w.index+1}`}@R${Number.isInteger(w.roomIndex)?w.roomIndex+1:'-'} HP${Math.round(w.hp)}/${w.maxHp} AA${Math.round(w.aa)}/${w.maxAa}`).join(' | ')}`;
   let leftCrew=[],rightCrew=[];try{leftCrew=aCrew;rightCrew=eCrew}catch{}
-  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.32.7').replace('build=2026-08-20_01-58PM_PT','build=2026-08-26_SHARED_MANUAL_BALLISTICS').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT').replace('vfxWatchdog=8s','vfxWatchdog=3s/acid8s/barrage12s/solar15s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
+  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.32.8').replace('build=2026-08-20_01-58PM_PT','build=2026-08-26_SHARED_MANUAL_BALLISTICS').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT').replace('vfxWatchdog=8s','vfxWatchdog=3s/acid8s/barrage12s/solar15s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
 };
-const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.32.7';
+const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.32.8';
 function debugButtonAllowed(){return true}
 function updateDebugButtonVisibility(){if(!ownerDbgBtn)return;ownerDbgBtn.classList.toggle('debugVisible',debugButtonAllowed())}
 function refreshOwnerDebug(){if(!ownerDbgText)return;ownerDbgText.textContent=ownerDebugReport()}
@@ -3772,15 +3772,15 @@ function setAimVisual(a,b){
       aimPath.style.strokeDasharray='14 12';aimPath.style.opacity='.48';aimDot.style.opacity='.42';
     }
   }else if(wp.aim==='hose'){
-    // Manual artillery sight: show only the straight launch vector. The released acid starts on this
-    // exact heading, then gravity bends the real projectile into a lob. No curved preview and no lock-on.
+    // Straight manual cone: the release direction remains the travel direction. Power controls reach,
+    // while the widening cone determines which of its twenty physical lanes touch the fortress.
     const profile=acidTrajectoryProfile(aimOriginWorld||muzzleWorld(selected,b),b);displayPower=profile.power;
     const guide=acidLaunchVectorGuide(selected,a,b),endGuide=guide.end;
     aimPath.setAttribute('d',guide.d);
     aimDot.setAttribute('cx',endGuide.x);aimDot.setAttribute('cy',endGuide.y);
     aimPath.style.stroke=profile.forward?'#86ff58':'#ff5a4d';aimDot.style.fill=profile.forward?'#d9ffc8':'#ff9288';
     aimPath.style.strokeDasharray='13 9';aimPath.style.opacity='.72';aimDot.style.opacity='0';muzzleDot.style.opacity='0';
-    if(profile.forward){const descent=acidDescentPreview(selected,a,b,profile);if(descent){aimDropPath.setAttribute('d',descent);aimDropPath.style.opacity='.34'}}
+    // No dotted drop tail: Acid Brute has no gravity or lob.
   }else{
     const guide=bombardierAimGuide(a,b),gx=guide.end.x,gy=guide.end.y;displayPower=guide.profile.power;
     aimPath.setAttribute('d',guide.d);aimDot.setAttribute('cx',gx);aimDot.setAttribute('cy',gy);
@@ -3790,9 +3790,9 @@ function setAimVisual(a,b){
   }
   const angle=Math.max(-86,Math.min(86,Math.atan2(a.y-b.y,Math.max(1,Math.abs(b.x-a.x)))*180/Math.PI));
   const anglePct=Math.round(angle/90*100),angleSign=anglePct>0?'+':'';
-  angleMetric.textContent=`ANGLE ${angleSign}${anglePct}%`;powerMetric.textContent=`POWER ${Math.round(displayPower)}%`;
+  angleMetric.textContent=`ANGLE ${angleSign}${anglePct}%`;powerMetric.textContent=`POWER ${Math.round(displayPower)}%`;statusEl.textContent=`MANUAL AIM • ANGLE ${angleSign}${anglePct}% • POWER ${Math.round(displayPower)}%`;
 }
-function clearAim(){aimPath.style.opacity='0';aimPath.style.stroke='';aimPath.style.strokeWidth='';aimPath.style.filter='';aimDropPath.setAttribute('d','');aimDropPath.style.opacity='0';aimDot.style.opacity='0';aimDot.style.fill='';muzzleDot.style.opacity='0';rangeBadge?.classList.remove('rangeLive');aiming=false;startPx=currentPx=null;aimOriginWorld=aimOriginStage=null;pointerId=null}
+function clearAim(){aimHud.classList.remove('live');aimPath.style.opacity='0';aimPath.style.stroke='';aimPath.style.strokeWidth='';aimPath.style.filter='';aimDropPath.setAttribute('d','');aimDropPath.style.opacity='0';aimDot.style.opacity='0';aimDot.style.fill='';muzzleDot.style.opacity='0';rangeBadge?.classList.remove('rangeLive');aiming=false;startPx=currentPx=null;aimOriginWorld=aimOriginStage=null;pointerId=null}
 function stageRay(pt){const ndc=new THREE.Vector2(pt.x/640-1,1-pt.y/360);raycaster.setFromCamera(ndc,camera);return raycaster.ray.clone()}
 function worldPointOnCameraPlane(pt,worldPoint){const ray=stageRay(pt),normal=new THREE.Vector3();camera.getWorldDirection(normal);const plane=new THREE.Plane().setFromNormalAndCoplanarPoint(normal,worldPoint),out=new THREE.Vector3();return ray.intersectPlane(plane,out)?out:worldPoint.clone()}
 function targetWorldFromStage(pt){return worldPointOnCameraPlane(pt,new THREE.Vector3(0,9,6))}
@@ -4695,6 +4695,32 @@ function acidFrontFaceHits(attacker,primaryHit){
   if(!primaryHit?.room)return[];const rooms=opposingRooms(attacker).userData.rooms,frontCol=attacker.side==='aurelian'?0:2,primaryRow=Math.floor(primaryHit.roomIndex/3);
   return[0,1,2].map(row=>{const roomIndex=row*3+frontCol,room=rooms[roomIndex],end=room.hitPlane.getWorldPosition(new THREE.Vector3());return{room,roomIndex,end,warrior:opposing(attacker).find(w=>w.roomIndex===roomIndex&&w.hp>0)||null,primary:row===primaryRow}})
 }
+function resolveAcidConeContact(flood,contact,ordinal){
+  if(!contact?.hit?.room||matchEnded)return false;
+  const attacker=flood.attacker,weapon=flood.weapon,hit=contact.hit,room=hit.room,i=hit.roomIndex,p=hit.end,pressure=acidRangePressure();
+  flood.successfulHits=(flood.successfulHits||0)+1;
+  if(flood.successfulHits===1)weaponImpactSfx('acid',true);
+  if(room.erased){applyStructureDamage(attacker,Math.max(1,Math.round(3*pressure.multiplier)),`ACID CONE HIT ${ordinal}/20 • OPEN CHANNEL`);spawnImpactBurst(p,0xbaff6a)}
+  else{
+    // Twenty micro-contacts share the original attack budget; none is a full weapon strike.
+    const requested=Math.max(1,Math.round(5*pressure.multiplier)),shield=absorbShieldHit(attacker,i,requested,`ACID CONE ${ordinal}/20`,p);
+    if(!shield.blocked){
+      const before=room.armor;room.armor=Math.max(0,room.armor-shield.passed);room.breach=100-room.armor;const melted=before-room.armor;
+      if(melted>0){applyStructureDamage(attacker,melted,`ACID CONE HIT ${ordinal}/20`);damageRoomVisual(room)}
+      const occ=nearestWarriorInRoom(attacker,i,p);if(occ&&room.breach>=40)applyWarriorDamage(occ.w,Math.max(1,(weapon.damage||28)/20),'ACID CONE CONTACT',attacker);
+      if(room.breach>=100)resolveVerticalCollapse(attacker,room,i)
+    }
+    if(ordinal%3===0)spawnAcidResidue(room,p);
+    spawnImpactBurst(p,ordinal%4===0?0xd6ff82:0x78d941);
+  }
+  statusEl.textContent=`ACID CONE • HIT ${flood.successfulHits}/20 • LANE ${ordinal}/20`;diag('ACID CONE HIT',`${ordinal}/20 room=${i+1} landed=${flood.successfulHits}`);checkMatchEnd();return true;
+}
+function finalizeAcidConeStacks(flood){
+  if(flood.stacksFinalized)return;flood.stacksFinalized=true;
+  const grouped=new Map();for(const c of flood.contacts||[])if(c.hit?.room){const i=c.hit.roomIndex;grouped.set(i,(grouped.get(i)||0)+1)}
+  for(const [i,count] of grouped){const room=opposingRooms(flood.attacker).userData.rooms[i];if(!room||room.erased)continue;const stacks=count>=8?3:count>=4?2:1;scheduleRoomAcidStacks(flood.attacker,room,i,stacks);const occ=nearestWarriorInRoom(flood.attacker,i,room.hitPlane.getWorldPosition(new THREE.Vector3()));if(occ&&room.breach>=40)scheduleWarriorAcidStacks(occ.w,count>=7?2:1,flood.attacker)}
+  diag('ACID CONE COMPLETE',`physicalHits=${flood.successfulHits||0}/20 affectedRooms=${[...grouped.keys()].map(i=>i+1).join(',')||'NONE'}`);
+}
 function resolveCorrosiveFlood(attacker,aimPt,weapon,preHit=undefined,preSpread=undefined){
   // A miss is allowed only when the sampled on-screen projectile path never touches the visible hull.
   const hit=preHit===undefined?acidVisibleHullHitAtStagePoint(attacker,aimPt):preHit;
@@ -4732,43 +4758,27 @@ function acidTrajectoryProfile(start,aimPt){
   return{elevation,dist,power,mode:'MANUAL_ANGLE_POWER',forward,towardOpponent,horizontalReach};
 }
 function acidBallisticStagePath(attacker,startStage,aimPt,profile,resolveHit=true){
-  // Fully manual ballistics. The unmodified drag direction controls angle and drag distance controls power.
-  // The same sampled curve drives both the sight and the released acid, so preview and projectile stay truthful.
+  // Acid Brute is a straight pressurized cone. Angle controls direction; power controls reach.
+  // Gravity and lob behavior are reserved for future warriors.
   const dx=aimPt.x-startStage.x,dy=aimPt.y-startStage.y,dragDist=Math.hypot(dx,dy)||1;
-  const dirX=dx/dragDist,dirY=dy/dragDist;
-  const power=Math.max(.16,Math.min(1,(profile.power||16)/100));
-  // Heavier, slower acid gives the player time to read the rise and fall. Speed and gravity remain
-  // deterministic and are shared by the preview and the released liquid.
-  const speed=280+power*450;
-  const vx=dirX*speed;
-  const launchVy=dirY*speed;
-  const gravity=430;
-
-  const maxT=3.2,steps=200,points=[];
-  let hit=null,impactAim=null;
+  const dirX=dx/dragDist,dirY=dy/dragDist,power=Math.max(.16,Math.min(1,(profile.power||16)/100));
+  const maxDistance=260+power*1160,steps=54,points=[];let hit=null,impactAim=null;
   for(let i=0;i<=steps;i++){
-    const t=maxT*i/steps;
-    const p={
-      x:startStage.x+vx*t,
-      y:startStage.y+launchVy*t+.5*gravity*t*t,
-      distance:Math.hypot(vx*t,launchVy*t+.5*gravity*t*t),
-      t
-    };
+    const t=i/steps,p={x:startStage.x+dirX*maxDistance*t,y:startStage.y+dirY*maxDistance*t,distance:maxDistance*t,t};
     points.push(p);
-    if(resolveHit&&i>1){
-      const prev=points[i-1],h=acidSweptHullHit(attacker,prev,p);
-      if(h?.room){hit=h;impactAim={x:p.x,y:p.y};break}
-    }
-    // Do not kill a high lob above the camera. It must be allowed to complete its arc and return.
-    if(p.x<-180||p.x>1460||p.y>780)break;
+    if(resolveHit&&i>0){const h=acidSweptHullHit(attacker,points[i-1],p);if(h?.room){hit=h;impactAim=h.impactStage?{x:h.impactStage.x,y:h.impactStage.y}:{x:p.x,y:p.y};break}}
   }
   if(!impactAim){const p=points[points.length-1];impactAim={x:p.x,y:p.y}}
-  return{
-    points,hit,impactAim,control:null,
-    releaseAim:{x:aimPt.x,y:aimPt.y},
-    launch:{vx,vy:launchVy,gravity,power},
-    arcPx:0
-  };
+  return{points,hit,impactAim,control:'STRAIGHT_CONE',releaseAim:{x:aimPt.x,y:aimPt.y},launch:{vx:dirX*maxDistance,vy:dirY*maxDistance,gravity:0,power,maxDistance},arcPx:0};
+}
+function acidConeContactPlan(attacker,startStage,aimPt,profile){
+  const dx=aimPt.x-startStage.x,dy=aimPt.y-startStage.y,base=Math.atan2(dy,dx),power=Math.max(.16,Math.min(1,(profile.power||16)/100)),maxDistance=260+power*1160,halfAngle=.145,contacts=[];
+  for(let lane=0;lane<20;lane++){
+    const laneUnit=(lane-9.5)/9.5,angle=base+laneUnit*halfAngle,end={x:startStage.x+Math.cos(angle)*maxDistance,y:startStage.y+Math.sin(angle)*maxDistance};
+    const hit=acidSweptHullHit(attacker,startStage,end);
+    contacts.push({lane,laneUnit,hit,impactAim:hit?.impactStage?{x:hit.impactStage.x,y:hit.impactStage.y}:end});
+  }
+  return contacts;
 }
 function stageBoundsForRooms(rooms,pad=0){
   const rects=rooms.map(r=>objectScreenRect(r.hitPlane,pad));
@@ -4818,16 +4828,17 @@ function createAcidScreenShot(path){
   // circles: the airborne effect must read as wet projected acid, with vapor appearing only on impact.
   const guide=document.createElementNS(ns,'path');guide.setAttribute('d',acidStagePathD(path.points));guide.setAttribute('fill','none');guide.setAttribute('stroke','none');group.appendChild(guide);
   let guideLength=0;try{guideLength=guide.getTotalLength()}catch{}if(!Number.isFinite(guideLength)||guideLength<1)guideLength=Math.max(1,path.releaseDistance||600);
-  const waves=[],palette=[['#244719','#65a936','#dfff88'],['#1e3f16','#72b63d','#e9ff9a'],['#183512','#5f9b31','#ceff73']];
-  for(let wave=0;wave<3;wave++){
-    const body=document.createElementNS(ns,'path'),highlight=document.createElementNS(ns,'path'),d=acidFanPathD(path.points,(wave-1)*4.5);for(const p of [body,highlight]){p.setAttribute('d',d);p.setAttribute('fill','none');p.setAttribute('stroke-linecap','round');p.setAttribute('stroke-linejoin','round');p.style.opacity='0';group.appendChild(p)}
-    body.setAttribute('stroke',palette[wave][0]);body.setAttribute('stroke-width',String(7+wave));highlight.setAttribute('stroke',palette[wave][1]);highlight.setAttribute('stroke-width',String(2.5+wave*.5));highlight.style.filter='drop-shadow(0 0 4px rgba(155,255,80,.42))';let length=guideLength;try{length=body.getTotalLength()}catch{}body.style.strokeDasharray=`${length} ${length}`;highlight.style.strokeDasharray=`${length} ${length}`;
+  const waves=[],palette=[['#17330f','#57962c','#cfff6f'],['#1b3d12','#68b635','#deff83'],['#244f17','#82d344','#efffa5'],['#1b3d12','#68b635','#deff83'],['#17330f','#57962c','#cfff6f']];
+  // Five slow liquid tongues widen like flame while remaining visibly wet and heavy.
+  for(let wave=0;wave<5;wave++){
+    const body=document.createElementNS(ns,'path'),highlight=document.createElementNS(ns,'path'),d=acidFanPathD(path.points,(wave-2)*28);for(const p of [body,highlight]){p.setAttribute('d',d);p.setAttribute('fill','none');p.setAttribute('stroke-linecap','round');p.setAttribute('stroke-linejoin','round');p.style.opacity='0';group.appendChild(p)}
+    body.setAttribute('stroke',palette[wave][0]);body.setAttribute('stroke-width',String(10-Math.abs(wave-2)*1.35));highlight.setAttribute('stroke',palette[wave][1]);highlight.setAttribute('stroke-width',String(3.6-Math.abs(wave-2)*.35));highlight.style.filter='drop-shadow(0 0 4px rgba(155,255,80,.42))';let length=guideLength;try{length=body.getTotalLength()}catch{}body.style.strokeDasharray=`${length} ${length}`;highlight.style.strokeDasharray=`${length} ${length}`;
     const slugs=[];
-    for(let i=0;i<34;i++){
-      const e=document.createElementNS(ns,'ellipse'),phase=(i+.45)/46,side=((i*11)%9-4)*(1.1+phase*.8),rx=9+(i%5)*2.2+wave,ry=4.4+(i%4)*1.1;
+    for(let i=0;i<13;i++){
+      const e=document.createElementNS(ns,'ellipse'),phase=(i+.45)/18,side=((i*11)%9-4)*(1.0+phase*1.45),rx=10+(i%5)*2.4,ry=3.8+(i%4)*.9;
       e.setAttribute('rx',String(rx));e.setAttribute('ry',String(ry));e.setAttribute('fill',i%7===0?palette[wave][2]:i%2?palette[wave][1]:palette[wave][0]);e.setAttribute('stroke',i%5===0?'#efffc1':'none');e.setAttribute('stroke-width',i%5===0?'1':'0');e.style.opacity='0';group.appendChild(e);slugs.push({el:e,phase,side,seed:i*1.73+wave*.91})
     }
-    waves.push({body,highlight,length,slugs,delay:wave*.145})
+    waves.push({body,highlight,length,slugs,delay:wave*.055})
   }
   const droplets=[];for(let i=0;i<18;i++){
     const e=document.createElementNS(ns,'ellipse');e.setAttribute('rx',String(2.4+(i%4)*1.2));e.setAttribute('ry',String(1.2+(i%3)*.7));e.setAttribute('fill',i%4===0?'#e7ff9a':'#85d94c');e.style.opacity='0';group.appendChild(e);
@@ -4855,20 +4866,20 @@ function acidImpactAim(attacker,start,aimPt,profile){
 }
 function acidTrajectoryData(attacker,start,aimPt){
   const profile=acidTrajectoryProfile(start,aimPt),startStage=worldToStage(start);
-  const path=acidBallisticStagePath(attacker,startStage,aimPt,profile,true);
-  const impactAim=path.impactAim,hit=path.hit||null;
+  const path=acidBallisticStagePath(attacker,startStage,aimPt,profile,true),contacts=acidConeContactPlan(attacker,startStage,aimPt,profile);
+  const firstContact=contacts.filter(c=>c.hit?.room).sort((a,b)=>Math.abs(a.laneUnit)-Math.abs(b.laneUnit))[0]||null;
+  const hit=firstContact?.hit||path.hit||null,impactAim=firstContact?.impactAim||path.impactAim;
   const end=hit?.end?.clone?.()||targetPlanePointForOpponent(attacker,impactAim);
-  return{profile,impactAim,hit,end,ballistic:path,releaseAim:path.releaseAim,screenPath:path};
+  return{profile,impactAim,hit,end,contacts,ballistic:path,releaseAim:path.releaseAim,screenPath:path};
 }
 function spawnAcidFlood(attacker,start,aimPt,power,weapon){
-  const trajectory=acidTrajectoryData(attacker,start,aimPt),{profile,impactAim,hit,end,screenPath}=trajectory;
-  const spreadHits=acidFrontFaceHits(attacker,hit),spreadImpactAims=spreadHits.map(h=>worldToStage(h.end)),pressure=acidRangePressure();
+  const trajectory=acidTrajectoryData(attacker,start,aimPt),{profile,impactAim,hit,end,contacts,screenPath}=trajectory,contactHits=contacts.filter(c=>c.hit?.room),pressure=acidRangePressure();
   const localAction=(!multiplayer&&attacker.side==='aurelian')||(multiplayer&&attacker.side===localSide);
-  if(localAction){acidActionLock=true;diag('ACTION LOCK','ACID_HOSE_RESOLUTION');refreshMovePad()}
+  if(localAction){acidActionLock=true;diag('ACTION LOCK','ACID_CONE_RESOLUTION');refreshMovePad()}
   const screenShot=createAcidScreenShot({...screenPath,releaseDistance:profile.dist});
-  effects.push({acidFlood:{screenShot,attacker,aimPt,impactAim,spreadImpactAims,spreadHits,weapon,profile,hit,end:end.clone(),localAction},life:1.55,max:1.55,impacted:false});
-  statusEl.textContent=`ACID BALLISTIC FLOOD • ${pressure.label} • ${Math.round(profile.elevation)}° • POWER ${Math.round(profile.power)}%`;
-  diag('CORROSIVE FLOOD',`control=BALLISTIC_FAN_GRAVITY_TRUE pressure=${pressure.multiplier.toFixed(2)} vfx=FULL_HEIGHT_FRONT_WALL elevation=${Math.round(profile.elevation)} direction=${aimPt.y>worldToStage(start).y?'DESCENDING':'RISING_THEN_FALLING'} impact=${Math.round(impactAim.x)},${Math.round(impactAim.y)} fanLane=${hit?.acidFanLane??0} front=${spreadHits.map(h=>h.roomIndex+1).join(',')||'MISS'} screenVfx=Y`);
+  effects.push({acidFlood:{screenShot,attacker,aimPt,impactAim,contacts,weapon,profile,hit,end:end.clone(),localAction,contactTicks:0,successfulHits:0,stacksFinalized:false},life:2.35,max:2.35,impacted:false});
+  statusEl.textContent=`ACID CONE • ${contactHits.length}/20 LANES ON TARGET • POWER ${Math.round(profile.power)}%`;
+  diag('CORROSIVE CONE',`control=STRAIGHT_MANUAL_CONE gravity=0 pressure=${pressure.multiplier.toFixed(2)} elevation=${Math.round(profile.elevation)} contacts=${contactHits.length}/20 rooms=${contactHits.map(c=>c.hit.roomIndex+1).join(',')||'MISS'}`);
 }
 function spatialDriftPoint(pt){const seed=(shots+1)*17.319+pt.x*.019+pt.y*.027;const sx=Math.sin(seed*2.31),sy=Math.cos(seed*1.83);return{x:pt.x+sx*96,y:pt.y+sy*72}}
 function barrageRoomTargets(attacker,end){
@@ -4977,7 +4988,7 @@ function beginAimFromVesselGesture(e,pt){
   if(!ensureAimShooterReady())return false;
   if(xrayOpen)closePrivateXray('aim start');
   diag('AIM START',`${selected.weaponKey||'warrior'} from own vessel x=${Math.round(pt.x)} y=${Math.round(pt.y)}`);
-  tacticalAimView=true;updateBattleCamera();showCombatRange(4000);aiming=true;pointerId=e.pointerId;
+  tacticalAimView=true;updateBattleCamera();showCombatRange(4000);aiming=true;aimHud.classList.add('live');pointerId=e.pointerId;
   aimOriginWorld=muzzleWorld(selected,pt).clone();aimOriginStage=worldToStage(aimOriginWorld);startPx={x:aimOriginStage.x,y:aimOriginStage.y};currentPx={x:pt.x,y:pt.y};setAimVisual(startPx,currentPx);return true
 }
 function xrayWarriorAtStagePoint(pt){
@@ -5063,8 +5074,8 @@ let battleSceneWatch=0;const clock=new THREE.Clock();function animate(){requestA
   if(shot){
     const fade=q.life<.36?Math.max(0,q.life/.36):1;
     for(let wi=0;wi<shot.waves.length;wi++){
-      const wave=shot.waves[wi],progress=Math.max(0,Math.min(1,(age-wave.delay)/.34)),hold=Math.max(0,(age-wave.delay)-.34);
-      wave.body.style.strokeDashoffset=String(wave.length*(1-progress));wave.highlight.style.strokeDashoffset=String(wave.length*(1-progress));wave.body.style.opacity=progress<=0?'0':String(.22*fade*Math.max(.18,1-hold*2.0));wave.highlight.style.opacity=progress<=0?'0':String(.18*fade*Math.max(.14,1-hold*2.15));
+      const wave=shot.waves[wi],progress=Math.max(0,Math.min(1,(age-wave.delay)/.62)),hold=Math.max(0,(age-wave.delay)-.62);
+      wave.body.style.strokeDashoffset=String(wave.length*(1-progress));wave.highlight.style.strokeDashoffset=String(wave.length*(1-progress));wave.body.style.opacity=progress<=0?'0':String(.52*fade*Math.max(.22,1-hold*1.15));wave.highlight.style.opacity=progress<=0?'0':String(.40*fade*Math.max(.20,1-hold*1.28));
       for(const c of wave.slugs){if(c.phase>progress+.05||c.phase<Math.max(0,progress-.48)){c.el.style.opacity='0';continue}const t=Math.max(0,Math.min(1,c.phase)),len=Math.min(shot.guideLength-2,Math.max(0,t*shot.guideLength)),p=shot.guide.getPointAtLength(len),p2=shot.guide.getPointAtLength(Math.min(shot.guideLength,len+3)),dx=p2.x-p.x,dy=p2.y-p.y,mag=Math.hypot(dx,dy)||1,nx=-dy/mag,ny=dx/mag,ripple=Math.sin(age*30+c.seed)*2.2,x=p.x+nx*(c.side+ripple),y=p.y+ny*(c.side+ripple);c.el.setAttribute('cx',String(x));c.el.setAttribute('cy',String(y));c.el.setAttribute('transform',`rotate(${Math.atan2(dy,dx)*180/Math.PI} ${x} ${y})`);c.el.style.opacity=String(.76*fade*Math.max(.24,1-hold*2.0))}
     }
     if(shot.droplets?.length&&shot.guide?.getPointAtLength){
@@ -5072,9 +5083,13 @@ let battleSceneWatch=0;const clock=new THREE.Clock();function animate(){requestA
       for(const s of shot.droplets){const t=(age*s.speed+s.phase)%1;if(t>furthest+.06){s.el.style.opacity='0';continue}const len=Math.min(shot.guideLength-2,Math.max(0,t*shot.guideLength)),p=shot.guide.getPointAtLength(len),p2=shot.guide.getPointAtLength(Math.min(shot.guideLength,len+2)),ang=Math.atan2(p2.y-p.y,p2.x-p.x)*180/Math.PI;s.el.setAttribute('cx',String(p.x));s.el.setAttribute('cy',String(p.y+s.side*Math.sin(age*10+s.phase*17)));s.el.setAttribute('transform',`rotate(${ang} ${p.x} ${p.y})`);s.el.style.opacity=String((.36+.34*Math.sin(Math.PI*t))*fade)}
     }
   }
-  if(age>=.34&&!q.acidFlood.wave1){q.acidFlood.wave1=true;resolveCorrosiveFlood(q.acidFlood.attacker,q.acidFlood.impactAim||q.acidFlood.aimPt,q.acidFlood.weapon,q.acidFlood.hit,q.acidFlood.spreadHits);for(const p of q.acidFlood.spreadImpactAims||[])addAcidImpactWaveVisual(shot,p,1)}
-  if(age>=.49&&!q.acidFlood.wave2){q.acidFlood.wave2=true;applyAcidCoatingWave(q.acidFlood.attacker,q.acidFlood.hit,2,q.acidFlood.spreadHits);for(const p of q.acidFlood.spreadImpactAims||[])addAcidImpactWaveVisual(shot,p,2)}
-  if(age>=.64&&!q.acidFlood.wave3){q.acidFlood.wave3=true;applyAcidCoatingWave(q.acidFlood.attacker,q.acidFlood.hit,3,q.acidFlood.spreadHits);for(const p of q.acidFlood.spreadImpactAims||[])addAcidImpactWaveVisual(shot,p,3)}
+  // Twenty physical cone lanes resolve in sequence. Missed lanes remain misses; no hit is reassigned.
+  const targetTicks=age<.27?0:Math.min(20,Math.floor((age-.27)/.025)+1);
+  while(q.acidFlood.contactTicks<targetTicks&&!matchEnded){
+    const ordinal=q.acidFlood.contactTicks+1,contact=q.acidFlood.contacts[q.acidFlood.contactTicks];q.acidFlood.contactTicks++;
+    if(resolveAcidConeContact(q.acidFlood,contact,ordinal))addAcidImpactWaveVisual(shot,contact.impactAim,ordinal<8?1:ordinal<15?2:3);
+  }
+  if(q.acidFlood.contactTicks>=20)finalizeAcidConeStacks(q.acidFlood)
   if(q.life<=0){
     removeAcidScreenShot(q.acidFlood.screenShot);
     const localAction=!!q.acidFlood.localAction;acidActionLock=false;
