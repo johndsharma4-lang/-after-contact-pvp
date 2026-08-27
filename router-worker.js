@@ -16,163 +16,119 @@ function documentHeaders(response) {
   return headers;
 }
 
-const SPECIALIST_CSS = `
-<style id="ac-v03213-specialists">
-#characterRoster.acEarthRoster{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:9px!important}
-#characterRoster.acEarthRoster .characterCard{min-height:180px!important;padding:9px!important}
-#characterRoster.acEarthRoster .characterCard img{height:68%!important}
-#characterRoster.acEarthRoster .characterName{font-size:clamp(8px,.86vw,12px)!important;text-align:center}
-#characterRoster.acEarthRoster .characterWeapon{font-size:7px!important;text-align:center}
-@media(max-height:520px) and (orientation:landscape){#characterRoster.acEarthRoster .characterCard{min-height:100px!important}#characterRoster.acEarthRoster .characterCard img{height:62%!important}}
+const PATCH_CSS = `
+<style id="ac-v03215-earth-placement">
+#characterOverlay.acEarthPlacement .characterPanel{width:min(1180px,96%);height:min(620px,94%);grid-template-columns:.9fr 1.1fr;gap:16px;padding:16px}
+#characterOverlay.acEarthPlacement .characterIntro{justify-content:flex-start;min-width:0}
+#characterOverlay.acEarthPlacement .characterTitle{font-size:clamp(22px,3vw,38px)}
+#characterOverlay.acEarthPlacement .characterText{margin-bottom:9px}
+#characterOverlay.acEarthPlacement #characterRoster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;flex:1;min-height:0}
+#characterOverlay.acEarthPlacement #characterRoster .characterCard{min-height:0;padding:7px;border-color:rgba(116,217,255,.35);background:linear-gradient(180deg,rgba(64,133,174,.14),rgba(2,10,18,.88));cursor:grab}
+#characterOverlay.acEarthPlacement #characterRoster .characterCard img{height:70%;filter:none}
+#characterOverlay.acEarthPlacement #characterRoster .characterCard.placed{opacity:.46;border-color:rgba(121,240,172,.5)}
+#characterOverlay.acEarthPlacement #characterRoster .characterCard.dragging{border-color:#7fffc2;box-shadow:0 0 0 2px rgba(127,255,194,.2)}
+#characterOverlay.acEarthPlacement #characterContinue{display:none!important}
+#acEarthShipPanel{display:flex;flex-direction:column;min-width:0}
+#acEarthShipLabel{text-align:center;font-size:10px;font-weight:1000;letter-spacing:.12em;color:#f0c65a;margin-bottom:7px}
+#acEarthShipShell{position:relative;flex:1;min-height:0;display:grid;place-items:center;border:1px solid rgba(240,198,90,.22);border-radius:22px;background:radial-gradient(ellipse at center,rgba(240,198,90,.14),rgba(3,10,18,.96) 68%);overflow:hidden}
+#acEarthShipShell:before,#acEarthShipShell:after{content:"";position:absolute;left:5%;right:5%;height:35%;border-radius:50%;border:7px solid rgba(188,142,43,.62);transform:skewX(-14deg);pointer-events:none}
+#acEarthShipShell:before{top:12%;border-bottom-color:transparent}#acEarthShipShell:after{bottom:12%;border-top-color:transparent}
+#acEarthPlacementGrid{width:min(78%,410px);aspect-ratio:1.18/1;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:7px;z-index:2}
+.acEarthPlaceSlot{position:relative;border:2px solid rgba(240,198,90,.5);border-radius:8px;background:linear-gradient(180deg,rgba(8,20,32,.98),rgba(1,6,12,.98));box-shadow:inset 0 0 18px rgba(0,0,0,.8);overflow:hidden}
+.acEarthPlaceSlot:after{content:attr(data-label);position:absolute;right:4px;bottom:3px;font-size:7px;font-weight:900;opacity:.35}.acEarthPlaceSlot.hover{border-color:#7fffc2}.acEarthPlaceSlot.filled{border-color:rgba(121,240,172,.85)}
+.acEarthPlaceSlot img{width:100%;height:100%;object-fit:contain;pointer-events:none}
+#acEarthDeployBtn{height:48px;margin-top:9px;border:0;border-radius:13px;background:linear-gradient(180deg,#47b9ff,#147bd0);color:#fff;font-size:13px;font-weight:1000;letter-spacing:.12em;touch-action:manipulation}
+#acEarthDeployBtn:disabled{opacity:.32}.acEarthHint{text-align:center;font-size:8px;opacity:.55;margin-top:5px}
+#acEarthDragGhost{position:fixed;z-index:120;width:68px;height:78px;object-fit:contain;display:none;pointer-events:none;filter:drop-shadow(0 8px 14px #000)}
+@media(max-height:520px) and (orientation:landscape){#characterOverlay.acEarthPlacement{padding:5px}#characterOverlay.acEarthPlacement .characterPanel{height:calc(100% - 2px);padding:8px;gap:9px}#characterOverlay.acEarthPlacement .characterTitle{font-size:20px}#characterOverlay.acEarthPlacement .characterText{font-size:8px;margin:2px 0 5px}#characterOverlay.acEarthPlacement #characterRoster{gap:5px}#characterOverlay.acEarthPlacement #characterRoster .characterCard{padding:4px}#acEarthShipLabel{font-size:8px;margin-bottom:3px}#acEarthDeployBtn{height:40px;margin-top:5px}.acEarthHint{display:none}}
 </style>`;
 
 const INTERNAL_PATCH = `
-// === AFTER CONTACT v0.32.13 INTERNAL EARTH ROSTER PATCH ===
-const AC_EARTH_SPECIALISTS=Object.freeze([
-  Object.freeze({id:'bombardier',name:'BOMBARDIER',weapon:'HE-9 BARRAGE',base:'bombardier',accent:'#55bfff',mark:'HE-9'}),
-  Object.freeze({id:'sniper',name:'SNIPER',weapon:'LONGSHOT RIFLE',base:'bombardier',accent:'#d8efff',mark:'SNIPER'}),
-  Object.freeze({id:'radio_man',name:'RADIO MAN',weapon:'TARGET LOCATOR',base:'bombardier',accent:'#83dcff',mark:'RADIO'}),
-  Object.freeze({id:'combat_controller',name:'COMBAT CONTROLLER',weapon:'TACTICAL UPLINK',base:'bombardier',accent:'#7bbcff',mark:'CONTROL'})
+// === AFTER CONTACT v0.32.15 EARTH TACTICAL PLACEMENT ===
+const AC_EARTH_TEAM=Object.freeze([
+ {id:'bombardier',name:'BOMBARDIER',weapon:'HE-9 BARRAGE'},
+ {id:'sniper',name:'SNIPER',weapon:'LONGSHOT RIFLE'},
+ {id:'radio_man',name:'RADIO MAN',weapon:'TARGET LOCATOR • COMBAT CONTROLLER'}
 ]);
-const AC_EARTH_SPECIALIST_MAP=Object.freeze(Object.fromEntries(AC_EARTH_SPECIALISTS.map(u=>[u.id,u])));
-function acEarthSpecialistArt(type){
-  if(type==='bombardier')return '/bombardier.webp';
-  const u=AC_EARTH_SPECIALIST_MAP[type]||AC_EARTH_SPECIALISTS[0];
-  const icon=type==='sniper'?'⌖':type==='radio_man'?'⌁':'✦';
-  const extra=type==='sniper'?'<path d="M116 255h88M160 211v88" stroke="#dff5ff" stroke-width="6" opacity=".9"/>':type==='radio_man'?'<path d="M112 168q48-52 96 0M126 186q34-34 68 0M145 204q15-14 30 0" fill="none" stroke="#bceeff" stroke-width="6"/>':'<path d="M115 175h90M160 130v90" stroke="#bce6ff" stroke-width="8"/><circle cx="160" cy="175" r="55" fill="none" stroke="#83c8ff" stroke-width="5"/>';
-  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="320" height="420" viewBox="0 0 320 420"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#101b27"/><stop offset="1" stop-color="#03070c"/></linearGradient></defs><rect width="320" height="420" fill="url(#g)"/><circle cx="160" cy="112" r="42" fill="#25384a" stroke="'+u.accent+'" stroke-width="5"/><path d="M104 286q10-115 56-115t56 115l26 80H78z" fill="#1e3144" stroke="'+u.accent+'" stroke-width="5"/><path d="M118 238h84v68h-84z" fill="#142332" stroke="#78b7db" stroke-width="4"/>'+extra+'<text x="160" y="350" text-anchor="middle" fill="'+u.accent+'" font-family="Arial,sans-serif" font-size="30" font-weight="900">'+icon+'</text><text x="160" y="388" text-anchor="middle" fill="#ffffff" font-family="Arial,sans-serif" font-size="20" font-weight="900">'+u.mark+'</text></svg>';
-  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+const acEarthPlacement=[null,null,null];
+let acEarthDragIndex=null,acEarthDragPointer=null;
+function acEarthArt(type){
+ if(type==='bombardier')return '/bombardier.webp';
+ const icon=type==='sniper'?'⌖':'⌁',label=type==='sniper'?'SNIPER':'RADIO';
+ const feature=type==='sniper'?'<circle cx="160" cy="220" r="42" fill="none" stroke="#bde9ff" stroke-width="5"/><path d="M103 220h114M160 163v114" stroke="#e8f8ff" stroke-width="6"/>':'<path d="M105 165q55-60 110 0M123 188q37-39 74 0M144 210q16-16 32 0" fill="none" stroke="#bdeaff" stroke-width="7"/><rect x="120" y="230" width="80" height="55" rx="8" fill="#13283a" stroke="#7fdcff" stroke-width="4"/>';
+ const svg='<svg xmlns="http://www.w3.org/2000/svg" width="320" height="420" viewBox="0 0 320 420"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#15283b"/><stop offset="1" stop-color="#03070c"/></linearGradient></defs><rect width="320" height="420" fill="url(#g)"/><circle cx="160" cy="100" r="43" fill="#293e52" stroke="#83d9ff" stroke-width="5"/><path d="M98 300q13-130 62-130t62 130l26 66H72z" fill="#20364a" stroke="#6ccfff" stroke-width="5"/>'+feature+'<text x="160" y="350" text-anchor="middle" fill="#dff6ff" font-family="Arial" font-size="27" font-weight="900">'+icon+'</text><text x="160" y="391" text-anchor="middle" fill="#fff" font-family="Arial" font-size="19" font-weight="900">'+label+'</text></svg>';
+ return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 }
-
-const acOriginalValidateFactionStarter=validateFactionStarter;
-validateFactionStarter=function(faction,warrior){
-  if(faction==='earth')return !!AC_EARTH_SPECIALIST_MAP[warrior];
-  return acOriginalValidateFactionStarter(faction,warrior);
-};
-
-const acOriginalRenderFactionRoster=renderFactionRoster;
-renderFactionRoster=function(){
-  if(selectedFaction!=='earth'){
-    const roster=document.getElementById('characterRoster');if(roster)roster.classList.remove('acEarthRoster');
-    return acOriginalRenderFactionRoster();
-  }
-  const roster=document.getElementById('characterRoster');if(!roster)return false;
-  roster.classList.add('acEarthRoster');
-  [...roster.querySelectorAll('.characterCard,.characterReserve')].forEach(n=>n.remove());
-  selectedWarriorType=AC_EARTH_SPECIALISTS[0].id;
-  for(const unit of AC_EARTH_SPECIALISTS){
-    const card=document.createElement('div');
-    card.className='characterCard'+(unit.id===selectedWarriorType?' selected':'');
-    card.dataset.warrior=unit.id;card.setAttribute('role','button');card.tabIndex=0;
-    const img=document.createElement('img');img.src=acEarthSpecialistArt(unit.id);img.alt=unit.name;img.style.filter='none';
-    const name=document.createElement('div');name.className='characterName';name.textContent=unit.name;
-    const weapon=document.createElement('div');weapon.className='characterWeapon';weapon.textContent=unit.weapon;
-    card.append(img,name,weapon);
-    const pick=e=>selectStarterCard(unit.id,card,e);
-    card.addEventListener('pointerup',pick,{passive:false});
-    card.addEventListener('click',e=>{if(e.detail===0)pick(e)},{passive:false});
-    roster.insertBefore(card,characterContinue);
-  }
-  characterContinue.textContent='DEPLOY BOMBARDIER';characterContinue.disabled=false;
-  const kicker=document.querySelector('.characterKicker');if(kicker)kicker.textContent='EARTH COMMAND • SPECIALIST ROSTER';
-  const text=document.querySelector('.characterText');if(text)text.textContent='Choose your Earth warrior, then deploy that warrior into any fortress compartment.';
-  diag('EARTH ROSTER','Bombardier + Sniper + Radio Man + Combat Controller ready');
-  return true;
-};
-
-const acOriginalApplyStarterProfile=applyStarterProfile;
-applyStarterProfile=function(type){
-  const specialist=selectedFaction==='earth'?AC_EARTH_SPECIALIST_MAP[type]:null;
-  if(!specialist)return acOriginalApplyStarterProfile(type);
-  acOriginalApplyStarterProfile('bombardier');
-  selectedWarriorType=specialist.id;
-  const w=localSide==='earth'?eWarriors[0]:aWarriors[0];
-  if(w){w.weaponKey='bombardier';w.acEarthSpecialist=specialist.id;w.displayName=specialist.name;if(w.nameText)w.nameText.textContent=specialist.name;}
-  starterCard.dataset.warriorStock=specialist.id;
-  const img=starterCard.querySelector('img');if(img){img.src=acEarthSpecialistArt(specialist.id);img.style.display='block';img.style.filter='none'}
-  const cardName=starterCard.querySelector('.cardName');if(cardName)cardName.textContent=specialist.name;
-  const deployText=document.querySelector('.deployText');if(deployText)deployText.textContent='Drag your '+specialist.name+' into any fortress compartment. You can reposition before battle.';
-  const shipLabel=document.querySelector('.shipLabel');if(shipLabel)shipLabel.textContent='EARTH COMMAND • 3×3 TEST FORTRESS';
-  characterContinue.textContent='DEPLOY '+specialist.name;characterContinue.disabled=false;
-  diag('EARTH SPECIALIST PROFILE',specialist.id+' visual identity / stable combat route bombardier');
-};
-
-const acOriginalSelectStarterCard=selectStarterCard;
-selectStarterCard=function(type,card,e){
-  if(selectedFaction!=='earth'||!AC_EARTH_SPECIALIST_MAP[type])return acOriginalSelectStarterCard(type,card,e);
-  if(e)stopNative(e);
-  selectedWarriorType=type;
-  document.querySelectorAll('#characterRoster .characterCard').forEach(c=>c.classList.remove('selected'));
-  if(card)card.classList.add('selected');
-  applyStarterProfile(type);characterContinue.disabled=false;
-  diag('WARRIOR SELECT',AC_EARTH_SPECIALIST_MAP[type].name+' faction=earth');
-};
-
-// Keep the modern physical cutaway/interior system, but suppress the obsolete glow-silhouette X-ray layer.
-function acSuppressLegacyXrayGlow(){
-  for(const w of allWarriors||[]){
-    if(w.xrayGlow){w.xrayGlow.visible=false;if(w.xrayGlow.material)w.xrayGlow.material.opacity=0;}
-    if(w.captainBeacon){w.captainBeacon.visible=false;if(w.captainBeacon.material)w.captainBeacon.material.opacity=0;}
-  }
+function acEarthPlacementOpen(){return selectedFaction==='earth'&&gameFlowPhase==='warrior'&&!characterOverlay.classList.contains('hidden')}
+function acBuildEarthPlacement(){
+ if(selectedFaction!=='earth')return false;
+ characterOverlay.classList.add('acEarthPlacement');
+ const panel=characterOverlay.querySelector('.characterPanel'),intro=panel?.querySelector('.characterIntro'),roster=document.getElementById('characterRoster');if(!panel||!intro||!roster)return false;
+ const kicker=intro.querySelector('.characterKicker'),title=intro.querySelector('.characterTitle'),text=intro.querySelector('.characterText');
+ if(kicker)kicker.textContent='EARTH COMMAND • TACTICAL DEPLOYMENT';if(title)title.textContent='PLACE YOUR WARRIORS';if(text)text.textContent='Drag all three Earth warriors into the ship interior. Choose their strategic starting rooms, then press DEPLOY.';
+ [...roster.querySelectorAll('.characterCard,.characterReserve')].forEach(n=>n.remove());
+ AC_EARTH_TEAM.forEach((u,i)=>{const card=document.createElement('div');card.className='characterCard';card.dataset.acEarthIndex=String(i);card.innerHTML='<img src="'+acEarthArt(u.id)+'" alt="'+u.name+'"><div class="characterName">'+u.name+'</div><div class="characterWeapon">'+u.weapon+'</div>';card.addEventListener('pointerdown',e=>acEarthBeginDrag(e,i),{passive:false});roster.insertBefore(card,characterContinue)});
+ let ship=document.getElementById('acEarthShipPanel');if(!ship){ship=document.createElement('section');ship.id='acEarthShipPanel';ship.innerHTML='<div id="acEarthShipLabel">EARTH FORTRESS • CUTAWAY INTERIOR</div><div id="acEarthShipShell"><div id="acEarthPlacementGrid">'+Array.from({length:9},(_,i)=>'<div class="acEarthPlaceSlot" data-index="'+i+'" data-label="'+(i+1)+'"></div>').join('')+'</div></div><button id="acEarthDeployBtn" type="button" disabled>PLACE ALL 3</button><div class="acEarthHint">DRAG A WARRIOR AGAIN TO REPOSITION • ONE WARRIOR PER COMPARTMENT</div>';panel.appendChild(ship);ship.querySelector('#acEarthDeployBtn').addEventListener('pointerup',acEarthDeploy,{passive:false});}
+ let ghost=document.getElementById('acEarthDragGhost');if(!ghost){ghost=document.createElement('img');ghost.id='acEarthDragGhost';ghost.alt='';document.body.appendChild(ghost)}
+ acEarthPlacement.fill(null);acEarthRefreshPlacement();diag('EARTH PLACEMENT','three-warrior cutaway placement screen ready');return true;
 }
-acSuppressLegacyXrayGlow();
-if(typeof refreshPrivateXrayVisuals==='function'){
-  const acOriginalRefreshPrivateXrayVisuals=refreshPrivateXrayVisuals;
-  refreshPrivateXrayVisuals=function(...args){const r=acOriginalRefreshPrivateXrayVisuals(...args);acSuppressLegacyXrayGlow();return r;};
+function acEarthRefreshPlacement(){
+ if(!acEarthPlacementOpen())return;
+ document.querySelectorAll('#characterRoster .characterCard').forEach(c=>{const i=Number(c.dataset.acEarthIndex);c.classList.toggle('placed',Number.isInteger(acEarthPlacement[i]))});
+ document.querySelectorAll('.acEarthPlaceSlot').forEach(slot=>{const room=Number(slot.dataset.index),wi=acEarthPlacement.findIndex(x=>x===room);slot.innerHTML='';slot.classList.toggle('filled',wi>=0);if(wi>=0){const img=document.createElement('img');img.src=acEarthArt(AC_EARTH_TEAM[wi].id);img.alt=AC_EARTH_TEAM[wi].name;slot.appendChild(img)}});
+ const ready=acEarthPlacement.every(Number.isInteger)&&new Set(acEarthPlacement).size===3,btn=document.getElementById('acEarthDeployBtn');if(btn){btn.disabled=!ready;btn.textContent=ready?'DEPLOY':'PLACE ALL 3'}
 }
-if(typeof updatePrivateXrayAnimation==='function'){
-  const acOriginalUpdatePrivateXrayAnimation=updatePrivateXrayAnimation;
-  updatePrivateXrayAnimation=function(...args){const r=acOriginalUpdatePrivateXrayAnimation(...args);acSuppressLegacyXrayGlow();return r;};
+function acEarthBeginDrag(e,i){
+ if(!acEarthPlacementOpen())return;e.preventDefault();e.stopPropagation();acEarthDragIndex=i;acEarthDragPointer=e.pointerId;const card=e.currentTarget;card.classList.add('dragging');const ghost=document.getElementById('acEarthDragGhost');ghost.src=acEarthArt(AC_EARTH_TEAM[i].id);ghost.style.display='block';ghost.style.left=(e.clientX-34)+'px';ghost.style.top=(e.clientY-39)+'px';
+ try{card.setPointerCapture(e.pointerId)}catch{}
 }
-const acBuildBadge=document.querySelector('.lab');if(acBuildBadge)acBuildBadge.textContent='3D LAB • MOBILE PVP TEST • v0.32.13';
-diag('PATCH 0.32.13','REAL EARTH ROSTER + LEGACY XRAY GLOW REMOVED');
+function acEarthMoveDrag(e){if(acEarthDragIndex==null||e.pointerId!==acEarthDragPointer)return;e.preventDefault();const ghost=document.getElementById('acEarthDragGhost');ghost.style.left=(e.clientX-34)+'px';ghost.style.top=(e.clientY-39)+'px';const hit=document.elementsFromPoint(e.clientX,e.clientY).find(x=>x.classList?.contains('acEarthPlaceSlot'));document.querySelectorAll('.acEarthPlaceSlot').forEach(s=>s.classList.toggle('hover',s===hit))}
+function acEarthEndDrag(e){
+ if(acEarthDragIndex==null||e.pointerId!==acEarthDragPointer)return;e.preventDefault();const wi=acEarthDragIndex,hit=document.elementsFromPoint(e.clientX,e.clientY).find(x=>x.classList?.contains('acEarthPlaceSlot'));document.getElementById('acEarthDragGhost').style.display='none';document.querySelectorAll('.acEarthPlaceSlot').forEach(s=>s.classList.remove('hover'));document.querySelectorAll('#characterRoster .characterCard').forEach(c=>c.classList.remove('dragging'));
+ if(hit){const room=Number(hit.dataset.index),other=acEarthPlacement.findIndex((r,j)=>j!==wi&&r===room);if(other<0)acEarthPlacement[wi]=room;}
+ acEarthDragIndex=null;acEarthDragPointer=null;acEarthRefreshPlacement();
+}
+document.addEventListener('pointermove',acEarthMoveDrag,{passive:false,capture:true});document.addEventListener('pointerup',acEarthEndDrag,{passive:false,capture:true});document.addEventListener('pointercancel',acEarthEndDrag,{passive:false,capture:true});
+const acOldRenderFactionRoster=renderFactionRoster;
+renderFactionRoster=function(){if(selectedFaction!=='earth'){characterOverlay.classList.remove('acEarthPlacement');document.getElementById('acEarthShipPanel')?.remove();return acOldRenderFactionRoster()}selectedWarriorType='bombardier';setTimeout(acBuildEarthPlacement,0);return true};
+const acOldValidateFactionStarter=validateFactionStarter;validateFactionStarter=function(faction,warrior){if(faction==='earth')return warrior==='bombardier';return acOldValidateFactionStarter(faction,warrior)};
+function acPrepEarthBattleTeam(){
+ const warriors=localSide==='earth'?eWarriors:aWarriors;
+ AC_EARTH_TEAM.forEach((u,i)=>{const w=warriors[i];if(!w)return;applyProfileToWarrior(w,'bombardier');w.weaponKey='bombardier';w.faction='earth';w.acEarthSpecialist=u.id;w.displayName=u.name;w.passive=false;if(w.nameText)w.nameText.textContent=u.name;const art=acEarthArt(u.id);if(w.sprite)textureLoader.load(art,t=>{w.sprite.material.map=t;w.sprite.material.needsUpdate=true},undefined,()=>{})});
+}
+function acEarthDeploy(e){
+ if(e)stopNative(e);if(!acEarthPlacement.every(Number.isInteger)||new Set(acEarthPlacement).size!==3)return;
+ selectedWarriorType='bombardier';const saved=[...acEarthPlacement];
+ continueToDeployment(e);deployment.length=3;for(let i=0;i<3;i++)deployment[i]=saved[i];acPrepEarthBattleTeam();updateDeployUI();diag('EARTH DEPLOY','Bombardier + Sniper + Radio Man positions committed');setTimeout(()=>startBattle(e),40);
+}
+function acSuppressLegacyXrayGlow(){for(const w of allWarriors||[]){if(w.xrayGlow){w.xrayGlow.visible=false;if(w.xrayGlow.material)w.xrayGlow.material.opacity=0}if(w.captainBeacon){w.captainBeacon.visible=false;if(w.captainBeacon.material)w.captainBeacon.material.opacity=0}}}
+acSuppressLegacyXrayGlow();if(typeof refreshPrivateXrayVisuals==='function'){const f=refreshPrivateXrayVisuals;refreshPrivateXrayVisuals=function(...a){const r=f(...a);acSuppressLegacyXrayGlow();return r}}if(typeof updatePrivateXrayAnimation==='function'){const f=updatePrivateXrayAnimation;updatePrivateXrayAnimation=function(...a){const r=f(...a);acSuppressLegacyXrayGlow();return r}}
+const acBuildBadge=document.querySelector('.lab');if(acBuildBadge)acBuildBadge.textContent='3D LAB • MOBILE PVP TEST • v0.32.15';diag('PATCH 0.32.15','EARTH WARRIOR SCREEN NOW INCLUDES CUTAWAY SHIP PLACEMENT');
 `;
 
 function patchIndexHtml(html) {
   let out = html;
-  if (!out.includes('ac-v03213-specialists')) {
-    out = out.replace('</head>', `${SPECIALIST_CSS}\n</head>`);
-  }
-  if (!out.includes('PATCH 0.32.13')) {
+  if (!out.includes('ac-v03215-earth-placement')) out = out.replace('</head>', `${PATCH_CSS}\n</head>`);
+  if (!out.includes('PATCH 0.32.15')) {
     const close = out.lastIndexOf('</script>');
     if (close > 0) out = out.slice(0, close) + INTERNAL_PATCH + '\n' + out.slice(close);
   }
-  out = out.replace('</body>', '<script src="/lifecycle-fix.js?v=20260827-2"></script>\n</body>');
+  out = out.replace('</body>', '<script src="/lifecycle-fix.js?v=20260827-4"></script>\n</body>');
   return out;
 }
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-
     if (isDocumentRequest(request, url)) {
       const indexUrl = new URL('/index.html', url);
-      const assetRequest = new Request(indexUrl.toString(), {
-        method: request.method,
-        headers: request.headers,
-      });
-
+      const assetRequest = new Request(indexUrl.toString(), {method: request.method, headers: request.headers});
       const assetResponse = await env.ASSETS.fetch(assetRequest);
       const headers = documentHeaders(assetResponse);
-
-      if (request.method === 'HEAD') {
-        return new Response(null, {
-          status: assetResponse.status,
-          statusText: assetResponse.statusText,
-          headers,
-        });
-      }
-
-      let html = await assetResponse.text();
-      html = patchIndexHtml(html);
-
-      return new Response(html, {
-        status: assetResponse.status,
-        statusText: assetResponse.statusText,
-        headers,
-      });
+      if (request.method === 'HEAD') return new Response(null, {status: assetResponse.status,statusText: assetResponse.statusText,headers});
+      let html = await assetResponse.text();html = patchIndexHtml(html);
+      return new Response(html, {status: assetResponse.status,statusText: assetResponse.statusText,headers});
     }
-
     return baseWorker.fetch(request, env, ctx);
   },
 };
