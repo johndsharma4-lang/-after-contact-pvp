@@ -796,13 +796,13 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <button id="moveDown" aria-label="Move down">▼</button>
 </div>
   <div class="hud"><div class="side"><div class="name" id="leftFactionName">AURELIAN ACCORD</div><div class="sub" id="leftFactionSub">SOLAR LANCER • PENETRATION TEST</div></div><div class="side right"><div class="name" id="rightFactionName">EARTH COMMAND</div><div class="sub" id="rightFactionSub">BOMBARDIER • FORTRESS LV.1</div></div></div>
-  <div class="lab">3D LAB • MOBILE PVP TEST • v0.32.6</div>
+  <div class="lab">3D LAB • MOBILE PVP TEST • v0.32.7</div>
   <div id="structureHud"><div class="structureSide"><div class="structureLabel" id="leftStructureLabel">VESSEL STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="leftStructureFill"></div></div></div><div class="structureSide right"><div class="structureLabel" id="rightStructureLabel">FORTRESS STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="rightStructureFill"></div></div></div></div>
   <div id="rangeBadge">RANGE 885m</div>
   <svg id="aimSvg" viewBox="0 0 1280 720" preserveAspectRatio="none"><g id="acidShotLayer" pointer-events="none"></g><path id="aimPath"/><path id="aimDropPath"/><circle id="aimDot" r="4"/><circle id="muzzleDot" r="6"/></svg>
   <div id="unitHpLayer"></div>
   <div id="status">DEPLOY YOUR STARTER WARRIOR • THEN PRESS BATTLE</div>
-  <div id="aimHud"><div class="metric" id="angleMetric">ANGLE 0°</div><div class="metric" id="powerMetric">POWER 0%</div><div class="metric" id="shotMetric">SHOTS 0</div></div>
+  <div id="aimHud"><div class="metric" id="angleMetric">ANGLE 0%</div><div class="metric" id="powerMetric">POWER 0%</div><div class="metric" id="shotMetric">SHOTS 0</div></div>
   <div id="weaponPanel"><div id="weaponName">NO UNIT SELECTED</div><div id="weaponDesc">Deploy your warriors before battle.</div></div>
   <div id="powerTray">POWER-UP STORAGE • RESERVED</div>
   <div id="damageMonitor"><div class="dmgTitle">TARGET DAMAGE</div><div class="dmgRow"><span class="dmgLabel">TARGET</span><span class="dmgValue" id="targetRoom">—</span></div><div class="dmgRow"><span class="dmgLabel">ARMOR</span><span class="dmgValue" id="targetArmor">—</span></div><div class="dmgRow"><span class="dmgLabel">BREACH</span><span class="dmgValue" id="targetBreach">—</span></div><div class="dmgRow"><span class="dmgLabel">WARRIOR</span><span class="dmgValue" id="targetUnit">HIDDEN</span></div></div>
@@ -813,7 +813,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <div style="font:900 8px system-ui;color:#9fffc8;margin-bottom:6px">OWNER • NDA LEDGER</div>
 <div id="ownerNdaLedgerText" style="white-space:pre-wrap;max-height:180px;overflow:auto;user-select:text!important;-webkit-user-select:text!important">NOT LOADED</div>
 </div>
-<div id="ownerBuildCard" style="display:none;margin:8px 0;padding:9px;border:1px solid rgba(116,217,255,.35);border-radius:10px;background:rgba(4,18,29,.92);font:800 8px/1.45 system-ui;color:#d9f5ff"><div style="color:#82e7ff;letter-spacing:.12em;margin-bottom:5px">LATEST BUILD • v0.32.6</div><div>WET LIQUID ACID • HP-MATCHED SILHOUETTE • TORN OPENINGS • FOUNDATION WRECK</div><div style="margin-top:5px;opacity:.7">RUN BUILD SHOWCASE stages the enemy vessel at 100%, 50%, 10%, and 0% structure without changing combat data.</div></div>
+<div id="ownerBuildCard" style="display:none;margin:8px 0;padding:9px;border:1px solid rgba(116,217,255,.35);border-radius:10px;background:rgba(4,18,29,.92);font:800 8px/1.45 system-ui;color:#d9f5ff"><div style="color:#82e7ff;letter-spacing:.12em;margin-bottom:5px">LATEST BUILD • v0.32.7</div><div>SEPARATE RANGE/HEIGHT CONTROL • ANGLE % REFERENCE • HE-9 AI RECOVERY</div><div style="margin-top:5px;opacity:.7">RUN BUILD SHOWCASE stages the enemy vessel at 100%, 50%, 10%, and 0% structure without changing combat data.</div></div>
 <div class="dbgActions"><button id="ownerBuildShowcase" class="wide" type="button">RUN BUILD SHOWCASE</button><button id="ownerBuildNotes" class="wide" type="button">LATEST BUILD NOTES</button><button id="ownerDestructionDemo" class="wide" type="button">ROOM DESTRUCTION DEMO</button><button id="ownerNdaLedgerBtn" class="wide" type="button">NDA LEDGER</button><button id="ownerNdaLedgerCopy" class="wide" type="button">COPY NDA LEDGER</button><button id="ownerDbgCopy" class="wide" type="button">COPY MATCH LOG</button><button id="ownerDbgRefresh" type="button">REFRESH SNAPSHOT</button><button id="ownerDbgShare" type="button">SHARE</button><button id="ownerDbgSelectAll" class="wide" type="button">SELECT ALL LOG</button><button id="ownerDbgClear" class="wide" type="button">CLEAR LOG</button></div></div>
 
 
@@ -824,7 +824,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
   <div id="mpOverlay" aria-live="polite">
     <div class="mpCard">
       <div class="mpKicker">AFTER CONTACT • MAIN MENU</div>
-      <div class="mpTitle">PRIVATE PVP TEST • v0.32.6</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
+      <div class="mpTitle">PRIVATE PVP TEST • v0.32.7</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
       <div class="mpText">Choose Solo Game or Multiplayer. Multiplayer creates a private room you can share with another tester.</div>
       <div class="mpActions"><button class="mpBtn primary" id="mpHostBtn">MULTIPLAYER</button><button class="mpBtn" id="mpSoloBtn">SOLO GAME</button><button class="mpBtn" id="replayStoryBtn" type="button">REPLAY STORY INTRO</button></div>
       <div class="mpJoin"><input id="mpCodeInput" maxlength="6" inputmode="text" autocomplete="off" placeholder="ROOM CODE"><button class="mpBtn" id="mpJoinBtn">JOIN</button></div>
@@ -1391,9 +1391,9 @@ const baseOwnerDebugReport=ownerDebugReport;
 ownerDebugReport=function(){
   const crewState=(label,crew)=>`${label} CREW ${crew.filter(w=>w.active).map(w=>`${w.isCaptain?'CAPTAIN':`S${w.index+1}`}@R${Number.isInteger(w.roomIndex)?w.roomIndex+1:'-'} HP${Math.round(w.hp)}/${w.maxHp} AA${Math.round(w.aa)}/${w.maxAa}`).join(' | ')}`;
   let leftCrew=[],rightCrew=[];try{leftCrew=aCrew;rightCrew=eCrew}catch{}
-  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.32.6').replace('build=2026-08-20_01-58PM_PT','build=2026-08-26_SHARED_MANUAL_BALLISTICS').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT').replace('vfxWatchdog=8s','vfxWatchdog=3s/acid8s/barrage12s/solar15s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
+  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.32.7').replace('build=2026-08-20_01-58PM_PT','build=2026-08-26_SHARED_MANUAL_BALLISTICS').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT').replace('vfxWatchdog=8s','vfxWatchdog=3s/acid8s/barrage12s/solar15s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
 };
-const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.32.6';
+const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.32.7';
 function debugButtonAllowed(){return true}
 function updateDebugButtonVisibility(){if(!ownerDbgBtn)return;ownerDbgBtn.classList.toggle('debugVisible',debugButtonAllowed())}
 function refreshOwnerDebug(){if(!ownerDbgText)return;ownerDbgText.textContent=ownerDebugReport()}
@@ -3509,8 +3509,14 @@ function runSoloEarthTurn(){
   const world=target.room.hitPlane.getWorldPosition(new THREE.Vector3());
   const pt=worldToStage(world);
   const power=72+Math.random()*24;
-  fireWarriorFromStage(enemy,pt,power,false);
-  diag('AI BARRAGE WAIT','turn held until all five missiles resolve');
+  try{
+    fireWarriorFromStage(enemy,pt,power,false);
+    diag('AI BARRAGE WAIT','turn held until all five missiles resolve');
+  }catch(err){
+    diag('AI HE9 RECOVERY',String(err?.stack||err?.message||err));
+    barrageActionLock=false;refreshMovePad();
+    if(!completeTurn()){soloRound++;setSoloTurn('aurelian')}
+  }
 }
 function endSoloPlayerTurnAfterShot(){
   if(multiplayer||!battleStarted||matchEnded)return;
@@ -3713,8 +3719,11 @@ function bombardierTrajectoryProfile(a,b){
   // A nearly level release is a direct shot. Raising the release point deliberately transitions
   // into artillery flight; there is no target lock or hidden angle correction.
   const mode=elevation>8?'LOB':'DIRECT';
-  const power=Math.max(18,Math.min(100,dist/5.1));
-  return{elevation,dist,power,forward,towardOpponent,mode};
+  const horizontalReach=Math.max(0,Math.abs(dx)-18);
+  // Range and height are separate controls: horizontal drag owns thrust, vertical drag owns elevation.
+  // The exponential curve expands the useful middle band so small finger changes do not double range.
+  const power=Math.max(18,Math.min(100,18+82*(1-Math.exp(-horizontalReach/390))));
+  return{elevation,dist,power,forward,towardOpponent,mode,horizontalReach};
 }
 function bombardierAimGuide(a,b){
   const p=bombardierTrajectoryProfile(a,b),dx=b.x-a.x,dy=b.y-a.y,mag=Math.hypot(dx,dy)||1;
@@ -3780,7 +3789,8 @@ function setAimVisual(a,b){
     if(guide.profile.forward){const descent=bombardierDescentPreview(selected,a,b,guide.profile);if(descent){aimDropPath.setAttribute('d',descent);aimDropPath.style.stroke='#ffc15a';aimDropPath.style.opacity='.28'}}
   }
   const angle=Math.max(-86,Math.min(86,Math.atan2(a.y-b.y,Math.max(1,Math.abs(b.x-a.x)))*180/Math.PI));
-  angleMetric.textContent=`ANGLE ${Math.round(angle)}°`;powerMetric.textContent=`POWER ${Math.round(displayPower)}%`;
+  const anglePct=Math.round(angle/90*100),angleSign=anglePct>0?'+':'';
+  angleMetric.textContent=`ANGLE ${angleSign}${anglePct}%`;powerMetric.textContent=`POWER ${Math.round(displayPower)}%`;
 }
 function clearAim(){aimPath.style.opacity='0';aimPath.style.stroke='';aimPath.style.strokeWidth='';aimPath.style.filter='';aimDropPath.setAttribute('d','');aimDropPath.style.opacity='0';aimDot.style.opacity='0';aimDot.style.fill='';muzzleDot.style.opacity='0';rangeBadge?.classList.remove('rangeLive');aiming=false;startPx=currentPx=null;aimOriginWorld=aimOriginStage=null;pointerId=null}
 function stageRay(pt){const ndc=new THREE.Vector2(pt.x/640-1,1-pt.y/360);raycaster.setFromCamera(ndc,camera);return raycaster.ray.clone()}
@@ -4715,8 +4725,11 @@ function acidTrajectoryProfile(start,aimPt){
   const elevation=Math.atan2(dy,Math.max(1,Math.abs(dx)))*180/Math.PI;
   const towardOpponent=start.x<0?1:-1,forward=dx*towardOpponent>12;
   // More usable mobile range: a normal drag stays in the middle band instead of saturating at 100%.
-  const power=Math.max(16,Math.min(100,dist/6.8));
-  return{elevation,dist,power,mode:'MANUAL_ANGLE_POWER',forward,towardOpponent};
+  const horizontalReach=Math.max(0,Math.abs(dx)-18);
+  // Horizontal reach controls pressure; vertical drag controls launch height. This removes the old
+  // coupling where aiming higher also injected a large, unintended power increase.
+  const power=Math.max(16,Math.min(100,16+84*(1-Math.exp(-horizontalReach/420))));
+  return{elevation,dist,power,mode:'MANUAL_ANGLE_POWER',forward,towardOpponent,horizontalReach};
 }
 function acidBallisticStagePath(attacker,startStage,aimPt,profile,resolveHit=true){
   // Fully manual ballistics. The unmodified drag direction controls angle and drag distance controls power.
@@ -4726,10 +4739,10 @@ function acidBallisticStagePath(attacker,startStage,aimPt,profile,resolveHit=tru
   const power=Math.max(.16,Math.min(1,(profile.power||16)/100));
   // Heavier, slower acid gives the player time to read the rise and fall. Speed and gravity remain
   // deterministic and are shared by the preview and the released liquid.
-  const speed=230+power*620;
+  const speed=280+power*450;
   const vx=dirX*speed;
   const launchVy=dirY*speed;
-  const gravity=500;
+  const gravity=430;
 
   const maxT=3.2,steps=200,points=[];
   let hit=null,impactAim=null;
@@ -4881,7 +4894,7 @@ function he9BallisticStagePath(attacker,startStage,aimPt,power,lane=0,resolveHit
   const baseAngle=Math.atan2(dy,dx)+lane,unitPower=Math.max(.18,Math.min(1,power/100));
   // HE-9 rockets stabilize a level launch for a truly direct shot. Once elevated, thrust cuts and
   // gravity owns the arc. This is manual direction/power control, never endpoint targeting.
-  const speed=mode==='DIRECT'?920:300+unitPower*690,gravity=mode==='DIRECT'?0:500;
+  const speed=mode==='DIRECT'?880:360+unitPower*470,gravity=mode==='DIRECT'?0:440;
   const vx=Math.cos(baseAngle)*speed,launchVy=Math.sin(baseAngle)*speed;
   const maxT=3.2,steps=210,points=[];let hit=null;
   for(let i=0;i<=steps;i++){
@@ -4893,12 +4906,17 @@ function he9BallisticStagePath(attacker,startStage,aimPt,power,lane=0,resolveHit
   return{points,hit,mode,elevation,forward,launch:{vx,vy:launchVy,gravity,power:unitPower}};
 }
 function stageTrajectoryCurve(points,roomHit=null){
-  const sampled=[];for(let i=0;i<points.length;i+=3)sampled.push(worldPointOnCameraPlane(points[i],new THREE.Vector3(0,9,6)));
-  const last=points[points.length-1];
+  // A malformed or extremely short ballistic path must never stop the combat loop.
+  const usable=(points||[]).filter(p=>Number.isFinite(p?.x)&&Number.isFinite(p?.y));
+  if(!usable.length)usable.push({x:640,y:360},{x:641,y:360});
+  const sampled=[];for(let i=0;i<usable.length;i+=3)sampled.push(worldPointOnCameraPlane(usable[i],new THREE.Vector3(0,9,6)));
+  const last=usable[usable.length-1];
   const endWorld=roomHit?.room?stagePointToRoomWorld(roomHit.impactStage,roomHit.room):worldPointOnCameraPlane(last,new THREE.Vector3(0,9,6));
   if(!sampled.length||sampled[sampled.length-1].distanceToSquared(endWorld)>.0001)sampled.push(endWorld);
-  if(sampled.length===1)sampled.push(endWorld.clone().add(new THREE.Vector3(.001,0,0)));
-  return{curve:new THREE.CatmullRomCurve3(sampled,false,'centripetal'),target:endWorld};
+  const compact=[];for(const p of sampled)if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&Number.isFinite(p.z)&&(!compact.length||compact[compact.length-1].distanceToSquared(p)>.0000001))compact.push(p);
+  if(!compact.length)compact.push(new THREE.Vector3(0,9,6));
+  while(compact.length<4){const lastPoint=compact[compact.length-1],prev=compact[Math.max(0,compact.length-2)],step=lastPoint.clone().sub(prev);if(step.lengthSq()<.000001)step.set(.001,0,0);compact.push(lastPoint.clone().add(step.multiplyScalar(.001)))}
+  return{curve:new THREE.CatmullRomCurve3(compact,false,'centripetal'),target:endWorld};
 }
 function spawnArc(attacker,start,aimPt,power,weapon){
   const localAction=(!multiplayer&&attacker.side==='aurelian')||(multiplayer&&attacker.side===localSide);
