@@ -796,7 +796,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <button id="moveDown" aria-label="Move down">▼</button>
 </div>
   <div class="hud"><div class="side"><div class="name" id="leftFactionName">AURELIAN ACCORD</div><div class="sub" id="leftFactionSub">SOLAR LANCER • PENETRATION TEST</div></div><div class="side right"><div class="name" id="rightFactionName">EARTH COMMAND</div><div class="sub" id="rightFactionSub">BOMBARDIER • FORTRESS LV.1</div></div></div>
-  <div class="lab">3D LAB • MOBILE PVP TEST • v0.32.9</div>
+  <div class="lab">3D LAB • MOBILE PVP TEST • v0.32.10</div>
   <div id="structureHud"><div class="structureSide"><div class="structureLabel" id="leftStructureLabel">VESSEL STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="leftStructureFill"></div></div></div><div class="structureSide right"><div class="structureLabel" id="rightStructureLabel">FORTRESS STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="rightStructureFill"></div></div></div></div>
   <div id="rangeBadge">RANGE 885m</div>
   <svg id="aimSvg" viewBox="0 0 1280 720" preserveAspectRatio="none"><g id="acidShotLayer" pointer-events="none"></g><path id="aimPath"/><path id="aimDropPath"/><circle id="aimDot" r="4"/><circle id="muzzleDot" r="6"/></svg>
@@ -813,7 +813,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <div style="font:900 8px system-ui;color:#9fffc8;margin-bottom:6px">OWNER • NDA LEDGER</div>
 <div id="ownerNdaLedgerText" style="white-space:pre-wrap;max-height:180px;overflow:auto;user-select:text!important;-webkit-user-select:text!important">NOT LOADED</div>
 </div>
-<div id="ownerBuildCard" style="display:none;margin:8px 0;padding:9px;border:1px solid rgba(116,217,255,.35);border-radius:10px;background:rgba(4,18,29,.92);font:800 8px/1.45 system-ui;color:#d9f5ff"><div style="color:#82e7ff;letter-spacing:.12em;margin-bottom:5px">LATEST BUILD • v0.32.9</div><div>SEPARATE RANGE/HEIGHT CONTROL • ANGLE % REFERENCE • HE-9 AI RECOVERY</div><div style="margin-top:5px;opacity:.7">RUN BUILD SHOWCASE stages the enemy vessel at 100%, 50%, 10%, and 0% structure without changing combat data.</div></div>
+<div id="ownerBuildCard" style="display:none;margin:8px 0;padding:9px;border:1px solid rgba(116,217,255,.35);border-radius:10px;background:rgba(4,18,29,.92);font:800 8px/1.45 system-ui;color:#d9f5ff"><div style="color:#82e7ff;letter-spacing:.12em;margin-bottom:5px">LATEST BUILD • v0.32.10</div><div>SERPENT IMPACT SYNC • HE-9 BALLISTIC AI • FORTRESS IMPACT FEEDBACK</div><div style="margin-top:5px;opacity:.7">RUN BUILD SHOWCASE stages the enemy vessel at 100%, 50%, 10%, and 0% structure without changing combat data.</div></div>
 <div class="dbgActions"><button id="ownerBuildShowcase" class="wide" type="button">RUN BUILD SHOWCASE</button><button id="ownerBuildNotes" class="wide" type="button">LATEST BUILD NOTES</button><button id="ownerDestructionDemo" class="wide" type="button">ROOM DESTRUCTION DEMO</button><button id="ownerNdaLedgerBtn" class="wide" type="button">NDA LEDGER</button><button id="ownerNdaLedgerCopy" class="wide" type="button">COPY NDA LEDGER</button><button id="ownerDbgCopy" class="wide" type="button">COPY MATCH LOG</button><button id="ownerDbgRefresh" type="button">REFRESH SNAPSHOT</button><button id="ownerDbgShare" type="button">SHARE</button><button id="ownerDbgSelectAll" class="wide" type="button">SELECT ALL LOG</button><button id="ownerDbgClear" class="wide" type="button">CLEAR LOG</button></div></div>
 
 
@@ -824,7 +824,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
   <div id="mpOverlay" aria-live="polite">
     <div class="mpCard">
       <div class="mpKicker">AFTER CONTACT • MAIN MENU</div>
-      <div class="mpTitle">PRIVATE PVP TEST • v0.32.9</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
+      <div class="mpTitle">PRIVATE PVP TEST • v0.32.10</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
       <div class="mpText">Choose Solo Game or Multiplayer. Multiplayer creates a private room you can share with another tester.</div>
       <div class="mpActions"><button class="mpBtn primary" id="mpHostBtn">MULTIPLAYER</button><button class="mpBtn" id="mpSoloBtn">SOLO GAME</button><button class="mpBtn" id="replayStoryBtn" type="button">REPLAY STORY INTRO</button></div>
       <div class="mpJoin"><input id="mpCodeInput" maxlength="6" inputmode="text" autocomplete="off" placeholder="ROOM CODE"><button class="mpBtn" id="mpJoinBtn">JOIN</button></div>
@@ -1075,6 +1075,8 @@ let lastHapticAt=0;
 function gameHaptic(pattern,kind='GENERIC'){
   const now=performance.now();if(now-lastHapticAt<85)return false;lastHapticAt=now;
   try{
+    const nativeBridge=window.webkit?.messageHandlers?.afterContactHaptics;
+    if(nativeBridge?.postMessage){nativeBridge.postMessage({kind,pattern:Array.isArray(pattern)?pattern:[pattern]});diag?.('HAPTIC',`${kind} NATIVE REQUESTED`);return true}
     if(typeof navigator.vibrate!=='function')return false;
     const ok=navigator.vibrate(pattern);diag?.('HAPTIC',`${kind} ${ok===false?'BLOCKED':'REQUESTED'}`);return ok!==false;
   }catch{return false}
@@ -1222,7 +1224,7 @@ function structureMobilityCost(side){const pct=(structureHp[side]??STRUCTURE_MAX
 function structureMobilityScale(side){const pct=(structureHp[side]??STRUCTURE_MAX)/STRUCTURE_MAX;return pct<=.25?.48:pct<=.50?.66:pct<=.75?.84:1}
 function structureDamageStage(side){const pct=(structureHp[side]??STRUCTURE_MAX)/STRUCTURE_MAX;return pct<=0?4:pct<=.25?3:pct<=.50?2:pct<=.75?1:0}
 function updateStructureDamagePresentation(side,beforeHp){const stage=structureDamageStage(side),g=side==='aurelian'?aure:earth,skin=side==='aurelian'?factionSkinA:factionSkinE;if(!skin)return;const prev=skin.userData.structureDamageStage||0;if(stage<=prev)return;skin.userData.structureDamageStage=stage;const faction=factionForWorldSide(side),colors={earth:0x56504a,gray:0x31283b,aurelian:0x7a5520,lizard:0x244c42},p=g.position.clone();p.y+=5;for(let k=prev+1;k<=stage;k++){spawnDebris(p,colors[faction]||0x555555,12+k*9,.18,.42+k*.13);if(k>=2)spawnImpactBurst(p,faction==='gray'?0xb16cff:faction==='aurelian'?0xffb43d:faction==='lizard'?0x65ff9a:0xff8a52);if(k>=3)kickCamera(.20,.16)}diag('STRUCTURE STAGE',`${side} stage=${stage} hp=${Math.round(structureHp[side])}`)}
-function applyStructureDamage(attacker,amount,label='STRUCTURE'){if(matchEnded)return 0;const side=structureTargetSide(attacker),dmg=Math.max(0,Math.round(boostedAttackDamage(attacker,amount)));if(!dmg)return 0;if(side===localWorldSide())(dmg>=20?hapticHeavy():hapticHit());const before=structureHp[side]??STRUCTURE_MAX;structureHp[side]=Math.max(0,before-dmg);updateStructureHud();flashStructureHud(side);updateStructureDamagePresentation(side,before);syncProgressiveVesselDestruction(side);diag('STRUCTURE DAMAGE',`${label} target=${side==='aurelian'?'LEFT':'RIGHT'} ${before}->${structureHp[side]} (-${dmg}) visibleLoss=${Math.round((1-structureHp[side]/STRUCTURE_MAX)*100)}%`);checkMatchEnd();return dmg}
+function applyStructureDamage(attacker,amount,label='STRUCTURE'){if(matchEnded)return 0;const side=structureTargetSide(attacker),dmg=Math.max(0,Math.round(boostedAttackDamage(attacker,amount)));if(!dmg)return 0;const before=structureHp[side]??STRUCTURE_MAX;structureHp[side]=Math.max(0,before-dmg);updateStructureHud();flashStructureHud(side);updateStructureDamagePresentation(side,before);syncProgressiveVesselDestruction(side);diag('STRUCTURE DAMAGE',`${label} target=${side==='aurelian'?'LEFT':'RIGHT'} ${before}->${structureHp[side]} (-${dmg}) visibleLoss=${Math.round((1-structureHp[side]/STRUCTURE_MAX)*100)}%`);checkMatchEnd();return dmg}
 function showShieldSectionBreach(side,index,point){
   const root=side==='aurelian'?aure:earth,fx=root?.userData?.vesselHealth;if(!root||!fx||fx.breaches?.has(index))return;fx.breaches=fx.breaches||new Map();const old=fx.stress?.get(index);if(old){root.remove(old);fx.stress.delete(index)}const g=new THREE.Group(),dark=new THREE.Mesh(new THREE.CircleGeometry(.52,28),new THREE.MeshBasicMaterial({color:0x010306,transparent:true,opacity:.92,depthTest:false,depthWrite:false,side:THREE.DoubleSide})),rim=new THREE.Mesh(new THREE.RingGeometry(.50,.72,30),new THREE.MeshBasicMaterial({color:0xd8f7ff,transparent:true,opacity:.68,depthTest:false,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide}));dark.renderOrder=31;rim.renderOrder=32;g.add(dark,rim);g.position.copy(root.worldToLocal(point.clone()));g.lookAt(root.worldToLocal(camera.position.clone()));root.add(g);fx.breaches.set(index,g)
 }
@@ -1391,9 +1393,9 @@ const baseOwnerDebugReport=ownerDebugReport;
 ownerDebugReport=function(){
   const crewState=(label,crew)=>`${label} CREW ${crew.filter(w=>w.active).map(w=>`${w.isCaptain?'CAPTAIN':`S${w.index+1}`}@R${Number.isInteger(w.roomIndex)?w.roomIndex+1:'-'} HP${Math.round(w.hp)}/${w.maxHp} AA${Math.round(w.aa)}/${w.maxAa}`).join(' | ')}`;
   let leftCrew=[],rightCrew=[];try{leftCrew=aCrew;rightCrew=eCrew}catch{}
-  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.32.9').replace('build=2026-08-20_01-58PM_PT','build=2026-08-26_SHARED_MANUAL_BALLISTICS').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT').replace('vfxWatchdog=8s','vfxWatchdog=3s/acid8s/barrage12s/solar15s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
+  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.32.10').replace('build=2026-08-20_01-58PM_PT','build=2026-08-27_SERPENT_HE9_IMPACT_SYNC').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT+IMPACT_SPRING').replace('vfxWatchdog=8s','vfxWatchdog=3s/acid8s/barrage12s/solar15s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
 };
-const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.32.9';
+const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.32.10';
 function debugButtonAllowed(){return true}
 function updateDebugButtonVisibility(){if(!ownerDbgBtn)return;ownerDbgBtn.classList.toggle('debugVisible',debugButtonAllowed())}
 function refreshOwnerDebug(){if(!ownerDbgText)return;ownerDbgText.textContent=ownerDebugReport()}
@@ -2528,16 +2530,26 @@ let factionSkinA=null,factionSkinE=null;const progressiveVesselDamageState=new W
 // Crisp single-root movement: hull, shield, rooms and hit planes remain visually locked together.
 // The previous exterior-only spring left the shield at the new position while the colored hull
 // eased from the old position, which read as a duplicate or shadow ship during every move.
-const vesselVisualMotion={aurelian:{offset:new THREE.Vector3(),vel:new THREE.Vector3()},earth:{offset:new THREE.Vector3(),vel:new THREE.Vector3()}};
+const vesselVisualMotion={aurelian:{offset:new THREE.Vector3(),vel:new THREE.Vector3(),tilt:0,tiltVel:0},earth:{offset:new THREE.Vector3(),vel:new THREE.Vector3(),tilt:0,tiltVel:0}};
 function visualSkinForSide(side){return side==='aurelian'?factionSkinA:factionSkinE}
+function kickVesselVisual(side,strength=1){
+  const state=vesselVisualMotion[side];if(!state)return;
+  const away=side==='aurelian'?-1:1,s=Math.max(.45,Math.min(1.8,strength));
+  state.vel.x+=away*9.5*s;state.vel.y+=(Math.random()-.5)*3.2*s;state.tiltVel+=away*.46*s;
+}
 function beginVesselVisualMove(side,oldPos,newPos){
   const state=vesselVisualMotion[side],skin=visualSkinForSide(side);if(!state||!skin)return;
-  state.offset.set(0,0,0);state.vel.set(0,0,0);skin.position.set(0,0,0);
+  state.offset.set(0,0,0);state.vel.set(0,0,0);state.tilt=0;state.tiltVel=0;skin.position.set(0,0,0);skin.rotation.z=0;
   const mobility=skin.userData.earthMobility,dx=(newPos?.x||0)-(oldPos?.x||0);if(mobility&&Math.abs(dx)>.001){mobility.spinDirection=-Math.sign(dx);mobility.spinSpeed=16+Math.min(10,Math.abs(dx)*.65);mobility.spinRemaining=Math.max(mobility.spinRemaining,.68)}
 }
 function updateVesselVisualMotion(dt){
   for(const side of ['aurelian','earth']){const state=vesselVisualMotion[side],skin=visualSkinForSide(side);if(!state||!skin)continue;
-    if(state.offset.lengthSq()||state.vel.lengthSq()||skin.position.lengthSq()){state.offset.set(0,0,0);state.vel.set(0,0,0);skin.position.set(0,0,0)}
+    const damping=Math.exp(-15*dt),spring=92;
+    state.vel.addScaledVector(state.offset,-spring*dt).multiplyScalar(damping);state.offset.addScaledVector(state.vel,dt);
+    state.tiltVel=(-spring*state.tilt*dt+state.tiltVel)*damping;state.tilt+=state.tiltVel*dt;
+    if(state.offset.lengthSq()<.00001&&state.vel.lengthSq()<.0001)state.offset.set(0,0,0),state.vel.set(0,0,0);
+    if(Math.abs(state.tilt)<.0001&&Math.abs(state.tiltVel)<.001)state.tilt=0,state.tiltVel=0;
+    skin.position.copy(state.offset);skin.rotation.z=state.tilt;
     const mobility=skin.userData.earthMobility;if(mobility?.spinRemaining>0){const step=Math.min(dt,mobility.spinRemaining);mobility.angle+=mobility.spinDirection*mobility.spinSpeed*step;mobility.spinRemaining=Math.max(0,mobility.spinRemaining-dt);for(const wheel of mobility.wheels)wheel.rotation.z=mobility.angle;for(const p of mobility.treadPads){const u=((p.phase-mobility.angle*.055)%1+1)%1,a=u*Math.PI*2;p.mesh.position.set(p.podX+Math.cos(a)*5.0,mobility.cy-5.0+Math.sin(a)*2.42,7.92);p.mesh.rotation.z=a+Math.PI/2}}
   }
 }
@@ -3499,6 +3511,20 @@ function chooseSoloAiTargetRoom(){
   candidates.sort((a,b)=>b.score-a.score);
   return candidates[0];
 }
+function solveSoloHe9Shot(attacker,target){
+  const targetStage=worldToStage(target.room.hitPlane.getWorldPosition(new THREE.Vector3())),startStage=worldToStage(muzzleWorld(attacker,targetStage)),toward=attacker.side==='aurelian'?1:-1;
+  let firstPhysicalHit=null;
+  for(let power=52;power<=96;power+=4){
+    for(let elevation=24;elevation<=68;elevation+=2){
+      const rad=elevation*Math.PI/180,aim={x:startStage.x+toward*Math.cos(rad)*420,y:startStage.y-Math.sin(rad)*420};
+      const flight=he9BallisticStagePath(attacker,startStage,aim,power,0,true);
+      if(flight.hit&&!firstPhysicalHit)firstPhysicalHit={aim,power,roomIndex:flight.hit.roomIndex,elevation};
+      if(flight.hit?.roomIndex===target.index)return{aim,power,elevation,exact:true};
+    }
+  }
+  if(firstPhysicalHit)return{...firstPhysicalHit,exact:false};
+  const direct={x:targetStage.x,y:targetStage.y};return{aim:direct,power:82,elevation:0,exact:false};
+}
 function runSoloEarthTurn(){
   if(multiplayer||!battleStarted||matchEnded||soloTurn!=='earth')return;
   const enemy=eWarriors[0];
@@ -3506,10 +3532,9 @@ function runSoloEarthTurn(){
   const target=chooseSoloAiTargetRoom();
   if(!target)return;
   statusEl.textContent=`ROUND ${soloRound} • EARTH AI FIRING HE-9`;
-  const world=target.room.hitPlane.getWorldPosition(new THREE.Vector3());
-  const pt=worldToStage(world);
-  const power=72+Math.random()*24;
+  const solution=solveSoloHe9Shot(enemy,target),pt=solution.aim,power=solution.power;
   try{
+    diag('AI HE9 SOLUTION',`targetRoom=${target.index+1} result=${solution.exact?'EXACT':'PHYSICAL_FALLBACK'} elevation=${Math.round(solution.elevation||0)} power=${Math.round(power)}`);
     fireWarriorFromStage(enemy,pt,power,false);
     diag('AI BARRAGE WAIT','turn held until all five missiles resolve');
   }catch(err){
@@ -3718,17 +3743,17 @@ function bombardierTrajectoryProfile(a,b){
   const forward=dx*towardOpponent>12;
   // A nearly level release is a direct shot. Raising the release point deliberately transitions
   // into artillery flight; there is no target lock or hidden angle correction.
-  const mode=elevation>8?'LOB':'DIRECT';
+  const lobBlend=Math.max(0,Math.min(1,(elevation-4)/18)),mode=lobBlend<=.02?'DIRECT':lobBlend>=.98?'LOB':'TRANSITION';
   const horizontalReach=Math.max(0,Math.abs(dx)-18);
   // Range and height are separate controls: horizontal drag owns thrust, vertical drag owns elevation.
   // The exponential curve expands the useful middle band so small finger changes do not double range.
   const power=Math.max(18,Math.min(100,18+82*(1-Math.exp(-horizontalReach/390))));
-  return{elevation,dist,power,forward,towardOpponent,mode,horizontalReach};
+  return{elevation,dist,power,forward,towardOpponent,mode,lobBlend,horizontalReach};
 }
 function bombardierAimGuide(a,b){
   const p=bombardierTrajectoryProfile(a,b),dx=b.x-a.x,dy=b.y-a.y,mag=Math.hypot(dx,dy)||1;
   const len=Math.min(420,mag)*.5,end={x:a.x+dx/mag*len,y:a.y+dy/mag*len};
-  if(p.mode==='DIRECT')return{d:`M ${a.x.toFixed(2)} ${a.y.toFixed(2)} L ${end.x.toFixed(2)} ${end.y.toFixed(2)}`,end,profile:p};
+  if(p.lobBlend<=.02)return{d:`M ${a.x.toFixed(2)} ${a.y.toFixed(2)} L ${end.x.toFixed(2)} ${end.y.toFixed(2)}`,end,profile:p};
   // The short tail communicates gravity without drawing a full auto-solved trajectory.
   const mx=a.x+(end.x-a.x)*.58,my=a.y+(end.y-a.y)*.58-12;
   return{d:`M ${a.x.toFixed(2)} ${a.y.toFixed(2)} Q ${mx.toFixed(2)} ${my.toFixed(2)} ${end.x.toFixed(2)} ${end.y.toFixed(2)}`,end,profile:p};
@@ -3752,7 +3777,7 @@ function acidDescentPreview(attacker,a,b,profile){
   return ballisticDescentTail(all.slice(0,ballisticPreviewContactIndex(attacker,all,12)+1));
 }
 function bombardierDescentPreview(attacker,a,b,profile){
-  if(profile.mode!=='LOB')return'';
+  if(profile.lobBlend<.12)return'';
   const all=he9BallisticStagePath(attacker,a,b,profile.power,0,false).points||[];
   if(all.length<5)return'';
   return ballisticDescentTail(all.slice(0,ballisticPreviewContactIndex(attacker,all,10)+1));
@@ -4244,7 +4269,7 @@ function primeSoloBattleSelection(){
 }
 function resetBattleWorld(nextPhase=null){
   if(aiming)clearAim();closePrivateXray('battle reset');xrayTurnKey='';xrayInitialSelectionShown=false;solarActionLock=false;barrageActionLock=false;clearBuildShowcase?.('battle reset');clearAllEffects();if(multiplayer)mpBattleStartKey='';diag('RESET OK','effects cleared');
-  clearSoloAiTimer();soloTurn='aurelian';soloRound=1;turnsTaken=0;aure.position.set(-31,selectedFaction==='earth'?EARTH_GROUND_Y:18,-2);earth.position.set(28,EARTH_GROUND_Y,2);for(const side of ['aurelian','earth']){vesselVisualMotion[side].offset.set(0,0,0);vesselVisualMotion[side].vel.set(0,0,0);const skin=visualSkinForSide(side);if(skin)skin.position.set(0,0,0)}moveRemaining=5;movePending=false;movePad.classList.remove('show');
+  clearSoloAiTimer();soloTurn='aurelian';soloRound=1;turnsTaken=0;aure.position.set(-31,selectedFaction==='earth'?EARTH_GROUND_Y:18,-2);earth.position.set(28,EARTH_GROUND_Y,2);for(const side of ['aurelian','earth']){const motion=vesselVisualMotion[side];motion.offset.set(0,0,0);motion.vel.set(0,0,0);motion.tilt=0;motion.tiltVel=0;const skin=visualSkinForSide(side);if(skin){skin.position.set(0,0,0);skin.rotation.z=0}}moveRemaining=5;movePending=false;movePad.classList.remove('show');
   const resolvedPhase=nextPhase||(gameFlowPhase==='battle'?'deployment':gameFlowPhase);
   gameFlowPhase=resolvedPhase;
   diag('FLOW RESET',`phase=${resolvedPhase}`);
@@ -4486,7 +4511,7 @@ bindMobileAction(ownerBuildShowcase,runBuildShowcase);
 function resolveVerticalCollapse(attacker,room,index){
   if(!room||room.collapseDone||room.breach<100||room.erased)return;room.collapseDone=true;const below=index+3,rooms=opposingRooms(attacker).userData.rooms,p=room.hitPlane.getWorldPosition(new THREE.Vector3());spawnDebris(p,0x5a554d,28,.24,.78);ensurePersistentRubble(room,p);if(below<rooms.length){diag('VERTICAL COLLAPSE',`room=${index+1} -> room=${below+1}`);const w=opposing(attacker).find(x=>x.active&&x.hp>0&&x.roomIndex===below);if(w){const dmg=applyWarriorDamage(w,6,'FALLING DEBRIS',attacker);diag('DEBRIS DAMAGE',`room=${below+1} unit=${dmg}`)}const lower=rooms[below];if(lower&&!lower.erased&&lower.armor>0){const chip=Math.min(5,lower.armor);lower.armor-=chip;lower.breach=100-lower.armor;damageRoomVisual(lower);applyStructureDamage(attacker,chip,'COLLAPSE IMPACT')}}eraseCompartment(attacker,room,index);diag('BREACH FAILURE',`room=${index+1} source=ANY_WEAPON geometry=REMOVED`)
 }
-function resolveHit(attacker,hit,weapon){if(matchEnded)return{armorDamage:0,unitDamage:0};if(!hit||!hit.room){diag('HIT RESULT',`${weapon.name} MISS`);statusEl.textContent=`${weapon.name} • MISS • NO DAMAGE`;updateDamageMonitor(null,-1,0,attacker);flashDamage('MISS');return{armorDamage:0,unitDamage:0}}if(hit.room.erased&&weapon.kind==='explosive'){const dealt=applyStructureDamage(attacker,Math.max(4,Math.round((weapon.armorDamage||8)*.5)),`${weapon.name} • OPEN CHANNEL`);spawnExplosionVisual(hit.end,weapon.color||0xff8a36,.82);statusEl.textContent=`${weapon.name} • OPEN CHANNEL • REAR HULL -${dealt}`;flashDamage(`REAR HULL • -${dealt}`);return{armorDamage:0,structureDamage:dealt,unitDamage:0}}if(hit.room.erased){diag('HIT RESULT',`${weapon.name} MISS`);statusEl.textContent=`${weapon.name} • MISS • NO DAMAGE`;updateDamageMonitor(null,-1,0,attacker);flashDamage('MISS');return{armorDamage:0,unitDamage:0}}weaponImpactSfx(weapon.kind,weapon.kind==='explosive');const room=hit.room,index=hit.roomIndex,beforeArmor=room.armor;diag('HIT',`${weapon.name} room=${index+1} armorBefore=${Math.round(beforeArmor)}`);const shield=absorbShieldHit(attacker,index,weapon.armorDamage,weapon.name,hit.end);if(shield.blocked){updateDamageMonitor(room,index,0,attacker);return{armorDamage:0,unitDamage:0,shieldDamage:shield.absorbed}}let armorStrike=shield.passed;if(room.corrosionTurns>0&&weapon.kind!=='acid'){armorStrike=Math.round(armorStrike*1.28);room.corrosionTurns--;if(room.corrosionTurns<=0)room.corroded=false;}room.armor=Math.max(0,room.armor-armorStrike);room.breach=Math.min(100,100-room.armor);damageRoomVisual(room);scheduleStructuralFire(attacker,room,index);if(room.breach>=100)resolveVerticalCollapse(attacker,room,index);let unitDamage=0;let occ=hit.warrior?{w:hit.warrior,dist:0}:nearestWarriorInRoom(attacker,index,hit.end);const exposure=room.breach/100;
+function resolveHit(attacker,hit,weapon){if(matchEnded)return{armorDamage:0,unitDamage:0};if(!hit||!hit.room){diag('HIT RESULT',`${weapon.name} MISS`);statusEl.textContent=`${weapon.name} • MISS • NO DAMAGE`;updateDamageMonitor(null,-1,0,attacker);flashDamage('MISS');return{armorDamage:0,unitDamage:0}}const impactSide=structureTargetSide(attacker),impactStrength=Math.max(.45,Math.min(1.8,weapon.impactStrength||1));kickVesselVisual(impactSide,impactStrength);if(impactSide===localWorldSide())(impactStrength>=1.35?hapticHeavy():hapticHit());if(hit.room.erased&&weapon.kind==='explosive'){const dealt=applyStructureDamage(attacker,Math.max(4,Math.round((weapon.armorDamage||8)*.5)),`${weapon.name} • OPEN CHANNEL`);spawnExplosionVisual(hit.end,weapon.color||0xff8a36,.82);statusEl.textContent=`${weapon.name} • OPEN CHANNEL • REAR HULL -${dealt}`;flashDamage(`REAR HULL • -${dealt}`);return{armorDamage:0,structureDamage:dealt,unitDamage:0}}if(hit.room.erased){diag('HIT RESULT',`${weapon.name} MISS`);statusEl.textContent=`${weapon.name} • MISS • NO DAMAGE`;updateDamageMonitor(null,-1,0,attacker);flashDamage('MISS');return{armorDamage:0,unitDamage:0}}weaponImpactSfx(weapon.kind,weapon.kind==='explosive');const room=hit.room,index=hit.roomIndex,beforeArmor=room.armor;diag('HIT',`${weapon.name} room=${index+1} armorBefore=${Math.round(beforeArmor)}`);const shield=absorbShieldHit(attacker,index,weapon.armorDamage,weapon.name,hit.end);if(shield.blocked){updateDamageMonitor(room,index,0,attacker);return{armorDamage:0,unitDamage:0,shieldDamage:shield.absorbed}}let armorStrike=shield.passed;if(room.corrosionTurns>0&&weapon.kind!=='acid'){armorStrike=Math.round(armorStrike*1.28);room.corrosionTurns--;if(room.corrosionTurns<=0)room.corroded=false;}room.armor=Math.max(0,room.armor-armorStrike);room.breach=Math.min(100,100-room.armor);damageRoomVisual(room);scheduleStructuralFire(attacker,room,index);if(room.breach>=100)resolveVerticalCollapse(attacker,room,index);let unitDamage=0;let occ=hit.warrior?{w:hit.warrior,dist:0}:nearestWarriorInRoom(attacker,index,hit.end);const exposure=room.breach/100;
   if(occ){if(hit.direct){unitDamage+=weapon.damage}else if(room.breach>=30){unitDamage+=Math.max(1,weapon.damage*weapon.exposureScale*exposure)}if(weapon.kind==='laser'&&room.breach>=20)unitDamage+=weapon.damage*weapon.penetration*exposure;if(weapon.kind==='explosive'&&!hit.direct&&occ.dist<5.5)unitDamage+=weapon.splash*(1-Math.min(1,occ.dist/5.5));unitDamage=applyWarriorDamage(occ.w,unitDamage,weapon.name,attacker)}
   if(matchEnded){const armorDamage=Math.round(beforeArmor-room.armor);updateDamageMonitor(room,index,unitDamage,attacker);return{armorDamage,unitDamage}}
   if(weapon.kind==='explosive'){for(const w of opposing(attacker)){if(w.roomIndex===index||w.hp<=0)continue;const ri=w.roomGroup.userData.rooms[w.roomIndex],gap=Math.abs(w.roomIndex-index);if(gap===1||gap===3){const rp=ri.hitPlane.getWorldPosition(new THREE.Vector3()),splashShield=absorbShieldHit(attacker,w.roomIndex,weapon.splash*.60,'EXPLOSIVE SPLASH',rp);if(splashShield.blocked)continue;ri.armor=Math.max(0,ri.armor-splashShield.passed);ri.breach=Math.min(100,100-ri.armor);damageRoomVisual(ri);if(ri.breach>=40)applyWarriorDamage(w,weapon.splash*.25*(ri.breach/100),'SPLASH',attacker);if(ri.breach>=100)resolveVerticalCollapse(attacker,ri,w.roomIndex)}}}if(matchEnded){const armorDamage=Math.round(beforeArmor-room.armor);updateDamageMonitor(room,index,unitDamage,attacker);return{armorDamage,unitDamage}}
@@ -4699,7 +4724,7 @@ function resolveAcidConeContact(flood,contact,ordinal){
   if(!contact?.hit?.room||matchEnded)return false;
   const attacker=flood.attacker,weapon=flood.weapon,hit=contact.hit,room=hit.room,i=hit.roomIndex,p=hit.end,pressure=acidRangePressure();
   flood.successfulHits=(flood.successfulHits||0)+1;
-  if(flood.successfulHits===1)weaponImpactSfx('acid',true);
+  if(flood.successfulHits===1){weaponImpactSfx('acid',true);const side=structureTargetSide(attacker);kickVesselVisual(side,1.12);if(side===localWorldSide())hapticHeavy()}
   if(room.erased){applyStructureDamage(attacker,Math.max(1,Math.round(3*pressure.multiplier)),`ACID CONE HIT ${ordinal}/20 • OPEN CHANNEL`);spawnImpactBurst(p,0xbaff6a)}
   else{
     // Twenty micro-contacts share the original attack budget; none is a full weapon strike.
@@ -4826,7 +4851,7 @@ function acidAnacondaPathD(points){
   const last=Math.max(1,points.length-1),out=[];
   for(let i=0;i<points.length;i++){
     const p=points[i],a=points[Math.max(0,i-1)],b=points[Math.min(last,i+1)],dx=b.x-a.x,dy=b.y-a.y,mag=Math.hypot(dx,dy)||1,t=i/last;
-    const sway=Math.sin(t*Math.PI*5.5)*(2+9*t),nx=-dy/mag,ny=dx/mag;
+    const sway=Math.sin(t*Math.PI*6.5)*(3+12*t)+Math.sin(t*Math.PI*2.2)*3.5*t,nx=-dy/mag,ny=dx/mag;
     out.push(`${i?'L':'M'} ${(p.x+nx*sway).toFixed(2)} ${(p.y+ny*sway).toFixed(2)}`)
   }
   return out.join(' ')
@@ -4837,19 +4862,22 @@ function createAcidScreenShot(path){
   const guide=document.createElementNS(ns,'path');guide.setAttribute('d',d);guide.setAttribute('fill','none');guide.setAttribute('stroke','none');group.appendChild(guide);
   let guideLength=0;try{guideLength=guide.getTotalLength()}catch{}if(!Number.isFinite(guideLength)||guideLength<1)guideLength=Math.max(1,path.releaseDistance||600);
   const makeBody=(color,width,opacity,filter='')=>{const p=document.createElementNS(ns,'path');p.setAttribute('d',d);p.setAttribute('fill','none');p.setAttribute('stroke',color);p.setAttribute('stroke-width',String(width));p.setAttribute('stroke-linecap','round');p.setAttribute('stroke-linejoin','round');p.style.strokeDasharray=`${guideLength} ${guideLength}`;p.style.strokeDashoffset=String(guideLength);p.style.opacity='0';if(filter)p.style.filter=filter;group.appendChild(p);return p};
-  // One dense serpent body: dark wet skin, luminous acid flesh, then a hot liquid-fire core.
-  const outer=makeBody('#10270c',46,.78,'drop-shadow(0 0 7px rgba(87,180,40,.52))');
-  const body=makeBody('#397d22',33,.88);
-  const core=makeBody('#96e94e',15,.80,'drop-shadow(0 0 6px rgba(190,255,94,.68))');
-  const hot=makeBody('#e5ff91',5,.72);
+  // One dense serpent body: muscular dark skin, visible scale breaks and a restrained corrosive core.
+  const outer=makeBody('#071509',54,.88,'drop-shadow(0 0 7px rgba(44,110,27,.45))');
+  const body=makeBody('#173d18',41,.94);
+  const scales=makeBody('#4f7e2b',31,.56);scales.style.strokeDasharray='4 10';scales.setAttribute('stroke-linecap','butt');
+  const defs=document.createElementNS(ns,'defs'),scaleMask=document.createElementNS(ns,'mask'),scaleReveal=document.createElementNS(ns,'path'),maskId=`acidScaleMask${Date.now()}${Math.floor(Math.random()*10000)}`;scaleMask.setAttribute('id',maskId);scaleReveal.setAttribute('d',d);scaleReveal.setAttribute('fill','none');scaleReveal.setAttribute('stroke','#fff');scaleReveal.setAttribute('stroke-width','33');scaleReveal.setAttribute('stroke-linecap','round');scaleReveal.style.strokeDasharray=`${guideLength} ${guideLength}`;scaleReveal.style.strokeDashoffset=String(guideLength);scaleMask.appendChild(scaleReveal);defs.appendChild(scaleMask);group.insertBefore(defs,group.firstChild);scales.setAttribute('mask',`url(#${maskId})`);
+  const core=makeBody('#6d9f31',17,.66,'drop-shadow(0 0 4px rgba(150,220,62,.42))');
+  const hot=makeBody('#b7df62',5,.48);
   const head=document.createElementNS(ns,'g');head.style.opacity='0';
-  const skull=document.createElementNS(ns,'path');skull.setAttribute('d','M -29 -19 Q 3 -31 35 0 Q 3 31 -29 19 Q -18 0 -29 -19 Z');skull.setAttribute('fill','#3d8124');skull.setAttribute('stroke','#b8ff6c');skull.setAttribute('stroke-width','3');skull.style.filter='drop-shadow(0 0 8px rgba(148,255,70,.66))';head.appendChild(skull);
-  const brow=document.createElementNS(ns,'path');brow.setAttribute('d','M -12 -13 Q 4 -23 20 -12 M -12 13 Q 4 23 20 12');brow.setAttribute('fill','none');brow.setAttribute('stroke','#17350e');brow.setAttribute('stroke-width','5');brow.setAttribute('stroke-linecap','round');head.appendChild(brow);
-  const mouth=document.createElementNS(ns,'path');mouth.setAttribute('d','M 1 -11 Q 31 0 1 11 Q 12 0 1 -11 Z');mouth.setAttribute('fill','#101b08');mouth.setAttribute('stroke','#d9ff83');mouth.setAttribute('stroke-width','2');head.appendChild(mouth);
-  for(const y of[-11,11]){const eye=document.createElementNS(ns,'ellipse');eye.setAttribute('cx','2');eye.setAttribute('cy',String(y));eye.setAttribute('rx','4.8');eye.setAttribute('ry','3.4');eye.setAttribute('fill','#efff72');eye.style.filter='drop-shadow(0 0 5px #d9ff43)';head.appendChild(eye)}
+  const skull=document.createElementNS(ns,'path');skull.setAttribute('d','M -34 -17 L -22 -28 L -8 -23 L 5 -31 L 15 -20 L 31 -13 L 42 0 L 31 13 L 15 20 L 5 31 L -8 23 L -22 28 L -34 17 Q -22 0 -34 -17 Z');skull.setAttribute('fill','#173b18');skull.setAttribute('stroke','#668f35');skull.setAttribute('stroke-width','3');skull.style.filter='drop-shadow(0 0 7px rgba(60,126,35,.58))';head.appendChild(skull);
+  const crown=document.createElementNS(ns,'path');crown.setAttribute('d','M -24 -20 L -15 -34 L -7 -22 L 4 -38 L 12 -20 M -24 20 L -15 34 L -7 22 L 4 38 L 12 20');crown.setAttribute('fill','none');crown.setAttribute('stroke','#0a1d0c');crown.setAttribute('stroke-width','5');crown.setAttribute('stroke-linejoin','miter');head.appendChild(crown);
+  const brow=document.createElementNS(ns,'path');brow.setAttribute('d','M -8 -15 L 15 -9 M -8 15 L 15 9');brow.setAttribute('fill','none');brow.setAttribute('stroke','#050b06');brow.setAttribute('stroke-width','6');brow.setAttribute('stroke-linecap','square');head.appendChild(brow);
+  const mouth=document.createElementNS(ns,'path');mouth.setAttribute('d','M 2 -12 L 38 0 L 2 12 L 15 0 Z');mouth.setAttribute('fill','#050706');mouth.setAttribute('stroke','#607f35');mouth.setAttribute('stroke-width','2');head.appendChild(mouth);
+  for(const y of[-12,12]){const eye=document.createElementNS(ns,'path');eye.setAttribute('d',`M -2 ${y-3} L 13 ${y} L -2 ${y+3} Z`);eye.setAttribute('fill','#d5f15e');eye.style.filter='drop-shadow(0 0 3px #9dbb35)';head.appendChild(eye);const fang=document.createElementNS(ns,'path');fang.setAttribute('d',`M 17 ${y<0?-7:7} L 29 0 L 13 ${y<0?-2:2} Z`);fang.setAttribute('fill','#efffc0');head.appendChild(fang)}
   group.appendChild(head);
   const droplets=[];for(let i=0;i<28;i++){const e=document.createElementNS(ns,'ellipse');e.setAttribute('rx',String(2.2+(i%4)*1.3));e.setAttribute('ry',String(1.2+(i%3)*.9));e.setAttribute('fill',i%5===0?'#eaff8b':i%2?'#72bc38':'#315f1f');e.style.opacity='0';group.appendChild(e);droplets.push({el:e,phase:(i*.083)%1,side:(i%2?1:-1)*(13+(i%5)*4),seed:i*1.91})}
-  layer.appendChild(group);return{group,guide,guideLength,anaconda:{outer,body,core,hot,head},droplets};
+  layer.appendChild(group);return{group,guide,guideLength,anaconda:{outer,body,scales,scaleReveal,core,hot,head},droplets};
 }
 function removeAcidScreenShot(v){try{v?.group?.remove()}catch{}}
 function addAcidImpactWaveVisual(shot,impactAim,wave){
@@ -4904,11 +4932,11 @@ function he9BallisticStagePath(attacker,startStage,aimPt,power,lane=0,resolveHit
   const dx=aimPt.x-startStage.x,dy=aimPt.y-startStage.y,dragDist=Math.hypot(dx,dy)||1;
   const toward=attacker.side==='aurelian'?1:-1,forward=dx*toward>12;
   const elevation=Math.atan2(-dy,Math.max(1,Math.abs(dx)))*180/Math.PI;
-  const mode=elevation>8?'LOB':'DIRECT';
+  const lobBlend=Math.max(0,Math.min(1,(elevation-4)/18)),mode=lobBlend<=.02?'DIRECT':lobBlend>=.98?'LOB':'TRANSITION';
   const baseAngle=Math.atan2(dy,dx)+lane,unitPower=Math.max(.18,Math.min(1,power/100));
   // HE-9 rockets stabilize a level launch for a truly direct shot. Once elevated, thrust cuts and
   // gravity owns the arc. This is manual direction/power control, never endpoint targeting.
-  const speed=mode==='DIRECT'?880:360+unitPower*470,gravity=mode==='DIRECT'?0:440;
+  const ballisticSpeed=360+unitPower*470,speed=THREE.MathUtils.lerp(880,ballisticSpeed,lobBlend),gravity=440*lobBlend;
   const vx=Math.cos(baseAngle)*speed,launchVy=Math.sin(baseAngle)*speed;
   const maxT=3.2,steps=210,points=[];let hit=null;
   for(let i=0;i<=steps;i++){
@@ -4917,7 +4945,7 @@ function he9BallisticStagePath(attacker,startStage,aimPt,power,lane=0,resolveHit
     if(resolveHit&&i>1){hit=he9SweptRoomHit(attacker,points[i-1],p,13);if(hit)break}
     if(p.x<-180||p.x>1460||p.y>790)break;
   }
-  return{points,hit,mode,elevation,forward,launch:{vx,vy:launchVy,gravity,power:unitPower}};
+  return{points,hit,mode,elevation,lobBlend,forward,launch:{vx,vy:launchVy,gravity,power:unitPower}};
 }
 function stageTrajectoryCurve(points,roomHit=null){
   // A malformed or extremely short ballistic path must never stop the combat loop.
@@ -4938,11 +4966,11 @@ function spawnArc(attacker,start,aimPt,power,weapon){
   const startStage=worldToStage(start),base=he9BallisticStagePath(attacker,startStage,aimPt,power,0,false);
   diag('HE9 FLIGHT',`mode=${base.mode} elevation=${Math.round(base.elevation)} gravity=${base.launch.gravity} control=MANUAL_VECTOR_POWER barrage=5`);
   const strikePlan=[
-    {center:true,color:0xff7a24,scale:1.02,lane:-.006},
-    {center:true,color:0xff8a36,scale:1.02,lane:.006},
-    {center:false,color:0xff6f22,scale:.90,lane:-.014},
-    {center:false,color:0xffb044,scale:.90,lane:0},
-    {center:false,color:0xffc15a,scale:.90,lane:.014}
+    {center:true,color:0xff7a24,scale:1.30,lane:-.006},
+    {center:true,color:0xff8a36,scale:1.30,lane:.006},
+    {center:false,color:0xff6f22,scale:1.12,lane:-.014},
+    {center:false,color:0xffb044,scale:1.12,lane:0},
+    {center:false,color:0xffc15a,scale:1.12,lane:.014}
   ];
   function makeHe9Rocket(scale=1){
     const g=new THREE.Group(),bodyMat=new THREE.MeshStandardMaterial({color:0x45515d,metalness:.75,roughness:.28});
@@ -4960,7 +4988,7 @@ function spawnArc(attacker,start,aimPt,power,weapon){
   const trail=new THREE.Group();for(const [i,m] of missiles.entries()){const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(m.curve.getPoints(72)),new THREE.LineBasicMaterial({color:m.plan.color,transparent:true,opacity:i===3?.26:.13,depthWrite:false}));trail.add(line)}scene.add(trail);
   effects.push({barrage:true,missiles,trail,t:0,speed:.72,gap:.12,damageResolved:false,attacker,weapon});
 }
-function fireWarriorFromStage(w,pt,power,remote=false,routeOverride=null){if(!w||w.hp<=0)return;const routed=routeOverride||enforceAttackRoute(w.side,w,null,null,remote?'remote final guard':'local final guard')||w.weaponKey;if(routeOverride&&w.weaponKey!==routeOverride)applyProfileToWarrior(w,routeOverride);const weapon=WEAPONS[routed];if(!weapon){diag('ATTACK ROUTE ERROR',`missing weapon ${routed}`);statusEl.textContent='ATTACK ROUTE ERROR • OPEN DEBUG';return}weaponFireSfx(weapon.kind);diag('FIRE',`${STARTER_PROFILES[routed]?.name||routed} kind=${weapon.kind} x=${Math.round(pt.x)} y=${Math.round(pt.y)} power=${Math.round(power)} remote=${remote?'Y':'N'}`);if(weapon.kind==='disintegrator'){spawnSpatialVolley(w,pt,weapon)}else{const start=aimOriginWorld?aimOriginWorld.clone():muzzleWorld(w,pt);if(weapon.kind==='laser'){const beamPath=solarBeamPathFromStage(w,pt,weapon.maxCompartments||2);spawnSolarLancerBeam(w,start,beamPath,weapon)}else if(weapon.kind==='acid'){spawnAcidFlood(w,start,pt,power,weapon)}else if(weapon.kind==='explosive'){spawnArc(w,start,pt,power,weapon)}else{diag('ATTACK ROUTE ERROR',`unsupported kind ${weapon.kind}`);statusEl.textContent='UNKNOWN ATTACK TYPE • OPEN DEBUG';return}}shots++;shotMetric.textContent=`SHOTS ${shots}`}
+function fireWarriorFromStage(w,pt,power,remote=false,routeOverride=null){if(!w||w.hp<=0)return;const routed=routeOverride||enforceAttackRoute(w.side,w,null,null,remote?'remote final guard':'local final guard')||w.weaponKey;if(routeOverride&&w.weaponKey!==routeOverride)applyProfileToWarrior(w,routeOverride);const weapon=WEAPONS[routed];if(!weapon){diag('ATTACK ROUTE ERROR',`missing weapon ${routed}`);statusEl.textContent='ATTACK ROUTE ERROR • OPEN DEBUG';return}weaponFireSfx(weapon.kind);diag('FIRE',`${STARTER_PROFILES[routed]?.name||routed} kind=${weapon.kind} x=${Math.round(pt.x)} y=${Math.round(pt.y)} power=${Math.round(power)} remote=${remote?'Y':'N'}`);if(weapon.kind==='disintegrator'){spawnSpatialVolley(w,pt,weapon)}else{const start=!remote&&aiming&&aimOriginWorld?aimOriginWorld.clone():muzzleWorld(w,pt);if(weapon.kind==='laser'){const beamPath=solarBeamPathFromStage(w,pt,weapon.maxCompartments||2);spawnSolarLancerBeam(w,start,beamPath,weapon)}else if(weapon.kind==='acid'){spawnAcidFlood(w,start,pt,power,weapon)}else if(weapon.kind==='explosive'){spawnArc(w,start,pt,power,weapon)}else{diag('ATTACK ROUTE ERROR',`unsupported kind ${weapon.kind}`);statusEl.textContent='UNKNOWN ATTACK TYPE • OPEN DEBUG';return}}shots++;shotMetric.textContent=`SHOTS ${shots}`}
 function fireSelectedFromStage(pt,power){
   if(multiplayer){
     if(!multiplayerInputReady()){diag('FIRE BLOCK',`input rearming ${Math.max(0,mpInputArmAt-Date.now())}ms`);statusEl.textContent='CONTROL SYNC • TOUCH AGAIN';return}
@@ -5075,14 +5103,15 @@ let battleSceneWatch=0;const clock=new THREE.Clock();function animate(){requestA
   q.life-=dt;
   const age=Math.max(0,Math.min(1,1-q.life/q.max)),shot=q.acidFlood.screenShot;
   if(shot?.anaconda&&shot.guide?.getPointAtLength){
-    const fade=q.life<.42?Math.max(0,q.life/.42):1,progress=Math.max(0,Math.min(1,age/.70)),hold=Math.max(0,age-.70),snake=shot.anaconda,offset=shot.guideLength*(1-progress);
-    for(const [path,opacity] of [[snake.outer,.76],[snake.body,.90],[snake.core,.82],[snake.hot,.72]]){path.style.strokeDashoffset=String(offset);path.style.opacity=progress<=0?'0':String(opacity*fade*Math.max(.28,1-hold*1.35))}
+    const serpentArrival=.59,fade=q.life<.42?Math.max(0,q.life/.42):1,progress=Math.max(0,Math.min(1,age/serpentArrival)),hold=Math.max(0,age-serpentArrival),snake=shot.anaconda,offset=shot.guideLength*(1-progress);
+    for(const [path,opacity] of [[snake.outer,.86],[snake.body,.94],[snake.core,.65],[snake.hot,.46]]){path.style.strokeDashoffset=String(offset);path.style.opacity=progress<=0?'0':String(opacity*fade*Math.max(.28,1-hold*1.35))}
+    snake.scaleReveal.style.strokeDashoffset=String(offset);snake.scales.style.opacity=progress<=0?'0':String(.52*fade*Math.max(.28,1-hold*1.35));
     const len=Math.max(0,Math.min(shot.guideLength-2,progress*shot.guideLength)),p=shot.guide.getPointAtLength(len),p2=shot.guide.getPointAtLength(Math.min(shot.guideLength,len+4)),ang=Math.atan2(p2.y-p.y,p2.x-p.x)*180/Math.PI,pulse=1+.07*Math.sin(age*34);
     snake.head.setAttribute('transform',`translate(${p.x} ${p.y}) rotate(${ang}) scale(${pulse})`);snake.head.style.opacity=progress>.015?String(fade*Math.max(.35,1-hold*1.65)):'0';
     for(const d of shot.droplets||[]){const t=(age*.46+d.phase)%1;if(t>progress||t<Math.max(0,progress-.62)){d.el.style.opacity='0';continue}const dl=Math.min(shot.guideLength-2,t*shot.guideLength),dp=shot.guide.getPointAtLength(dl),dp2=shot.guide.getPointAtLength(Math.min(shot.guideLength,dl+3)),dx=dp2.x-dp.x,dy=dp2.y-dp.y,mag=Math.hypot(dx,dy)||1,nx=-dy/mag,ny=dx/mag,ripple=Math.sin(age*17+d.seed)*5,x=dp.x+nx*(d.side+ripple),y=dp.y+ny*(d.side+ripple);d.el.setAttribute('cx',String(x));d.el.setAttribute('cy',String(y));d.el.setAttribute('transform',`rotate(${Math.atan2(dy,dx)*180/Math.PI} ${x} ${y})`);d.el.style.opacity=String(.30+.38*Math.sin(Math.PI*t))}
   }
   // Twenty physical cone lanes resolve in sequence. Missed lanes remain misses; no hit is reassigned.
-  const targetTicks=age<.27?0:Math.min(20,Math.floor((age-.27)/.025)+1);
+  const serpentArrival=.59,targetTicks=age<serpentArrival?0:Math.min(20,Math.floor((age-serpentArrival)/.012)+1);
   while(q.acidFlood.contactTicks<targetTicks&&!matchEnded){
     const ordinal=q.acidFlood.contactTicks+1,contact=q.acidFlood.contacts[q.acidFlood.contactTicks];q.acidFlood.contactTicks++;
     if(resolveAcidConeContact(q.acidFlood,contact,ordinal)&&(ordinal===1||ordinal%4===0))addAcidImpactWaveVisual(shot,contact.impactAim,ordinal<8?1:ordinal<15?2:3);
@@ -5176,17 +5205,16 @@ let battleSceneWatch=0;const clock=new THREE.Clock();function animate(){requestA
     if(localT>=1&&!m.impacted){
       m.impacted=true;
       const impact=m.curve.getPoint(1);
-      spawnExplosionVisual(impact,m.plan.color,m.plan.center?1.48:.92);
+      spawnExplosionVisual(impact,m.plan.color,m.plan.center?1.90:1.24);
       spawnImpactBurst(impact,m.plan.color);
-      spawnDebris(impact,0x5e6267,m.plan.center?30:13,.10,m.plan.center?.68:.36);
-      kickCamera(m.plan.center?.22:.10,m.plan.center?.16:.08);
+      spawnDebris(impact,0x5e6267,m.plan.center?34:18,.12,m.plan.center?.76:.46);
+      kickCamera(m.plan.center?.27:.14,m.plan.center?.20:.11);
       if(!m.damageResolved){
         m.damageResolved=true;
         const hit=explosiveHitFromEnd(q.attacker,m.target);
         const armorShare=m.plan.center?.30:.18,crewShare=m.plan.center?.14:.07,splashShare=m.plan.center?.22:.14;
-        const mini={...q.weapon,name:'HE-9 MISSILE '+(mi+1),armorDamage:Math.max(1,q.weapon.armorDamage*armorShare),damage:Math.max(1,q.weapon.damage*crewShare),splash:Math.max(1,q.weapon.splash*splashShare)};
-        if(m.plan.center){spawnExplosionVisual(impact,0xffd06a,1.52);kickCamera(.30,.22)}
-        if(hit)resolveHit(q.attacker,hit,mini);else resolveHit(q.attacker,null,mini);
+        const mini={...q.weapon,name:'HE-9 MISSILE '+(mi+1),armorDamage:Math.max(1,q.weapon.armorDamage*armorShare),damage:Math.max(1,q.weapon.damage*crewShare),splash:Math.max(1,q.weapon.splash*splashShare),impactStrength:m.plan.center?1.55:1.05};
+        if(hit){spawnExplosionVisual(impact,0xffcf6a,m.plan.center?2.16:1.50);spawnImpactBurst(impact,0xffed9d);kickCamera(m.plan.center?.34:.19,m.plan.center?.24:.14);resolveHit(q.attacker,hit,mini)}else resolveHit(q.attacker,null,mini);
       }
     }
     if(localT>=1.055){scene.remove(m.mesh);m.removed=true}else allDone=false;
