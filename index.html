@@ -796,10 +796,10 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <button id="moveDown" aria-label="Move down">▼</button>
 </div>
   <div class="hud"><div class="side"><div class="name" id="leftFactionName">AURELIAN ACCORD</div><div class="sub" id="leftFactionSub">SOLAR LANCER • PENETRATION TEST</div></div><div class="side right"><div class="name" id="rightFactionName">EARTH COMMAND</div><div class="sub" id="rightFactionSub">BOMBARDIER • FORTRESS LV.1</div></div></div>
-  <div class="lab">3D LAB • MOBILE PVP TEST • v0.32.10</div>
+  <div class="lab">3D LAB • MOBILE PVP TEST • v0.32.11</div>
   <div id="structureHud"><div class="structureSide"><div class="structureLabel" id="leftStructureLabel">VESSEL STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="leftStructureFill"></div></div></div><div class="structureSide right"><div class="structureLabel" id="rightStructureLabel">FORTRESS STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="rightStructureFill"></div></div></div></div>
   <div id="rangeBadge">RANGE 885m</div>
-  <svg id="aimSvg" viewBox="0 0 1280 720" preserveAspectRatio="none"><g id="acidShotLayer" pointer-events="none"></g><path id="aimPath"/><path id="aimDropPath"/><circle id="aimDot" r="4"/><circle id="muzzleDot" r="6"/></svg>
+  <svg id="aimSvg" viewBox="0 0 1280 720" preserveAspectRatio="none"><g id="enemyAimOutlineLayer" pointer-events="none"></g><g id="acidShotLayer" pointer-events="none"></g><path id="aimPath"/><path id="aimDropPath"/><circle id="aimDot" r="4"/><circle id="muzzleDot" r="6"/></svg>
   <div id="unitHpLayer"></div>
   <div id="status">DEPLOY YOUR STARTER WARRIOR • THEN PRESS BATTLE</div>
   <div id="aimHud"><div class="metric" id="angleMetric">ANGLE 0%</div><div class="metric" id="powerMetric">POWER 0%</div><div class="metric" id="shotMetric">SHOTS 0</div></div>
@@ -813,7 +813,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <div style="font:900 8px system-ui;color:#9fffc8;margin-bottom:6px">OWNER • NDA LEDGER</div>
 <div id="ownerNdaLedgerText" style="white-space:pre-wrap;max-height:180px;overflow:auto;user-select:text!important;-webkit-user-select:text!important">NOT LOADED</div>
 </div>
-<div id="ownerBuildCard" style="display:none;margin:8px 0;padding:9px;border:1px solid rgba(116,217,255,.35);border-radius:10px;background:rgba(4,18,29,.92);font:800 8px/1.45 system-ui;color:#d9f5ff"><div style="color:#82e7ff;letter-spacing:.12em;margin-bottom:5px">LATEST BUILD • v0.32.10</div><div>SERPENT IMPACT SYNC • HE-9 BALLISTIC AI • FORTRESS IMPACT FEEDBACK</div><div style="margin-top:5px;opacity:.7">RUN BUILD SHOWCASE stages the enemy vessel at 100%, 50%, 10%, and 0% structure without changing combat data.</div></div>
+<div id="ownerBuildCard" style="display:none;margin:8px 0;padding:9px;border:1px solid rgba(116,217,255,.35);border-radius:10px;background:rgba(4,18,29,.92);font:800 8px/1.45 system-ui;color:#d9f5ff"><div style="color:#82e7ff;letter-spacing:.12em;margin-bottom:5px">LATEST BUILD • v0.32.11</div><div>LEVEL-TWO HE-9 FIREBALLS • OPEN OCEAN SKY • DEEPER CLIFF BIOME • REPTILIAN AIM OUTLINES</div><div style="margin-top:5px;opacity:.7">RUN BUILD SHOWCASE stages the enemy vessel at 100%, 50%, 10%, and 0% structure without changing combat data.</div></div>
 <div class="dbgActions"><button id="ownerBuildShowcase" class="wide" type="button">RUN BUILD SHOWCASE</button><button id="ownerBuildNotes" class="wide" type="button">LATEST BUILD NOTES</button><button id="ownerDestructionDemo" class="wide" type="button">ROOM DESTRUCTION DEMO</button><button id="ownerNdaLedgerBtn" class="wide" type="button">NDA LEDGER</button><button id="ownerNdaLedgerCopy" class="wide" type="button">COPY NDA LEDGER</button><button id="ownerDbgCopy" class="wide" type="button">COPY MATCH LOG</button><button id="ownerDbgRefresh" type="button">REFRESH SNAPSHOT</button><button id="ownerDbgShare" type="button">SHARE</button><button id="ownerDbgSelectAll" class="wide" type="button">SELECT ALL LOG</button><button id="ownerDbgClear" class="wide" type="button">CLEAR LOG</button></div></div>
 
 
@@ -824,7 +824,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
   <div id="mpOverlay" aria-live="polite">
     <div class="mpCard">
       <div class="mpKicker">AFTER CONTACT • MAIN MENU</div>
-      <div class="mpTitle">PRIVATE PVP TEST • v0.32.10</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
+      <div class="mpTitle">PRIVATE PVP TEST • v0.32.11</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
       <div class="mpText">Choose Solo Game or Multiplayer. Multiplayer creates a private room you can share with another tester.</div>
       <div class="mpActions"><button class="mpBtn primary" id="mpHostBtn">MULTIPLAYER</button><button class="mpBtn" id="mpSoloBtn">SOLO GAME</button><button class="mpBtn" id="replayStoryBtn" type="button">REPLAY STORY INTRO</button></div>
       <div class="mpJoin"><input id="mpCodeInput" maxlength="6" inputmode="text" autocomplete="off" placeholder="ROOM CODE"><button class="mpBtn" id="mpJoinBtn">JOIN</button></div>
@@ -1140,7 +1140,7 @@ function localWorldSide(){return multiplayer?localSide:'aurelian'}
 const aimHud=document.getElementById('aimHud'), angleMetric=document.getElementById('angleMetric'), powerMetric=document.getElementById('powerMetric'), shotMetric=document.getElementById('shotMetric');
 
 let statusSettleTimer=null;const statusObserver=new MutationObserver(()=>{const txt=statusEl.textContent||'';if(/ROUND|YOUR TURN|TURN$/.test(txt)){statusEl.classList.remove('turnSettled');statusEl.classList.add('turnAnnounce');clearTimeout(statusSettleTimer);statusSettleTimer=setTimeout(()=>{statusEl.classList.remove('turnAnnounce');statusEl.classList.add('turnSettled')},720)}else{statusEl.classList.remove('turnAnnounce','turnSettled')}});statusObserver.observe(statusEl,{childList:true,characterData:true,subtree:true});
-const aimPath=document.getElementById('aimPath'), aimDropPath=document.getElementById('aimDropPath'), aimDot=document.getElementById('aimDot'), weaponNameEl=document.getElementById('weaponName'), weaponDescEl=document.getElementById('weaponDesc');
+const aimPath=document.getElementById('aimPath'), aimDropPath=document.getElementById('aimDropPath'), aimDot=document.getElementById('aimDot'), enemyAimOutlineLayer=document.getElementById('enemyAimOutlineLayer'), weaponNameEl=document.getElementById('weaponName'), weaponDescEl=document.getElementById('weaponDesc');
 const deployOverlay=document.getElementById('deployOverlay'), deployGrid=document.getElementById('deployGrid'), battleBtn=document.getElementById('battleBtn'), dragGhost=document.getElementById('dragGhost');
 const deployReadyDock=document.getElementById('deployReadyDock'),deployReadyBtn=document.getElementById('deployReadyBtn'),deployReadyLabel=document.getElementById('deployReadyLabel');
 const mpDiag=document.getElementById('mpDiag');let mpDiagLines=[];
@@ -1393,9 +1393,9 @@ const baseOwnerDebugReport=ownerDebugReport;
 ownerDebugReport=function(){
   const crewState=(label,crew)=>`${label} CREW ${crew.filter(w=>w.active).map(w=>`${w.isCaptain?'CAPTAIN':`S${w.index+1}`}@R${Number.isInteger(w.roomIndex)?w.roomIndex+1:'-'} HP${Math.round(w.hp)}/${w.maxHp} AA${Math.round(w.aa)}/${w.maxAa}`).join(' | ')}`;
   let leftCrew=[],rightCrew=[];try{leftCrew=aCrew;rightCrew=eCrew}catch{}
-  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.32.10').replace('build=2026-08-20_01-58PM_PT','build=2026-08-27_SERPENT_HE9_IMPACT_SYNC').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT+IMPACT_SPRING').replace('vfxWatchdog=8s','vfxWatchdog=3s/acid8s/barrage12s/solar15s').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
+  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.32.11').replace('build=2026-08-20_01-58PM_PT','build=2026-08-27_LEVEL2_HE9_OCEAN_SKY_REBUILD').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT+IMPACT_SPRING').replace('vfxWatchdog=8s','vfxWatchdog=3s/acid8s/barrage12s/solar15s').replace('diveBounds=-24-28.5','diveBounds=-36-3.4').replace('acidAim=MANUAL_VECTOR_TRUE_GRAVITY_HALF_GUIDE','acidAim=STRAIGHT_MANUAL_CONE_NO_GRAVITY').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
 };
-const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.32.10';
+const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.32.11';
 function debugButtonAllowed(){return true}
 function updateDebugButtonVisibility(){if(!ownerDbgBtn)return;ownerDbgBtn.classList.toggle('debugVisible',debugButtonAllowed())}
 function refreshOwnerDebug(){if(!ownerDbgText)return;ownerDbgText.textContent=ownerDebugReport()}
@@ -2189,7 +2189,7 @@ function box(w,h,d,color,metal=.4,rough=.45){const m=new THREE.Mesh(new THREE.Bo
 function glowSphere(r,color,intensity=4){return new THREE.Mesh(new THREE.SphereGeometry(r,18,12),new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:intensity,roughness:.22}))}
 
 // v0.31.8 REPTILIAN OCEAN BIOME — layered underwater volume; no visible rectangular aquarium slab.
-const REPTILIAN_WATER_SURFACE_Y=30.0,REPTILIAN_MIN_DEPTH_Y=-24.0,REPTILIAN_MAX_DEPTH_Y=28.5;
+const REPTILIAN_WATER_SURFACE_Y=5.0,REPTILIAN_MIN_DEPTH_Y=-36.0,REPTILIAN_MAX_DEPTH_Y=3.4;
 const reptilianBiomeState={aurelian:null,earth:null};
 function buildReptilianOceanBiome(side){
   const g=new THREE.Group();g.name=`REPTILIAN_OCEAN_${side.toUpperCase()}`;g.visible=false;
@@ -2202,11 +2202,11 @@ function buildReptilianOceanBiome(side){
   // one continuous battlefield — dry Earth shelf -> severe coastal drop -> deep Reptilian ocean.
   // No screen-wide blue overlay and no giant translucent "glass" plane over the Earth side.
   const deepWall=new THREE.Mesh(
-    new THREE.PlaneGeometry(116,70),
-    new THREE.MeshBasicMaterial({color:0x031923,transparent:true,opacity:.82,depthWrite:false,side:THREE.DoubleSide})
+    new THREE.PlaneGeometry(116,82),
+    new THREE.MeshBasicMaterial({color:0x031923,transparent:true,opacity:.72,depthWrite:false,side:THREE.DoubleSide})
   );
   // Keep the underwater backdrop entirely below the waterline so the sky never turns into a blue wall.
-  deepWall.position.set(centerX,-5,-52);g.add(deepWall);
+  deepWall.position.set(centerX,-36,-52);g.add(deepWall);
 
   // Underwater volume is built from depth layers that exist ONLY on the ocean side.
   const curtains=[];
@@ -2218,7 +2218,7 @@ function buildReptilianOceanBiome(side){
         transparent:true,opacity:.055+i*.018,depthWrite:false,side:THREE.DoubleSide
       })
     );
-    m.position.set(centerX,0,-30+i*12);m.renderOrder=2+i;g.add(m);curtains.push(m);
+    m.position.set(centerX,-24,-30+i*12);m.renderOrder=2+i;g.add(m);curtains.push(m);
   }
 
   // A soft ceiling glow suggests the distant water surface without drawing a flat sheet through the battlefield.
@@ -2252,16 +2252,13 @@ function buildReptilianOceanBiome(side){
     g.add(cap);whiteCaps.push({mesh:cap,phase:i*.49,baseX:cap.position.x,baseZ:cap.position.z});
   }
 
+  const oceanFloorY=(wx,z)=>{const oceanDistance=Math.max(0,left?(coastX-wx):(wx-coastX)),nearCoast=Math.max(0,1-Math.min(1,oceanDistance/55)),trench=Math.max(0,Math.min(1,(oceanDistance-58)/50)),ridge=Math.sin(wx*.115)*.72+Math.cos(z*.145)*.62+Math.sin((wx+z)*.065)*.38;return -48+nearCoast*12-trench*8+ridge};
   // Deep seabed: broad, irregular and progressively higher as it approaches the continental drop.
   const geo=new THREE.PlaneGeometry(112,92,44,30);geo.rotateX(-Math.PI/2);
   const pos=geo.attributes.position;
   for(let i=0;i<pos.count;i++){
     const lx=pos.getX(i),z=pos.getZ(i),wx=centerX+lx;
-    const oceanDistance=Math.max(0,left?(coastX-wx):(wx-coastX));
-    const nearCoast=Math.max(0,1-Math.min(1,oceanDistance/55));
-    const trench=Math.max(0,Math.min(1,(oceanDistance-58)/50));
-    const ridge=Math.sin(wx*.115)*.72+Math.cos(z*.145)*.62+Math.sin((wx+z)*.065)*.38;
-    pos.setY(i,-34+nearCoast*10.5-trench*12.5+ridge);
+    pos.setY(i,oceanFloorY(wx,z));
   }
   geo.computeVertexNormals();
   const seabed=new THREE.Mesh(
@@ -2271,7 +2268,7 @@ function buildReptilianOceanBiome(side){
   seabed.position.set(centerX,0,0);seabed.receiveShadow=true;g.add(seabed);
 
   // Actual continental drop. Land ends near the center and falls sharply into the Reptilian abyss.
-  const slopeWidth=7,slopeGeo=new THREE.PlaneGeometry(slopeWidth,96,28,24);slopeGeo.rotateX(-Math.PI/2);
+  const slopeWidth=11,slopeGeo=new THREE.PlaneGeometry(slopeWidth,96,34,28);slopeGeo.rotateX(-Math.PI/2);
   const sp=slopeGeo.attributes.position;
   for(let i=0;i<sp.count;i++){
     const lx=sp.getX(i),z=sp.getZ(i);
@@ -2279,7 +2276,7 @@ function buildReptilianOceanBiome(side){
     const t=Math.max(0,Math.min(1,towardLand));
     const eased=t*t*(3-2*t);
     const rockNoise=Math.sin(z*.17+lx*.11)*.45+Math.cos(z*.09-lx*.16)*.28;
-    sp.setY(i,-45+eased*49.6+rockNoise*(1-t*.12));
+    sp.setY(i,-60+eased*64.6+rockNoise*(1-t*.12));
   }
   slopeGeo.computeVertexNormals();
   const divideSlope=new THREE.Mesh(
@@ -2306,15 +2303,15 @@ function buildReptilianOceanBiome(side){
 
   // Rock ledges make the cliff read as a massive physical boundary rather than a painted backdrop.
   const cliffRocks=[];
-  for(let i=0;i<24;i++){
+  for(let i=0;i<36;i++){
     const r=new THREE.Mesh(
-      new THREE.DodecahedronGeometry(1.1+(i%5)*.48,0),
+      new THREE.DodecahedronGeometry(1.4+(i%5)*.56,0),
       new THREE.MeshStandardMaterial({color:i%3?0x39483e:0x2c3c36,roughness:1})
     );
     const along=-42+(i*13.7)%84;
     const t=(i%7)/6;
-    r.position.set(coastX+dir*(.7+t*6.2),-39.5+t*43.5,along);
-    r.scale.set(1.5,.7+(i%4)*.2,1.1);r.rotation.set(i*.21,i*.37,i*.13);
+    r.position.set(coastX+dir*(.9+t*9.2),-55+t*59,along);
+    r.scale.set(1.7,.8+(i%4)*.24,1.25);r.rotation.set(i*.21,i*.37,i*.13);
     g.add(r);cliffRocks.push(r);
   }
 
@@ -2338,14 +2335,14 @@ function buildReptilianOceanBiome(side){
 
   // Marine snow + foreground particles are what place the submarine physically INSIDE the water.
   const snowGeo=new THREE.BufferGeometry(),snowPts=[];
-  for(let i=0;i<520;i++)snowPts.push(centerX-52+Math.random()*104,-8+Math.random()*38,-45+Math.random()*88);
+  for(let i=0;i<520;i++)snowPts.push(centerX-52+Math.random()*104,-36+Math.random()*40,-45+Math.random()*88);
   snowGeo.setAttribute('position',new THREE.Float32BufferAttribute(snowPts,3));
   const marineSnow=new THREE.Points(
     snowGeo,new THREE.PointsMaterial({color:0xc4eee8,size:.06,transparent:true,opacity:.20,depthWrite:false})
   );g.add(marineSnow);
 
   const fgGeo=new THREE.BufferGeometry(),fgPts=[];
-  for(let i=0;i<260;i++)fgPts.push(centerX-50+Math.random()*100,-5+Math.random()*35,15+Math.random()*27);
+  for(let i=0;i<260;i++)fgPts.push(centerX-50+Math.random()*100,-34+Math.random()*38,15+Math.random()*27);
   fgGeo.setAttribute('position',new THREE.Float32BufferAttribute(fgPts,3));
   const foregroundParticles=new THREE.Points(
     fgGeo,new THREE.PointsMaterial({color:0xd3f8f2,size:.09,transparent:true,opacity:.22,depthWrite:false})
@@ -2353,7 +2350,7 @@ function buildReptilianOceanBiome(side){
   foregroundParticles.renderOrder=19;g.add(foregroundParticles);
 
   const bubbleGeo=new THREE.BufferGeometry(),pts=[];
-  for(let i=0;i<320;i++)pts.push(centerX-50+Math.random()*100,-6+Math.random()*34,-38+Math.random()*76);
+  for(let i=0;i<320;i++)pts.push(centerX-50+Math.random()*100,-34+Math.random()*38,-38+Math.random()*76);
   bubbleGeo.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));
   const bubbles=new THREE.Points(
     bubbleGeo,new THREE.PointsMaterial({color:0xa8e8df,size:.13,transparent:true,opacity:.24,depthWrite:false})
@@ -2363,7 +2360,7 @@ function buildReptilianOceanBiome(side){
   const kelp=[],kelpMatA=new THREE.MeshStandardMaterial({color:0x164f3b,roughness:.98}),kelpMatB=new THREE.MeshStandardMaterial({color:0x33754c,roughness:.95});
   for(let i=0;i<58;i++){
     const h=3+(i%9)*.62,x=centerX-49+(i*17.3)%98,z=-38+(i*21.7)%78;
-    const floor=-10.0+Math.sin(x*.11)*.6+Math.cos(z*.15)*.55;
+    const floor=oceanFloorY(x,z)+.5;
     const stalk=new THREE.Mesh(new THREE.CylinderGeometry(.09,.17,h,5),i%2?kelpMatA:kelpMatB);
     stalk.position.set(x,floor+h*.5,z);stalk.rotation.z=(i%5-2)*.04;g.add(stalk);
     const leaf=new THREE.Mesh(new THREE.ConeGeometry(.34+(i%4)*.07,1.4+(i%3)*.3,5),i%2?kelpMatB:kelpMatA);
@@ -2376,7 +2373,7 @@ function buildReptilianOceanBiome(side){
       new THREE.MeshStandardMaterial({color:i%3?0x23443e:0x315449,roughness:1})
     );
     const x=centerX-50+(i*19.7)%100,z=-39+(i*23.1)%80;
-    r.position.set(x,-10+Math.sin(x*.11)*.55,z);r.scale.set(1.25,.55+(i%3)*.15,1);
+    r.position.set(x,oceanFloorY(x,z)+.4,z);r.scale.set(1.25,.55+(i%3)*.15,1);
     r.rotation.set(i*.17,i*.31,i*.11);g.add(r);
   }
 
@@ -2390,19 +2387,27 @@ function buildReptilianOceanBiome(side){
     g.add(ring);caustics.push({mesh:ring,phase:i*.8});
   }
 
+  // Small fish schools occupy open water without obscuring vessels or compartment targeting.
+  const fish=[];
+  for(let i=0;i<24;i++){
+    const school=new THREE.Group(),body=new THREE.Mesh(new THREE.SphereGeometry(.28+(i%3)*.07,10,6),new THREE.MeshStandardMaterial({color:i%3===0?0x79a8a1:i%3===1?0x4f7775:0x9aa88a,roughness:.72,metalness:.08}));
+    body.scale.set(1.8,.62,.48);const tail=new THREE.Mesh(new THREE.ConeGeometry(.22,.48,3),body.material);tail.rotation.z=Math.PI/2;tail.position.x=-.55;school.add(body,tail);
+    const lane=(i%2?1:-1),baseX=centerX-45+(i*13.7)%90,baseY=-29+(i*7.9)%27;school.position.set(baseX,baseY,-34+(i*17.1)%68);school.scale.setScalar(.75+(i%5)*.12);school.rotation.y=lane<0?Math.PI:0;g.add(school);fish.push({mesh:school,baseX,baseY,lane,phase:i*.67,speed:.45+(i%4)*.11});
+  }
+
   // Compatibility aliases retained so existing animation/update code does not break.
   const water=upperWater,frontWater={visible:false},oceanDome={visible:false},depthVeil=deepWall;
   scene.add(g);
   reptilianBiomeState[side]={
     group:g,water,oceanDome,frontWater,upperWater,deepWall,depthVeil,marineSnow,foregroundParticles,
-    divideSlope,landShelf,abyss,shafts,curtains,waveBands,whiteCaps,caustics,kelp,bubbles,bubbleBase:bubbleGeo.attributes.position.array.slice()
+    divideSlope,landShelf,abyss,shafts,curtains,waveBands,whiteCaps,caustics,kelp,fish,bubbles,bubbleBase:bubbleGeo.attributes.position.array.slice()
   };
   return g;
 }
 buildReptilianOceanBiome('aurelian');buildReptilianOceanBiome('earth');
 function updateReptilianBiomeVisibility(lf=factionForWorldSide('aurelian'),rf=factionForWorldSide('earth')){reptilianBiomeState.aurelian.group.visible=lf==='lizard';reptilianBiomeState.earth.group.visible=rf==='lizard'}
 function animateReptilianBiome(dt){const time=performance.now()*.001;for(const side of ['aurelian','earth']){const b=reptilianBiomeState[side];if(!b?.group.visible)continue;
-    for(const s of b.shafts||[]){s.mesh.material.opacity=.022+.012*(.5+.5*Math.sin(time*.55+s.phase));}b.water.material.opacity=.09+.025*Math.sin(time*1.1);for(const w of b.waveBands||[]){w.mesh.position.y=REPTILIAN_WATER_SURFACE_Y+.05+Math.sin(time*1.35+w.phase)*.13;w.mesh.position.z=w.baseZ+Math.sin(time*.72+w.phase)*.7;w.mesh.material.opacity=.07+.06*(.5+.5*Math.sin(time*1.1+w.phase));}for(const c of b.whiteCaps||[]){c.mesh.position.x=c.baseX+Math.sin(time*.58+c.phase)*1.3;c.mesh.position.z=c.baseZ+Math.cos(time*.42+c.phase)*.9;c.mesh.position.y=REPTILIAN_WATER_SURFACE_Y+.12+Math.sin(time*1.55+c.phase)*.10;c.mesh.material.opacity=.08+.10*(.5+.5*Math.sin(time*1.35+c.phase));}for(const c of b.caustics){c.mesh.material.opacity=.055+.05*(.5+.5*Math.sin(time*1.7+c.phase));c.mesh.rotation.z+=dt*.04}for(const k of b.kelp){k.stalk.rotation.z=k.baseRot+Math.sin(time*1.15+k.phase)*.09;k.leaf.rotation.z=k.leafBase+Math.sin(time*1.45+k.phase)*.14}const a=b.bubbles.geometry.attributes.position.array,base=b.bubbleBase;for(let i=0;i<a.length;i+=3){const phase=(i/3)*.37;a[i]=base[i]+Math.sin(time*.48+phase)*.16;a[i+1]=1+((base[i+1]-1+time*(.34+(i%9)*.02))%27);a[i+2]=base[i+2]+Math.cos(time*.43+phase)*.12}b.bubbles.geometry.attributes.position.needsUpdate=true}}
+    for(const s of b.shafts||[]){s.mesh.material.opacity=.022+.012*(.5+.5*Math.sin(time*.55+s.phase));}b.water.material.opacity=.09+.025*Math.sin(time*1.1);for(const w of b.waveBands||[]){w.mesh.position.y=REPTILIAN_WATER_SURFACE_Y+.05+Math.sin(time*1.35+w.phase)*.13;w.mesh.position.z=w.baseZ+Math.sin(time*.72+w.phase)*.7;w.mesh.material.opacity=.07+.06*(.5+.5*Math.sin(time*1.1+w.phase));}for(const c of b.whiteCaps||[]){c.mesh.position.x=c.baseX+Math.sin(time*.58+c.phase)*1.3;c.mesh.position.z=c.baseZ+Math.cos(time*.42+c.phase)*.9;c.mesh.position.y=REPTILIAN_WATER_SURFACE_Y+.12+Math.sin(time*1.55+c.phase)*.10;c.mesh.material.opacity=.08+.10*(.5+.5*Math.sin(time*1.35+c.phase));}for(const c of b.caustics){c.mesh.material.opacity=.055+.05*(.5+.5*Math.sin(time*1.7+c.phase));c.mesh.rotation.z+=dt*.04}for(const k of b.kelp){k.stalk.rotation.z=k.baseRot+Math.sin(time*1.15+k.phase)*.09;k.leaf.rotation.z=k.leafBase+Math.sin(time*1.45+k.phase)*.14}for(const f of b.fish||[]){f.mesh.position.x=f.baseX+Math.sin(time*f.speed+f.phase)*8*f.lane;f.mesh.position.y=f.baseY+Math.sin(time*.8+f.phase)*.65;f.mesh.rotation.z=Math.sin(time*2+f.phase)*.05}const a=b.bubbles.geometry.attributes.position.array,base=b.bubbleBase;for(let i=0;i<a.length;i+=3){const phase=(i/3)*.37;a[i]=base[i]+Math.sin(time*.48+phase)*.16;a[i+1]=-34+((base[i+1]+34+time*(.34+(i%9)*.02))%38);a[i+2]=base[i+2]+Math.cos(time*.43+phase)*.12}b.bubbles.geometry.attributes.position.needsUpdate=true}}
 
 
 const livingStage=new THREE.Group();livingStage.name='LIVING_MATCHUP_STAGE';scene.add(livingStage);
@@ -2452,11 +2457,26 @@ function addSpaceStage(overlay=false){
   else addBackdropSun(-88,58,-115,.86);
   for(let i=0;i<12;i++){const ship=new THREE.Mesh(new THREE.ConeGeometry(.55,4.2,5),stageMat(i%2?0x74d9ff:0xd26cff,.86));ship.position.set(-112+i*20,18+(i%4)*8,-48-(i%5)*8);ship.rotation.z=Math.PI/2+(i%2?-.14:.14);livingStage.add(ship);livingStageState.orbiters.push({mesh:ship,baseX:ship.position.x,phase:i*.73});const laser=new THREE.Mesh(new THREE.BoxGeometry(9,.10,.10),stageMat(i%2?0x70d8ff:0xff65dc,.72));laser.position.copy(ship.position).add(new THREE.Vector3(i%2?5:-5,(i%3)-1,-1));laser.rotation.z=(i%2?-.08:.08);livingStage.add(laser);livingStageState.tracers.push({mesh:laser,baseX:laser.position.x,phase:i*.48,speed:12})}
 }
+function addOceanWarStage(lf,rf){
+  // The ocean exists below its physical surface; everything above it remains open ruined-Earth sky.
+  addStageBackdrop('mixed');addSpaceStage(true);
+  const drySign=lf==='lizard'?1:-1,ruin=new THREE.Group();ruin.name='OCEAN_DISTANT_RUINED_WHITE_HOUSE';ruin.position.set(drySign*58,9,-62);ruin.rotation.y=drySign<0?Math.PI:0;
+  const stone=new THREE.MeshStandardMaterial({color:0x8b887f,roughness:.94}),scorch=new THREE.MeshStandardMaterial({color:0x252422,roughness:1}),dark=new THREE.MeshBasicMaterial({color:0x111820});
+  const main=new THREE.Mesh(new THREE.BoxGeometry(20,9,4.8),stone);main.position.y=5.2;ruin.add(main);
+  for(const sx of[-1,1]){const wing=new THREE.Mesh(new THREE.BoxGeometry(12,6.2,4.3),stone);wing.position.set(sx*14,3.7,-.3);wing.rotation.z=sx*.07;ruin.add(wing)}
+  const pediment=new THREE.Mesh(new THREE.CylinderGeometry(0,8.2,3.8,3),stone);pediment.position.set(0,11,.5);pediment.rotation.y=Math.PI/2;ruin.add(pediment);
+  for(const x of[-8,-5,-2,2,5,8]){const h=7.5-(x===2?2.8:0),column=new THREE.Mesh(new THREE.CylinderGeometry(.48,.60,h,9),x===2?scorch:stone);column.position.set(x,3.4+h*.5,2.6);column.rotation.z=x===2?.18:0;ruin.add(column)}
+  for(const x of[-14,-10,-6,6,10,14])for(const y of[3.5,6.2]){const hole=new THREE.Mesh(new THREE.PlaneGeometry(1.35,1.55),dark);hole.position.set(x,y,2.25);ruin.add(hole)}
+  const roofL=new THREE.Mesh(new THREE.BoxGeometry(15,1.1,4.2),stone),roofR=new THREE.Mesh(new THREE.BoxGeometry(12,1.1,4.2),stone);roofL.position.set(-8,11.3,0);roofR.position.set(9,10.2,0);roofL.rotation.z=-.13;roofR.rotation.z=.22;ruin.add(roofL,roofR);
+  for(let i=0;i<10;i++){const rubble=new THREE.Mesh(new THREE.DodecahedronGeometry(.7+(i%4)*.25,0),i%3?stone:scorch);rubble.position.set(-18+(i*4.1)%36,.5+(i%3)*.3,1+(i%4));rubble.rotation.set(i*.2,i*.4,i*.13);ruin.add(rubble)}
+  ruin.scale.setScalar(1.18);livingStage.add(ruin);
+}
 function updateLivingStage(lf=factionForWorldSide('aurelian'),rf=factionForWorldSide('earth')){
   const mode=(lf==='lizard'||rf==='lizard')?'ocean':(lf==='earth'&&rf==='earth')?'land':(lf!=='earth'&&rf!=='earth')?'space':'mixed';if(mode===livingStageState.mode)return;
-  clearLivingStage();livingStageState.mode=mode;livingStage.visible=mode!=='ocean';
-  const palette={ocean:[0x071d27,0x0b2a34,.0042],land:[0x142433,0x2d3b42,.0032],space:[0x01030b,0x050b18,.0011],mixed:[0x102437,0x25343d,.0027]}[mode];scene.background.setHex(palette[0]);scene.fog.color.setHex(palette[1]);scene.fog.density=palette[2];
-  if(mode==='land')addLandWarStage();else if(mode==='space')addSpaceStage();else if(mode==='mixed')addLandWarStage(true);diag('LIVING STAGE',mode.toUpperCase())
+  clearLivingStage();livingStageState.mode=mode;livingStage.visible=true;
+  terrain.visible=mode!=='ocean';
+  const palette={ocean:[0x07131f,0x1b303a,.0017],land:[0x142433,0x2d3b42,.0032],space:[0x01030b,0x050b18,.0011],mixed:[0x102437,0x25343d,.0027]}[mode];scene.background.setHex(palette[0]);scene.fog.color.setHex(palette[1]);scene.fog.density=palette[2];
+  if(mode==='ocean')addOceanWarStage(lf,rf);else if(mode==='land')addLandWarStage();else if(mode==='space')addSpaceStage();else if(mode==='mixed')addLandWarStage(true);diag('LIVING STAGE',mode.toUpperCase())
 }
 function animateLivingStage(){
   const t=performance.now()*.001;
@@ -3782,8 +3802,15 @@ function bombardierDescentPreview(attacker,a,b,profile){
   if(all.length<5)return'';
   return ballisticDescentTail(all.slice(0,ballisticPreviewContactIndex(attacker,all,10)+1));
 }
+function renderEnemyAimOutlines(pointer){
+  if(!enemyAimOutlineLayer)return;enemyAimOutlineLayer.replaceChildren();if(!aiming||!selected)return;
+  const targetSide=selected.side==='aurelian'?'earth':'aurelian';if(factionForWorldSide(targetSide)!=='lizard')return;
+  const ns='http://www.w3.org/2000/svg',rooms=opposingRooms(selected).userData.rooms;
+  for(const room of rooms){if(room.erased)continue;const r=objectScreenRect(room.hitPlane,1),hover=pointer&&pointer.x>=r.x1&&pointer.x<=r.x2&&pointer.y>=r.y1&&pointer.y<=r.y2,rect=document.createElementNS(ns,'rect');rect.setAttribute('x',r.x1.toFixed(1));rect.setAttribute('y',r.y1.toFixed(1));rect.setAttribute('width',Math.max(2,r.x2-r.x1).toFixed(1));rect.setAttribute('height',Math.max(2,r.y2-r.y1).toFixed(1));rect.setAttribute('rx','3');rect.setAttribute('fill',hover?'rgba(159,255,218,.16)':'rgba(32,136,132,.055)');rect.setAttribute('stroke',hover?'#d9ff98':'#65d9cf');rect.setAttribute('stroke-width',hover?'3':'1.5');rect.setAttribute('stroke-dasharray',hover?'none':'7 6');rect.style.filter=hover?'drop-shadow(0 0 7px rgba(199,255,140,.9))':'drop-shadow(0 0 4px rgba(76,221,211,.7))';enemyAimOutlineLayer.appendChild(rect)}
+}
 function setAimVisual(a,b){
   if(!selected)return;
+  renderEnemyAimOutlines(b);
   aimDropPath.setAttribute('d','');aimDropPath.style.opacity='0';
   a=aimOriginStage?{x:aimOriginStage.x,y:aimOriginStage.y}:worldToStage(muzzleWorld(selected,b));startPx=a;
   muzzleDot.setAttribute('cx',a.x);muzzleDot.setAttribute('cy',a.y);muzzleDot.style.opacity='1';
@@ -3817,7 +3844,7 @@ function setAimVisual(a,b){
   const anglePct=Math.round(angle/90*100),angleSign=anglePct>0?'+':'';
   angleMetric.textContent=`ANGLE ${angleSign}${anglePct}%`;powerMetric.textContent=`POWER ${Math.round(displayPower)}%`;statusEl.textContent=`MANUAL AIM • ANGLE ${angleSign}${anglePct}% • POWER ${Math.round(displayPower)}%`;
 }
-function clearAim(){aimHud.classList.remove('live');aimPath.style.opacity='0';aimPath.style.stroke='';aimPath.style.strokeWidth='';aimPath.style.filter='';aimDropPath.setAttribute('d','');aimDropPath.style.opacity='0';aimDot.style.opacity='0';aimDot.style.fill='';muzzleDot.style.opacity='0';rangeBadge?.classList.remove('rangeLive');aiming=false;startPx=currentPx=null;aimOriginWorld=aimOriginStage=null;pointerId=null}
+function clearAim(){aimHud.classList.remove('live');aimPath.style.opacity='0';aimPath.style.stroke='';aimPath.style.strokeWidth='';aimPath.style.filter='';aimDropPath.setAttribute('d','');aimDropPath.style.opacity='0';aimDot.style.opacity='0';aimDot.style.fill='';muzzleDot.style.opacity='0';enemyAimOutlineLayer?.replaceChildren();rangeBadge?.classList.remove('rangeLive');aiming=false;startPx=currentPx=null;aimOriginWorld=aimOriginStage=null;pointerId=null}
 function stageRay(pt){const ndc=new THREE.Vector2(pt.x/640-1,1-pt.y/360);raycaster.setFromCamera(ndc,camera);return raycaster.ray.clone()}
 function worldPointOnCameraPlane(pt,worldPoint){const ray=stageRay(pt),normal=new THREE.Vector3();camera.getWorldDirection(normal);const plane=new THREE.Plane().setFromNormalAndCoplanarPoint(normal,worldPoint),out=new THREE.Vector3();return ray.intersectPlane(plane,out)?out:worldPoint.clone()}
 function targetWorldFromStage(pt){return worldPointOnCameraPlane(pt,new THREE.Vector3(0,9,6))}
@@ -4535,7 +4562,7 @@ function spawnExplosionVisual(point,color=0xff8a36,scale=1){
   const ringMat2=new THREE.MeshBasicMaterial({color:0xffd17a,transparent:true,opacity:.70,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
   const ring1=new THREE.Mesh(new THREE.RingGeometry(.28*scale,.56*scale,34),ringMat1);ring1.position.copy(point);ring1.lookAt(camera.position);scene.add(ring1);rings.push(ring1);
   const ring2=new THREE.Mesh(new THREE.RingGeometry(.60*scale,.92*scale,34),ringMat2);ring2.position.copy(point);ring2.lookAt(camera.position);scene.add(ring2);rings.push(ring2);
-  for(let i=0;i<10;i++){
+  for(let i=0;i<Math.min(24,Math.round(10+scale*3));i++){
     const puff=glowSphere(.18*scale+Math.random()*.18*scale,0x595959,6);
     puff.material.transparent=true;puff.material.opacity=.24+Math.random()*.18;
     puff.position.copy(point).add(new THREE.Vector3((Math.random()-.5)*.55*scale,Math.random()*.2*scale,(Math.random()-.5)*.55*scale));
@@ -5204,17 +5231,16 @@ let battleSceneWatch=0;const clock=new THREE.Clock();function animate(){requestA
     if(dir.lengthSq()>.00001)m.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize());
     if(localT>=1&&!m.impacted){
       m.impacted=true;
-      const impact=m.curve.getPoint(1);
-      spawnExplosionVisual(impact,m.plan.color,m.plan.center?1.90:1.24);
+      const impact=m.curve.getPoint(1),hit=explosiveHitFromEnd(q.attacker,m.target),primaryScale=hit?(m.plan.center?2.70:2.15):(m.plan.center?1.30:.96);
+      spawnExplosionVisual(impact,m.plan.color,primaryScale);
       spawnImpactBurst(impact,m.plan.color);
-      spawnDebris(impact,0x5e6267,m.plan.center?34:18,.12,m.plan.center?.76:.46);
-      kickCamera(m.plan.center?.27:.14,m.plan.center?.20:.11);
+      spawnDebris(impact,0x5e6267,hit?(m.plan.center?40:24):(m.plan.center?22:12),.14,hit?(m.plan.center?.92:.58):.40);
+      kickCamera(hit?(m.plan.center?.34:.22):(m.plan.center?.17:.10),hit?(m.plan.center?.25:.16):.10);
       if(!m.damageResolved){
         m.damageResolved=true;
-        const hit=explosiveHitFromEnd(q.attacker,m.target);
         const armorShare=m.plan.center?.30:.18,crewShare=m.plan.center?.14:.07,splashShare=m.plan.center?.22:.14;
         const mini={...q.weapon,name:'HE-9 MISSILE '+(mi+1),armorDamage:Math.max(1,q.weapon.armorDamage*armorShare),damage:Math.max(1,q.weapon.damage*crewShare),splash:Math.max(1,q.weapon.splash*splashShare),impactStrength:m.plan.center?1.55:1.05};
-        if(hit){spawnExplosionVisual(impact,0xffcf6a,m.plan.center?2.16:1.50);spawnImpactBurst(impact,0xffed9d);kickCamera(m.plan.center?.34:.19,m.plan.center?.24:.14);resolveHit(q.attacker,hit,mini)}else resolveHit(q.attacker,null,mini);
+        if(hit){spawnExplosionVisual(impact,0xffcf6a,m.plan.center?3.55:2.78);spawnImpactBurst(impact,0xffed9d);kickCamera(m.plan.center?.40:.25,m.plan.center?.29:.18);resolveHit(q.attacker,hit,mini)}else resolveHit(q.attacker,null,mini);
       }
     }
     if(localT>=1.055){scene.remove(m.mesh);m.removed=true}else allDone=false;
