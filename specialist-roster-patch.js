@@ -1,31 +1,108 @@
-// AFTER CONTACT v0.32.12 - Earth specialist roster patch
+// AFTER CONTACT v0.32.12b - Earth specialist roster UI bridge
+// This file intentionally works through the DOM only so it can coexist with the main game module.
 (() => {
-  const SPECIALISTS = {
-    earth: [
-      {id:'bombardier', name:'BOMBARDIER', weapon:'HE-9 BARRAGE', desc:'Heavy explosive starter.'},
-      {id:'sniper', name:'SNIPER', weapon:'LONGSHOT RIFLE', desc:'Precision single-target specialist.'},
-      {id:'radio_man', name:'RADIO MAN', weapon:'TARGET LOCATOR', desc:'Marks a location for a delayed support strike.'},
-      {id:'combat_controller', name:'COMBAT CONTROLLER', weapon:'TACTICAL UPLINK', desc:'Battlefield command and targeting support.'}
-    ]
-  };
-  const BASE_ROUTE={sniper:'solar_lancer',radio_man:'bombardier',combat_controller:'bombardier'};
-  let specialist=null;
+  const UNITS = [
+    {id:'bombardier', name:'BOMBARDIER', weapon:'HE-9 BARRAGE', glyph:'✹', desc:'Heavy explosive starter.'},
+    {id:'sniper', name:'SNIPER', weapon:'LONGSHOT RIFLE', glyph:'⌖', desc:'Precision single-target specialist.'},
+    {id:'radio_man', name:'RADIO MAN', weapon:'TARGET LOCATOR', glyph:'⌁', desc:'Marks a location for delayed support fire.'},
+    {id:'combat_controller', name:'COMBAT CONTROLLER', weapon:'TACTICAL UPLINK', glyph:'✦', desc:'Battlefield command and targeting support.'}
+  ];
+  let chosen='bombardier';
+  let patched=false;
+
   const style=document.createElement('style');
-  style.textContent=`#characterRoster.acSpecialistRoster{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;overflow:auto}#characterRoster.acSpecialistRoster .characterCard{min-height:150px;justify-content:center;padding:12px;text-align:center}#characterRoster.acSpecialistRoster .acUnitGlyph{font:1000 38px/1 system-ui;margin-bottom:10px;filter:drop-shadow(0 0 10px rgba(116,217,255,.35))}#characterRoster.acSpecialistRoster .acUnitDesc{font:700 7px/1.3 system-ui;opacity:.55;margin-top:6px}#starterCard .acDeployGlyph{font:1000 44px/1 system-ui;margin:8px 0;text-align:center}@media(max-height:520px) and (orientation:landscape){#characterRoster.acSpecialistRoster .characterCard{min-height:92px}.acUnitDesc{display:none!important}}`;
+  style.textContent=`
+    #characterRoster.acEarthSpecialists{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:9px!important;align-items:stretch!important}
+    #characterRoster.acEarthSpecialists .characterCard{min-height:188px!important;justify-content:center!important;text-align:center!important;padding:10px!important}
+    #characterRoster.acEarthSpecialists .acSpecialistGlyph{font:1000 42px/1 system-ui;margin-bottom:12px;color:#d9f4ff;text-shadow:0 0 16px rgba(73,185,255,.45)}
+    #characterRoster.acEarthSpecialists .acSpecialistDesc{font:700 7px/1.35 system-ui;opacity:.55;margin-top:7px}
+    #characterRoster.acEarthSpecialists .characterCard.selected{border-color:#76d6ff!important;box-shadow:0 0 0 2px rgba(71,185,255,.2),0 0 28px rgba(71,185,255,.18)!important}
+    #starterCard .acDeployGlyph{font:1000 48px/1 system-ui;text-align:center;margin:8px 0 12px;color:#d9f4ff;text-shadow:0 0 14px rgba(73,185,255,.45)}
+    @media(max-width:850px){#characterRoster.acEarthSpecialists{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+    @media(max-height:520px) and (orientation:landscape){#characterRoster.acEarthSpecialists{grid-template-columns:repeat(4,minmax(0,1fr))!important}#characterRoster.acEarthSpecialists .characterCard{min-height:100px!important}.acSpecialistDesc{display:none!important}.acSpecialistGlyph{font-size:30px!important;margin-bottom:5px!important}}
+  `;
   document.head.appendChild(style);
-  const glyph=id=>({bombardier:'✹',sniper:'⌖',radio_man:'⌁',combat_controller:'✦'})[id]||'✦';
-  const roster=document.getElementById('characterRoster');
-  const originalRender=renderFactionRoster;
-  const originalApply=applyStarterProfile;
-  const originalValidate=validateFactionStarter;
-  const originalFire=fireWarriorFromStage;
-  validateFactionStarter=function(faction,warrior){if(faction==='earth'&&SPECIALISTS.earth.some(x=>x.id===warrior))return true;return originalValidate(faction,warrior)};
-  function paintDeployCard(unit){if(!unit)return;const card=document.getElementById('starterCard');if(!card)return;card.dataset.warriorStock=unit.id;card.querySelector('.cardName').textContent=unit.name;const img=card.querySelector('img');if(img)img.style.display=unit.id==='bombardier'?'block':'none';let g=card.querySelector('.acDeployGlyph');if(!g){g=document.createElement('div');g.className='acDeployGlyph';card.insertBefore(g,card.querySelector('.cardName'))}g.style.display=unit.id==='bombardier'?'none':'block';g.textContent=glyph(unit.id);const hint=card.querySelector('.cardHint');if(hint)hint.textContent='DRAG TO FORTRESS'}
-  function choose(unit){specialist=unit.id==='bombardier'?null:unit.id;selectedWarriorType=unit.id;roster.querySelectorAll('.characterCard').forEach(c=>c.classList.toggle('selected',c.dataset.warrior===unit.id));characterContinue.disabled=false;characterContinue.textContent=`DEPLOY ${unit.name}`;paintDeployCard(unit);diag('SPECIALIST SELECT',`${unit.id} faction=${selectedFaction}`)}
-  renderFactionRoster=function(){if(selectedFaction!=='earth'){specialist=null;roster.classList.remove('acSpecialistRoster');return originalRender()}roster.classList.add('acSpecialistRoster');[...roster.querySelectorAll('.characterCard,.characterReserve')].forEach(n=>n.remove());for(const unit of SPECIALISTS.earth){const card=document.createElement('div');card.className='characterCard';card.dataset.warrior=unit.id;card.innerHTML=`<div class="acUnitGlyph">${glyph(unit.id)}</div><div class="characterName">${unit.name}</div><div class="characterWeapon">${unit.weapon}</div><div class="acUnitDesc">${unit.desc}</div>`;card.addEventListener('pointerup',e=>{stopNative(e);choose(unit)},{passive:false});roster.insertBefore(card,characterContinue)}choose(SPECIALISTS.earth[0]);document.querySelector('.characterKicker').textContent='EARTH COMMAND • SPECIALIST ROSTER';document.querySelector('.characterText').textContent='Choose one Earth specialist, then deploy that warrior into any fortress compartment.';return true};
-  applyStarterProfile=function(type){if(selectedFaction==='earth'&&BASE_ROUTE[type]){const requested=type;originalApply(BASE_ROUTE[type]);selectedWarriorType=requested;specialist=requested;const w=localSide==='earth'?eWarriors[0]:aWarriors[0];if(w){w.weaponKey=requested;w.acBaseRoute=BASE_ROUTE[requested];w.displayName=SPECIALISTS.earth.find(x=>x.id===requested)?.name||requested}paintDeployCard(SPECIALISTS.earth.find(x=>x.id===requested));document.querySelector('.deployText').textContent=`Drag your ${w?.displayName||requested} into any fortress compartment. You can reposition before battle.`;document.querySelector('.shipLabel').textContent='EARTH COMMAND • 3×3 TEST FORTRESS';diag('SPECIALIST PROFILE',`${requested} base=${BASE_ROUTE[requested]}`);return}specialist=null;originalApply(type)};
-  fireWarriorFromStage=function(w,point,power,remote=false,eventWarrior=null){const key=eventWarrior||w?.weaponKey;if(BASE_ROUTE[key]){const old=w.weaponKey;w.weaponKey=BASE_ROUTE[key];if(key==='sniper'){statusEl.textContent='SNIPER • LONGSHOT';weaponNameEl.textContent='SNIPER • LONGSHOT RIFLE'}else if(key==='radio_man'){statusEl.textContent='RADIO MAN • TARGET LOCATOR';weaponNameEl.textContent='RADIO MAN • SUPPORT LOCATOR'}else{statusEl.textContent='COMBAT CONTROLLER • TACTICAL UPLINK';weaponNameEl.textContent='COMBAT CONTROLLER • TACTICAL UPLINK'}const result=originalFire(w,point,power,remote,BASE_ROUTE[key]);w.weaponKey=old;return result}return originalFire(w,point,power,remote,eventWarrior)};
-  const originalUpdateDeploy=updateDeployUI;updateDeployUI=function(){originalUpdateDeploy();if(selectedFaction==='earth'){const u=SPECIALISTS.earth.find(x=>x.id===selectedWarriorType);if(u)paintDeployCard(u)}};
-  const badge=document.querySelector('.lab');if(badge)badge.textContent='3D LAB • MOBILE PVP TEST • v0.32.12';
-  diag('PATCH 0.32.12','Earth Sniper + Radio Man + Combat Controller roster/deployment enabled');
+
+  function earthScreenOpen(){
+    const kicker=document.querySelector('#characterOverlay .characterKicker')?.textContent||'';
+    return !document.getElementById('characterOverlay')?.classList.contains('hidden') && /EARTH COMMAND/i.test(kicker);
+  }
+
+  function unitById(id){return UNITS.find(x=>x.id===id)||UNITS[0]}
+
+  function setChosen(id){
+    chosen=unitById(id).id;
+    document.documentElement.dataset.acEarthSpecialist=chosen;
+    document.querySelectorAll('#characterRoster .characterCard').forEach(c=>c.classList.toggle('selected',c.dataset.warrior===chosen));
+    const u=unitById(chosen),continueBtn=document.getElementById('characterContinue');
+    if(continueBtn){continueBtn.disabled=false;continueBtn.textContent=`DEPLOY ${u.name}`}
+  }
+
+  function buildRoster(){
+    const roster=document.getElementById('characterRoster');
+    if(!roster||!earthScreenOpen())return false;
+    const continueBtn=document.getElementById('characterContinue');
+    if(!continueBtn)return false;
+    roster.classList.add('acEarthSpecialists');
+    [...roster.querySelectorAll('.characterCard,.characterReserve')].forEach(n=>n.remove());
+    for(const u of UNITS){
+      const card=document.createElement('div');
+      card.className='characterCard';
+      card.dataset.warrior=u.id;
+      card.setAttribute('role','button');card.tabIndex=0;
+      if(u.id==='bombardier'){
+        card.innerHTML=`<img src="/bombardier.webp" alt="Bombardier"><div class="characterName">${u.name}</div><div class="characterWeapon">${u.weapon}</div><div class="acSpecialistDesc">${u.desc}</div>`;
+      }else{
+        card.innerHTML=`<div class="acSpecialistGlyph">${u.glyph}</div><div class="characterName">${u.name}</div><div class="characterWeapon">${u.weapon}</div><div class="acSpecialistDesc">${u.desc}</div>`;
+      }
+      const choose=e=>{e.preventDefault();e.stopPropagation();setChosen(u.id)};
+      card.addEventListener('pointerup',choose,{passive:false});
+      card.addEventListener('click',e=>{if(e.detail===0)choose(e)},{passive:false});
+      roster.insertBefore(card,continueBtn);
+    }
+    const intro=document.querySelector('#characterOverlay .characterText');
+    if(intro)intro.textContent='Choose an Earth warrior, then deploy that warrior into any fortress compartment.';
+    const kicker=document.querySelector('#characterOverlay .characterKicker');
+    if(kicker)kicker.textContent='EARTH COMMAND • SPECIALIST ROSTER';
+    setChosen(chosen);
+    patched=true;
+    return true;
+  }
+
+  function paintDeployCard(){
+    const deploy=document.getElementById('deployOverlay');
+    if(!deploy||deploy.classList.contains('hidden'))return;
+    const u=unitById(chosen),card=document.getElementById('starterCard');
+    if(!card)return;
+    card.dataset.displaySpecialist=u.id;
+    const img=card.querySelector('img');
+    if(img)img.style.display=u.id==='bombardier'?'block':'none';
+    let glyph=card.querySelector('.acDeployGlyph');
+    if(!glyph){glyph=document.createElement('div');glyph.className='acDeployGlyph';card.insertBefore(glyph,card.querySelector('.cardName'))}
+    glyph.style.display=u.id==='bombardier'?'none':'block';glyph.textContent=u.glyph;
+    const name=card.querySelector('.cardName');if(name)name.textContent=u.name;
+    const hint=card.querySelector('.cardHint');if(hint)hint.textContent='DRAG TO FORTRESS';
+    const text=document.querySelector('#deployOverlay .deployText');if(text)text.textContent=`Drag your ${u.name} into any fortress compartment. You can reposition before battle.`;
+    const label=document.querySelector('#deployOverlay .shipLabel');if(label)label.textContent='EARTH COMMAND • 3×3 TEST FORTRESS';
+    // Keep the visible occupant matching the chosen specialist during placement.
+    document.querySelectorAll('#deployGrid .deploySlot.filled').forEach(slot=>{
+      const slotImg=slot.querySelector('img');if(slotImg)slotImg.style.display=u.id==='bombardier'?'block':'none';
+      let sg=slot.querySelector('.acDeployGlyph');if(!sg&&u.id!=='bombardier'){sg=document.createElement('div');sg.className='acDeployGlyph';sg.style.fontSize='26px';slot.appendChild(sg)}
+      if(sg){sg.textContent=u.glyph;sg.style.display=u.id==='bombardier'?'none':'block'}
+    });
+  }
+
+  // The main game rebuilds Character Select dynamically after faction choice, so watch that handoff.
+  const observer=new MutationObserver(()=>{
+    if(earthScreenOpen()){
+      const cards=[...document.querySelectorAll('#characterRoster .characterCard')];
+      if(!patched||cards.length!==4||!cards.some(c=>c.dataset.warrior==='sniper'))buildRoster();
+    }else patched=false;
+    paintDeployCard();
+  });
+  observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','aria-hidden']});
+
+  // Run once after the game module has initialized.
+  setTimeout(()=>{if(earthScreenOpen())buildRoster();paintDeployCard()},150);
+  setInterval(()=>{if(earthScreenOpen()&&document.querySelectorAll('#characterRoster .characterCard').length!==4)buildRoster();paintDeployCard()},500);
 })();
