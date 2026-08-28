@@ -1,6 +1,7 @@
 import baseWorker from './after-contact-worker.js';
 import { patchIndexHtml } from './game-html-patcher.js';
 import { patchEarthSpecialistsRuntime } from './earth-specialists-runtime.js';
+import { patchSolarLancerRuntime } from './solar-lancer-runtime.js';
 export { MyDurableObject } from './after-contact-worker.js';
 
 function isDocumentRequest(request, url) {
@@ -29,6 +30,7 @@ export default {
       if (request.method === 'HEAD') return new Response(null, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
       let html = patchIndexHtml(await assetResponse.text());
       html = patchEarthSpecialistsRuntime(html);
+      html = patchSolarLancerRuntime(html);
       return new Response(html, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
     }
     return baseWorker.fetch(request, env, ctx);
