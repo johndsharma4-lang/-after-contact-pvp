@@ -17,8 +17,14 @@ function documentHeaders(response) {
 }
 
 function patchIndexHtml(html) {
-  if (html.includes('/lifecycle-fix.js?v=20260828-1')) return html;
-  return html.replace('</body>', '<script src="/lifecycle-fix.js?v=20260828-1"></script>\n</body>');
+  let patched = html;
+  if (!patched.includes('/lifecycle-fix.js?v=20260828-1')) {
+    patched = patched.replace('</body>', '<script src="/lifecycle-fix.js?v=20260828-1"></script>\n</body>');
+  }
+  if (!patched.includes('/deployment-roster-v0338.js?v=20260828-1')) {
+    patched = patched.replace('</body>', '<script src="/deployment-roster-v0338.js?v=20260828-1"></script>\n</body>');
+  }
+  return patched;
 }
 
 export default {
