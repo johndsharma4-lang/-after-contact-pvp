@@ -21,8 +21,11 @@ function patchIndexHtml(html) {
   if (!patched.includes('/lifecycle-fix.js?v=20260828-1')) {
     patched = patched.replace('</body>', '<script src="/lifecycle-fix.js?v=20260828-1"></script>\n</body>');
   }
-  if (!patched.includes('/deployment-roster-v0338.js?v=20260828-1')) {
-    patched = patched.replace('</body>', '<script src="/deployment-roster-v0338.js?v=20260828-1"></script>\n</body>');
+  if (!patched.includes('/deployment-roster-v0338.js?v=20260828-2')) {
+    patched = patched.replace('</body>', '<script src="/deployment-roster-v0338.js?v=20260828-2"></script>\n</body>');
+  }
+  if (!patched.includes('/deployment-button-v0339.js?v=20260828-1')) {
+    patched = patched.replace('</body>', '<script src="/deployment-button-v0339.js?v=20260828-1"></script>\n</body>');
   }
   return patched;
 }
