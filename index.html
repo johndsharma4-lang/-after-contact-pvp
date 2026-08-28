@@ -777,15 +777,16 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 #deployOverlay .deployFoot{font-size:7px!important;margin-top:3px!important}
 #dragGhost{width:82px!important;height:92px!important;filter:drop-shadow(0 10px 18px #000) drop-shadow(0 0 8px rgba(84,210,255,.55))!important}
 @media (orientation:landscape) and (max-height:600px){
-  #deployOverlay .deployRoster{gap:4px!important;padding-bottom:8px!important;scrollbar-width:thin!important;scrollbar-color:#52cfff rgba(255,255,255,.08)!important}
-  #deployOverlay .deployCard{flex:0 0 70px!important;height:70px!important;min-height:70px!important;grid-template-columns:25% minmax(0,75%)!important;padding:3px!important}
-  #deployOverlay .deployCardImage{height:64px!important;max-height:64px!important}
+  #deployOverlay .deployPanel{padding-bottom:48px!important}
+  #deployOverlay .deployRoster{gap:3px!important;padding-bottom:7px!important;scrollbar-width:thin!important;scrollbar-color:#52cfff rgba(255,255,255,.08)!important}
+  #deployOverlay .deployCard{flex:0 0 54px!important;height:54px!important;min-height:0!important;max-height:54px!important;grid-template-columns:22% minmax(0,78%)!important;padding:2px!important;overflow:hidden!important;contain:size layout!important}
+  #deployOverlay .deployCardImage{height:50px!important;max-height:50px!important}
   #deployOverlay .deployCardBody{padding:1px 3px 1px 5px!important}
-  #deployOverlay .cardName{font-size:9px!important}
+  #deployOverlay .cardName{font-size:8px!important}
   #deployOverlay .cardDesc{display:none!important}
   #deployOverlay .warriorStats{gap:2px 5px!important}
-  #deployOverlay .warriorStats>div{grid-template-columns:22px 1fr 18px!important;gap:2px!important;font-size:6px!important}
-  #deployOverlay .warriorStats b{font-size:6px!important}
+  #deployOverlay .warriorStats>div{grid-template-columns:20px 1fr 17px!important;gap:2px!important;font-size:5.5px!important}
+  #deployOverlay .warriorStats b{font-size:5.5px!important}
   #deployOverlay .stockBadge{height:15px!important;min-width:27px!important;font-size:6px!important;top:3px!important;right:3px!important}
   #deployOverlay .rosterReserve{flex:0 0 34px!important;min-height:34px!important}
 }
@@ -836,7 +837,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <button id="moveDown" aria-label="Move down">▼</button>
 </div>
   <div class="hud"><div class="side"><div class="name" id="leftFactionName">AURELIAN ACCORD</div><div class="sub" id="leftFactionSub">SOLAR LANCER • PENETRATION TEST</div></div><div class="side right"><div class="name" id="rightFactionName">EARTH COMMAND</div><div class="sub" id="rightFactionSub">BOMBARDIER • FORTRESS LV.1</div></div></div>
-  <div class="lab">3D LAB • MOBILE PVP TEST • v0.33.4</div>
+  <div class="lab">3D LAB • MOBILE PVP TEST • v0.33.5</div>
   <div id="structureHud"><div class="structureSide"><div class="structureLabel" id="leftStructureLabel">VESSEL STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="leftStructureFill"></div></div></div><div class="structureSide right"><div class="structureLabel" id="rightStructureLabel">FORTRESS STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="rightStructureFill"></div></div></div></div>
   <div id="rangeBadge">RANGE 885m</div>
   <svg id="aimSvg" viewBox="0 0 1280 720" preserveAspectRatio="none"><g id="enemyAimOutlineLayer" pointer-events="none"></g><g id="acidShotLayer" pointer-events="none"></g><path id="aimPath"/><path id="aimDropPath"/><circle id="aimDot" r="4"/><circle id="muzzleDot" r="6"/></svg>
@@ -853,7 +854,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 <div style="font:900 8px system-ui;color:#9fffc8;margin-bottom:6px">OWNER • NDA LEDGER</div>
 <div id="ownerNdaLedgerText" style="white-space:pre-wrap;max-height:180px;overflow:auto;user-select:text!important;-webkit-user-select:text!important">NOT LOADED</div>
 </div>
-<div id="ownerBuildCard" style="display:none;margin:8px 0;padding:9px;border:1px solid rgba(116,217,255,.35);border-radius:10px;background:rgba(4,18,29,.92);font:800 8px/1.45 system-ui;color:#d9f5ff"><div style="color:#82e7ff;letter-spacing:.12em;margin-bottom:5px">LATEST BUILD • v0.33.4</div><div>EARTH THREE-WARRIOR TEAM • ALL ACTIVE WARRIORS VISIBLE • STRATEGIC CUTAWAY DEPLOYMENT</div><div style="margin-top:5px;opacity:.7">Bombardier, Sniper and Combat Controller remain visible together above the six scrollable locked slots.</div></div>
+<div id="ownerBuildCard" style="display:none;margin:8px 0;padding:9px;border:1px solid rgba(116,217,255,.35);border-radius:10px;background:rgba(4,18,29,.92);font:800 8px/1.45 system-ui;color:#d9f5ff"><div style="color:#82e7ff;letter-spacing:.12em;margin-bottom:5px">LATEST BUILD • v0.33.5</div><div>EARTH ROSTER UNFROZEN • THREE ACTIVE WARRIORS VISIBLE • SIX LOCKED SLOTS BELOW</div><div style="margin-top:5px;opacity:.7">Every active warrior image accepts touch drag and the faction registry is guarded during Safari startup.</div></div>
 <div class="dbgActions"><button id="ownerBuildShowcase" class="wide" type="button">RUN BUILD SHOWCASE</button><button id="ownerBuildNotes" class="wide" type="button">LATEST BUILD NOTES</button><button id="ownerDestructionDemo" class="wide" type="button">ROOM DESTRUCTION DEMO</button><button id="ownerNdaLedgerBtn" class="wide" type="button">NDA LEDGER</button><button id="ownerNdaLedgerCopy" class="wide" type="button">COPY NDA LEDGER</button><button id="ownerDbgCopy" class="wide" type="button">COPY MATCH LOG</button><button id="ownerDbgRefresh" type="button">REFRESH SNAPSHOT</button><button id="ownerDbgShare" type="button">SHARE</button><button id="ownerDbgSelectAll" class="wide" type="button">SELECT ALL LOG</button><button id="ownerDbgClear" class="wide" type="button">CLEAR LOG</button></div></div>
 
 
@@ -864,7 +865,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
   <div id="mpOverlay" aria-live="polite">
     <div class="mpCard">
       <div class="mpKicker">AFTER CONTACT • MAIN MENU</div>
-      <div class="mpTitle">PRIVATE PVP TEST • v0.33.4</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
+      <div class="mpTitle">PRIVATE PVP TEST • v0.33.5</div><div id="bootState" style="margin:6px 0 8px;font-size:9px;font-weight:900;letter-spacing:.12em;color:#ffd27a">LOADING GAME SYSTEM…</div>
       <div class="mpText">Choose Solo Game or Multiplayer. Multiplayer creates a private room you can share with another tester.</div>
       <div class="mpActions"><button class="mpBtn primary" id="mpHostBtn">MULTIPLAYER</button><button class="mpBtn" id="mpSoloBtn">SOLO GAME</button><button class="mpBtn" id="replayStoryBtn" type="button">REPLAY STORY INTRO</button></div>
       <div class="mpJoin"><input id="mpCodeInput" maxlength="6" inputmode="text" autocomplete="off" placeholder="ROOM CODE"><button class="mpBtn" id="mpJoinBtn">JOIN</button></div>
@@ -978,7 +979,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.m
 const shell=document.getElementById('stageShell'), mount=document.getElementById('stage'), statusEl=document.getElementById('status');
 // Declare authoritative flow state before the first asynchronous artwork load. Safari may resume
 // event callbacks while the module is awaiting textures, so these bindings cannot live below it.
-let selectedFaction='',selectedWarriorType=null,mpFactionState={aurelian:null,earth:null},gameFlowPhase='home';
+let selectedFaction='',selectedWarriorType=null,mpFactionState={aurelian:null,earth:null},gameFlowPhase='home',factionRegistryReady=false;
 // v0.31.8 OPTIONAL AV LAYER — isolated from combat state.
 // TEST ONLY: compact excerpts embedded from the two user-supplied Pixabay MP3s.
 const AFTER_CONTACT_MUSIC={
@@ -1207,7 +1208,7 @@ const mpOverlay=document.getElementById('mpOverlay'),mpHostBtn=document.getEleme
 const isEditableTarget=t=>t instanceof HTMLInputElement||t instanceof HTMLTextAreaElement||t instanceof HTMLSelectElement||t?.isContentEditable;
 const stopNative=e=>{if(isEditableTarget(e.target))return;if(e.cancelable)e.preventDefault()};
 for(const type of ['contextmenu','selectstart','dragstart','gesturestart','gesturechange','gestureend'])document.addEventListener(type,stopNative,{passive:false});
-const isGameControlTarget=t=>!!t?.closest?.('#mpOverlay button,#mpOverlay a,#mpOverlay input,#characterOverlay button,#deployOverlay button,#starterCard,.deploySlot,#movePad button,#ndaOverlay button,#ndaOverlay input,#ownerDbgPanel,#ownerDbgBtn,#xrayCrewCard button');
+const isGameControlTarget=t=>!!t?.closest?.('#mpOverlay button,#mpOverlay a,#mpOverlay input,#characterOverlay button,#deployOverlay button,.deployCard,.deploySlot,#movePad button,#ndaOverlay button,#ndaOverlay input,#ownerDbgPanel,#ownerDbgBtn,#xrayCrewCard button');
 for(const type of ['touchstart','touchmove','touchend','touchcancel'])shell.addEventListener(type,e=>{
   if(isEditableTarget(e.target)||isGameControlTarget(e.target))return;
   stopNative(e)
@@ -1440,9 +1441,9 @@ const baseOwnerDebugReport=ownerDebugReport;
 ownerDebugReport=function(){
   const crewState=(label,crew)=>`${label} CREW ${crew.filter(w=>w.active).map(w=>`${w.isCaptain?'CAPTAIN':`S${w.index+1}`}@R${Number.isInteger(w.roomIndex)?w.roomIndex+1:'-'} HP${Math.round(w.hp)}/${w.maxHp} AA${Math.round(w.aa)}/${w.maxAa}`).join(' | ')}`;
   let leftCrew=[],rightCrew=[];try{leftCrew=aCrew;rightCrew=eCrew}catch{}
-  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.33.4').replace('build=2026-08-20_01-58PM_PT','build=2026-08-28_EARTH_TEAM_VISIBLE').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT+IMPACT_SPRING').replace('vfxWatchdog=8s','vfxWatchdog=3s/acid8s/barrage12s/solar15s').replace('diveBounds=-24-28.5','diveBounds=-36-3.4').replace('acidAim=MANUAL_VECTOR_TRUE_GRAVITY_HALF_GUIDE','acidAim=STRAIGHT_MANUAL_CONE_NO_GRAVITY').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
+  return `${baseOwnerDebugReport().replace('MATCH RECORDER v0.31.15','MATCH RECORDER v0.33.5').replace('build=2026-08-20_01-58PM_PT','build=2026-08-28_EARTH_ROSTER_UNFROZEN').replace('motion=VISUAL_SPRING','motion=CRISP_SINGLE_ROOT+IMPACT_SPRING').replace('vfxWatchdog=8s','vfxWatchdog=3s/acid8s/barrage12s/solar15s').replace('diveBounds=-24-28.5','diveBounds=-36-3.4').replace('acidAim=MANUAL_VECTOR_TRUE_GRAVITY_HALF_GUIDE','acidAim=STRAIGHT_MANUAL_CONE_NO_GRAVITY').replace('exteriorRooms=HIDDEN',`exteriorRooms=${exteriorRoomsHidden?'HIDDEN':'VISIBLE'}`).replace(`structure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`,`shield=L${Math.round(shieldHp.aurelian)}/${SHIELD_MAX} R${Math.round(shieldHp.earth)}/${SHIELD_MAX} sections=L${shieldSections.aurelian.map(Math.round).join(',')} R${shieldSections.earth.map(Math.round).join(',')}\nstructure=L${Math.round(structureHp.aurelian)}/${STRUCTURE_MAX} R${Math.round(structureHp.earth)}/${STRUCTURE_MAX}`)}\n${crewState('LEFT',leftCrew)}\n${crewState('RIGHT',rightCrew)}`;
 };
-const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.33.4';
+const debugVersionLabel=document.querySelector('#ownerDbgPanel .dbgHead span');if(debugVersionLabel)debugVersionLabel.textContent='MATCH RECORDER • v0.33.5';
 function debugButtonAllowed(){return true}
 function updateDebugButtonVisibility(){if(!ownerDbgBtn)return;ownerDbgBtn.classList.toggle('debugVisible',debugButtonAllowed())}
 function refreshOwnerDebug(){if(!ownerDbgText)return;ownerDbgText.textContent=ownerDebugReport()}
@@ -3166,10 +3167,11 @@ const FACTION_MODULES=Object.freeze({
 function factionModule(id){return FACTION_MODULES[id]||null}
 function factionStarter(id){return factionModule(id)?.roster?.[0]||null}
 function factionTeam(id){return (factionModule(id)?.roster||[]).slice(0,MAX_TEAM_SIZE)}
-function requiredDeploymentCount(faction=selectedFaction){return Math.max(1,factionTeam(faction).length)}
+function requiredDeploymentCount(faction=selectedFaction){if(!factionRegistryReady)return 1;return Math.max(1,factionTeam(faction).length)}
 const FACTION_STARTERS=Object.freeze(Object.fromEntries(Object.entries(FACTION_MODULES).map(([id,m])=>[id,m.roster[0].id])));
 const STARTER_PROFILES=Object.freeze(Object.fromEntries(Object.values(FACTION_MODULES).flatMap(m=>m.roster.map(u=>[u.id,Object.freeze({name:u.name,faction:m.meta.name,weapon:u.weapon,color:u.color,factionId:m.id,stats:u.stats||{acc:75,hp:100,dmg:75,aoe:50}})]))));
 const FACTION_META=Object.freeze(Object.fromEntries(Object.entries(FACTION_MODULES).map(([id,m])=>[id,m.meta])));
+factionRegistryReady=true;
 selectedWarriorType=FACTION_STARTERS[selectedFaction];
 function validateFactionStarter(faction,warrior){return !!factionModule(faction)?.roster?.some(u=>u.id===warrior)}
 function assertFactionIsolation(context='runtime'){
