@@ -23,7 +23,7 @@ export function patchEarthSpecialistsRuntime(html) {
     const room=rooms[i];if(room.erased)continue;const rect=objectScreenRect(room.hitPlane,0),t=rayRect(rect);if(t==null)continue;
     if(!best||t<best.t){const cx=(rect.x1+rect.x2)/2,cy=(rect.y1+rect.y2)/2,contact={x:start.x+ux*t,y:start.y+uy*t},inside={x:Math.max(rect.x1+2,Math.min(rect.x2-2,contact.x)),y:Math.max(rect.y1+2,Math.min(rect.y2-2,contact.y))};best={t,room,roomIndex:i,end:stagePointToRoomWorld(inside,room),warrior:warriors.find(w=>w.roomIndex===i&&w.hp>0)||null,direct:true,quality:1,placement:'AIM RAY LOCK',screenCenter:{x:cx,y:cy}}}
   }
-  diag(best?'TAC-LINK RAY LOCK':'TAC-LINK RAY MISS',best?`room=${best.roomIndex+1} rayDistance=${best.t.toFixed(1)}`:`aim=(${Math.round(aimPt.x)},${Math.round(aimPt.y)})`);
+  diag(best?'TAC-LINK RAY LOCK':'TAC-LINK RAY MISS',best?('room='+(best.roomIndex+1)+' rayDistance='+best.t.toFixed(1)):('aim=('+Math.round(aimPt.x)+','+Math.round(aimPt.y)+')'));
   return best;
 }
 `;
