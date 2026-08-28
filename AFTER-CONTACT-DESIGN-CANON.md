@@ -42,4 +42,12 @@ The Sun Disk Gunner and Sunadier must not look like near-identical armor variant
 
 ### Solar Lancer
 
-Radiant/golden laser specialist. Sustained solar beam identity. Keep visually and mechanically distinct from the Sun Disk Gunner and Sunadier.
+**Role:** Precision solar-lance marksman.
+
+- The old sustained five-second beam aiming/firing structure is retired.
+- Solar Lancer uses the **same mobile-friendly projected aiming concept as the Earth Sniper**: the player's finger stays nearer their own fortress while a distant crosshair/aim line is projected toward the enemy.
+- Manual precision aim only. No auto-lock or endpoint snapping.
+- On release, the Lancer fires an **immediate, needle-thin golden solar lance** along the chosen line rather than holding a prolonged burn beam.
+- The shot can penetrate along its line through up to three compartments, with damage diminishing through successive compartments.
+- It remains visually Aurelian: white-hot core, radiant gold sheath, solar impact flashes and penetration effects.
+- It must remain mechanically and visually distinct from the Sun Disk Gunner's traveling physical disk and the Sunadier's arcing chained grenade.
