@@ -6,14 +6,14 @@ function replaceOne(source, regex, replacement, key, status) {
 
 export function patchIndexHtml(html) {
   let patched = html;
-  const patchStatus = { sniper:false, locator:false, support:false, gate:false };
+  const patchStatus = { sniper:false, locator:false, support:false, gate:false, sniperAim:false, he9Preview:false };
 
   const bridgeNeedle = "  return true;\n}\nfunction showDeployGhost(e){";
   const bridgeReplacement = "  return true;\n}\nwindow.__acDeployBridge=Object.freeze({\n  getState:()=>deployment.slice(),\n  required:()=>requiredDeploymentCount(),\n  place:(warriorIndex,roomIndex,sourceRoom=null)=>placeWarriorInSlot(warriorIndex,roomIndex,sourceRoom),\n  refresh:()=>updateDeployUI()\n});\nfunction showDeployGhost(e){";
   if (!patched.includes('window.__acDeployBridge=Object.freeze')) patched = patched.replace(bridgeNeedle, bridgeReplacement);
 
-  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.20');
-  patched = patched.replace(/build=2026-08-28_[A-Z0-9_]+/g, 'build=2026-08-28_EARTH_SPECIALISTS_LIVE');
+  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.21');
+  patched = patched.replace(/build=2026-08-28_[A-Z0-9_]+/g, 'build=2026-08-28_MOBILE_AIM_BALLISTICS');
 
   const automaticSchedule = "if(mine){statusEl.textContent='TACTICAL SCAN • OPENING FORTRESS CUTAWAY';setTimeout(()=>{if(battleStarted&&!matchEnded&&!xrayOpen)openPrivateXray('automatic tactical scan')},120);diag('CUTAWAY READY',`${reason} side=${localXraySide()} private=Y automatic=Y persistent=Y`)}";
   const manualSchedule = "if(mine){statusEl.textContent='YOUR TURN • MOVE, POSITION, OR TAP YOUR FORTRESS FOR CUTAWAY';diag('CUTAWAY READY',`${reason} side=${localXraySide()} private=Y automatic=N manual=Y`)}";
@@ -26,7 +26,6 @@ export function patchIndexHtml(html) {
   patched = patched.replaceAll('TACTICAL SCAN • OPENING FORTRESS CUTAWAY','YOUR TURN • MOVE, POSITION, OR TAP YOUR FORTRESS FOR CUTAWAY');
   patched = patched.replaceAll('Tactical locator and battlefield support specialist','Designates targets for delayed tactical support strikes. Support type changes based on the enemy fortress.');
 
-  // Remove obsolete prototype gate that blocked Sniper and Combat Controller from aiming/firing.
   patched = replaceOne(
     patched,
     /\n  if\(selected\.weaponKey==='sniper'\|\|selected\.weaponKey==='combat_controller'\)\{[^\n]*?return false\}\n  return true\n\}\nfunction beginAimFromVesselGesture/,
@@ -85,7 +84,35 @@ export function patchIndexHtml(html) {
 }`;
   patched = replaceOne(patched,/function advanceSupportTurn\(side\)\{[\s\S]*?\n\}\nlet battleSceneBaselineChildren/,supportFn+'\nlet battleSceneBaselineChildren','support',patchStatus);
 
-  const statusText = `combatPatch=gate:${patchStatus.gate?'OK':'MISS'} sniper:${patchStatus.sniper?'OK':'MISS'} controller:${patchStatus.locator?'OK':'MISS'} support:${patchStatus.support?'OK':'MISS'}`;
+  // Sniper mobile aiming: thumb stays near own fortress while the crosshair projects downrange.
+  patched = patched.replace('<circle id="aimDot" r="4"/><circle id="muzzleDot" r="6"/>','<circle id="aimDot" r="4"/><g id="sniperCrosshair" opacity="0"><circle r="14" fill="none" stroke="#fff2c4" stroke-width="2"/><line x1="-22" y1="0" x2="22" y2="0" stroke="#fff2c4" stroke-width="2"/><line x1="0" y1="-22" x2="0" y2="22" stroke="#fff2c4" stroke-width="2"/><circle r="2.5" fill="#fff2c4"/></g><circle id="muzzleDot" r="6"/>');
+  patched = patched.replace("const aimPath=document.getElementById('aimPath'), aimDropPath=document.getElementById('aimDropPath'), aimDot=document.getElementById('aimDot'), enemyAimOutlineLayer=document.getElementById('enemyAimOutlineLayer')","const aimPath=document.getElementById('aimPath'), aimDropPath=document.getElementById('aimDropPath'), aimDot=document.getElementById('aimDot'), sniperCrosshair=document.getElementById('sniperCrosshair'), enemyAimOutlineLayer=document.getElementById('enemyAimOutlineLayer')");
+  const oldStraight = `    }else{
+      const maxGuide=330,ratio=dist>0?Math.min(1,maxGuide/dist):0,gx=a.x+dx*ratio,gy=a.y+dy*ratio;
+      aimPath.setAttribute('d',\`M \${a.x} \${a.y} L \${gx} \${gy}\`);aimDot.setAttribute('cx',gx);aimDot.setAttribute('cy',gy);
+      aimPath.style.strokeDasharray='14 12';aimPath.style.opacity='.48';aimDot.style.opacity='.42';
+    }`;
+  const newStraight = `    }else{
+      const sniperProjected=wp.kind==='sniper',guideLen=sniperProjected?Math.max(430,Math.min(690,dist*2.9)):330,ratio=dist>0?guideLen/dist:0,gx=a.x+dx*ratio,gy=a.y+dy*ratio;
+      aimPath.setAttribute('d',\`M \${a.x} \${a.y} L \${gx} \${gy}\`);aimDot.setAttribute('cx',gx);aimDot.setAttribute('cy',gy);
+      aimPath.style.strokeDasharray=sniperProjected?'10 8':'14 12';aimPath.style.opacity=sniperProjected?'.78':'.48';aimDot.style.opacity=sniperProjected?'0':'.42';
+      if(sniperCrosshair){sniperCrosshair.setAttribute('transform',\`translate(\${gx} \${gy})\`);sniperCrosshair.setAttribute('opacity',sniperProjected?'1':'0')}
+    }`;
+  patched = replaceOne(patched,new RegExp(oldStraight.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')),newStraight,'sniperAim',patchStatus);
+  patched = patched.replace("function clearAim(){aimHud.classList.remove('live');aimPath.style.opacity='0';","function clearAim(){aimHud.classList.remove('live');if(sniperCrosshair)sniperCrosshair.setAttribute('opacity','0');aimPath.style.opacity='0';");
+  patched = patched.replace("diag('AIM RELEASE',`distance=${Math.round(dist)} power=${Math.round(power)} control=${control}`);fireSelectedFromStage(pt,power)","const releasePt=selected?.weaponKey==='sniper'&&aimOriginStage?(()=>{const dx=pt.x-aimOriginStage.x,dy=pt.y-aimOriginStage.y,d=Math.hypot(dx,dy)||1,len=Math.max(430,Math.min(690,d*2.9));return{x:aimOriginStage.x+dx/d*len,y:aimOriginStage.y+dy/d*len}})():pt;diag('AIM RELEASE',`distance=${Math.round(dist)} power=${Math.round(power)} control=${control}`);fireSelectedFromStage(releasePt,power)");
+
+  // HE-9 preview now uses the exact same ballistic simulator as the actual barrage.
+  const he9GuideFn = `function bombardierAimGuide(a,b){
+  const p=bombardierTrajectoryProfile(a,b),sim=he9BallisticStagePath(selected,a,b,p.power,0,false),pts=(sim.points||[]).filter((q,i)=>i%3===0||i===(sim.points||[]).length-1);
+  const d=pts.length?pts.map((q,i)=>\`${'${'}i?'L':'M'} ${'${'}q.x.toFixed(2)} ${'${'}q.y.toFixed(2)}\`).join(' '):\`M ${'${'}a.x} ${'${'}a.y} L ${'${'}b.x} ${'${'}b.y}\`;
+  const end=pts.length?pts[pts.length-1]:b;
+  return{d,end,profile:p};
+}`;
+  patched = replaceOne(patched,/function bombardierAimGuide\(a,b\)\{[\s\S]*?\n\}\nfunction bombardierDescentPreview/,he9GuideFn+'\nfunction bombardierDescentPreview','he9Preview',patchStatus);
+  patched = patched.replace("if(guide.profile.forward){const descent=bombardierDescentPreview(selected,a,b,guide.profile);if(descent){aimDropPath.setAttribute('d',descent);aimDropPath.style.stroke='#ffc15a';aimDropPath.style.opacity='.28'}}","aimDropPath.setAttribute('d','');aimDropPath.style.opacity='0'");
+
+  const statusText = `combatPatch=gate:${patchStatus.gate?'OK':'MISS'} sniper:${patchStatus.sniper?'OK':'MISS'} controller:${patchStatus.locator?'OK':'MISS'} support:${patchStatus.support?'OK':'MISS'} sniperAim:${patchStatus.sniperAim?'OK':'MISS'} he9Preview:${patchStatus.he9Preview?'OK':'MISS'}`;
   patched = patched.replace("`status=${statusEl?.textContent||''}`","`status=${statusEl?.textContent||''}`,`"+statusText+"`");
   patched = patched.replace('</head>', `<meta name="ac-combat-patch" content="${statusText}">\n</head>`);
 
