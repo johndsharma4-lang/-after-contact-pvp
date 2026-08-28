@@ -18,14 +18,22 @@ function documentHeaders(response) {
 
 function patchIndexHtml(html) {
   let patched = html;
+
+  // v0.33.11: the Earth team UI exposes three Warriors, so the native deployment
+  // engine must own three Warriors too. Keeping this at 1 caused false DEPLOYED
+  // labels, empty fortress compartments, and no valid START BATTLE state.
+  patched = patched.replace('const ownedAurelianCount=1;', 'const ownedAurelianCount=3;');
+  patched = patched.replaceAll('MATCH RECORDER v0.33.7', 'MATCH RECORDER v0.33.11');
+  patched = patched.replaceAll('build=2026-08-28_EARTH_DEPLOYMENT_INPUT_STABLE', 'build=2026-08-28_THREE_WARRIOR_NATIVE_DEPLOYMENT');
+
   if (!patched.includes('/lifecycle-fix.js?v=20260828-1')) {
     patched = patched.replace('</body>', '<script src="/lifecycle-fix.js?v=20260828-1"></script>\n</body>');
   }
   if (!patched.includes('/deployment-roster-v0338.js?v=20260828-2')) {
     patched = patched.replace('</body>', '<script src="/deployment-roster-v0338.js?v=20260828-2"></script>\n</body>');
   }
-  if (!patched.includes('/deployment-button-v0339.js?v=20260828-2')) {
-    patched = patched.replace('</body>', '<script src="/deployment-button-v0339.js?v=20260828-2"></script>\n</body>');
+  if (!patched.includes('/deployment-button-v0339.js?v=20260828-3')) {
+    patched = patched.replace('</body>', '<script src="/deployment-button-v0339.js?v=20260828-3"></script>\n</body>');
   }
   return patched;
 }
