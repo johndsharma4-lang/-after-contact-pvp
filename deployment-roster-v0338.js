@@ -4,7 +4,7 @@ const BUILD='v0.33.8';
 const META=[
   {name:'BOMBARDIER',hp:85,aa:60,role:'EXPLOSIVE',description:'Heavy explosive specialist built to punish exposed compartments and pressure fortified rooms.'},
   {name:'SNIPER',hp:60,aa:60,role:'PRECISION',description:'Long-range precision specialist focused on deliberate shots and high-value targets.'},
-  {name:'COMBAT CONTROLLER',hp:75,aa:60,role:'TACTICAL SUPPORT',description:'Battlefield coordinator built to support the team and control the flow of combat.'}
+  {name:'COMBAT CONTROLLER',hp:75,aa:60,role:'TACTICAL SUPPORT',description:'Designates targets for delayed tactical support strikes. Support type changes based on the enemy fortress.'}
 ];
 const FUTURE_COUNT=6;
 let deployed=new Set();
