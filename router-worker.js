@@ -25,8 +25,8 @@ function patchIndexHtml(html) {
   const bridgeReplacement = "  return true;\n}\nwindow.__acDeployBridge=Object.freeze({\n  getState:()=>deployment.slice(),\n  required:()=>requiredDeploymentCount(),\n  place:(warriorIndex,roomIndex,sourceRoom=null)=>placeWarriorInSlot(warriorIndex,roomIndex,sourceRoom),\n  refresh:()=>updateDeployUI()\n});\nfunction showDeployGhost(e){";
   if (!patched.includes('window.__acDeployBridge=Object.freeze')) patched = patched.replace(bridgeNeedle, bridgeReplacement);
 
-  patched = patched.replaceAll('MATCH RECORDER v0.33.7', 'MATCH RECORDER v0.33.14');
-  patched = patched.replaceAll('build=2026-08-28_EARTH_DEPLOYMENT_INPUT_STABLE', 'build=2026-08-28_SCROLL_AND_BATTLE_LOCKIN');
+  patched = patched.replaceAll('MATCH RECORDER v0.33.7', 'MATCH RECORDER v0.33.15');
+  patched = patched.replaceAll('build=2026-08-28_EARTH_DEPLOYMENT_INPUT_STABLE', 'build=2026-08-28_IPHONE_TOUCH_SCROLL_CHAIN');
 
   if (!patched.includes('/lifecycle-fix.js?v=20260828-1')) patched = patched.replace('</body>', '<script src="/lifecycle-fix.js?v=20260828-1"></script>\n</body>');
 
@@ -36,7 +36,7 @@ function patchIndexHtml(html) {
   patched = patched.replace(/\s*<script src="\/deployment-controller-v03312\.js\?v=[^"]+"><\/script>/g, '');
   patched = patched.replace(/\s*<script src="\/deployment-controller-v03313\.js\?v=[^"]+"><\/script>/g, '');
 
-  if (!patched.includes('/deployment-controller-v03313.js?v=20260828-2')) patched = patched.replace('</body>', '<script src="/deployment-controller-v03313.js?v=20260828-2"></script>\n</body>');
+  if (!patched.includes('/deployment-controller-v03313.js?v=20260828-3')) patched = patched.replace('</body>', '<script src="/deployment-controller-v03313.js?v=20260828-3"></script>\n</body>');
   return patched;
 }
 
