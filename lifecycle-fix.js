@@ -1,4 +1,4 @@
-// AFTER CONTACT v0.32.20 - lifecycle guard + reliable Earth deployment touch controls
+// AFTER CONTACT v0.33.1 - lifecycle guard + authoritative Earth deployment touch hotfix
 (() => {
   const activeMedia = new Set();
   const originalPlay = HTMLMediaElement.prototype.play;
@@ -19,108 +19,120 @@
 })();
 
 (() => {
-  const css = `
-  #characterOverlay.acEarthPlacement .characterPanel{height:calc(100dvh - 10px)!important;max-height:calc(100dvh - 10px)!important;grid-template-columns:minmax(214px,.60fr) minmax(0,1.78fr)!important;align-items:stretch!important;padding:5px!important;gap:6px!important}
-  #acEarthRosterPane{height:100%!important;min-height:0!important;max-height:100%!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}
-  #characterOverlay.acEarthPlacement .characterIntro{flex:0 0 auto!important;padding:0 2px 3px!important}
-  #characterOverlay.acEarthPlacement .characterKicker{font-size:5.5px!important}
-  #characterOverlay.acEarthPlacement .characterTitle{font-size:12.5px!important;line-height:.92!important;margin-top:2px!important}
-  #characterOverlay.acEarthPlacement .characterText{font-size:5px!important;line-height:1.1!important;margin-top:2px!important;max-width:35ch!important}
-  #characterOverlay.acEarthPlacement #characterRoster{display:flex!important;flex:1 1 auto!important;height:auto!important;min-height:0!important;max-height:100%!important;overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;overscroll-behavior:contain!important;padding:0 4px 4px 0!important;gap:3px!important;scrollbar-width:thin!important}
-  #characterOverlay.acEarthPlacement #characterRoster .characterCard{flex:0 0 58px!important;min-height:58px!important;max-height:58px!important;grid-template-columns:40px minmax(0,1fr)!important;padding:3px!important;column-gap:4px!important}
-  #characterOverlay.acEarthPlacement #characterRoster .characterCard img{width:38px!important;height:51px!important;cursor:grab!important;touch-action:none!important;user-select:none!important;-webkit-user-drag:none!important}
-  #characterOverlay.acEarthPlacement #characterRoster .characterName{font-size:6.7px!important;line-height:1!important}
-  #characterOverlay.acEarthPlacement #characterRoster .characterWeapon{font-size:4.1px!important;margin-top:1px!important}
-  .acEarthDesc{font-size:4.15px!important;line-height:1.05!important;margin-top:1px!important}
-  .acEarthStats{gap:2px!important;margin-top:1px!important}.acStatLabel{font-size:3.8px!important}.acStatTrack{height:2px!important}
-  .acLockedWarrior{flex:0 0 26px!important;min-height:26px!important;padding:2px 5px!important;grid-template-columns:20px 1fr!important;gap:4px!important}
-  .acLockedIcon{font-size:10px!important}.acLockedTitle{font-size:5px!important}.acLockedSub{font-size:4.2px!important}
-  #acEarthShipPanel{height:100%!important;min-height:0!important;overflow:hidden!important}
-  #acEarthShipLabel{font-size:6.5px!important;margin:0 0 2px!important;flex:0 0 auto!important}
-  #acEarthShipShell{flex:1 1 auto!important;min-height:0!important;height:auto!important;padding:3px!important}
-  #acEarthPlacementGrid{width:97%!important;height:96%!important;max-height:none!important;gap:3px!important}
-  .acEarthPlaceSlot:before{font-size:16px!important}.acEarthPlaceSlot:after,.acEarthRoomName{font-size:4.3px!important}
-  .acEarthPlaceSlot img{width:66%!important;height:66%!important;object-fit:contain!important}
-  #acEarthDeployBtn{flex:0 0 29px!important;height:29px!important;margin-top:3px!important;font-size:8.5px!important}
-  .acEarthHint{font-size:4.5px!important;margin-top:1px!important;line-height:1!important}
-  #acEarthDragGhost{width:52px!important;height:62px!important}
-  @media(max-height:430px) and (orientation:landscape){
-    #characterOverlay.acEarthPlacement .characterPanel{grid-template-columns:minmax(196px,.56fr) minmax(0,1.84fr)!important;padding:4px!important;gap:5px!important}
-    #characterOverlay.acEarthPlacement .characterTitle{font-size:11px!important}
-    #characterOverlay.acEarthPlacement .characterText{display:none!important}
-    #characterOverlay.acEarthPlacement #characterRoster .characterCard{flex-basis:52px!important;min-height:52px!important;max-height:52px!important;grid-template-columns:36px minmax(0,1fr)!important}
-    #characterOverlay.acEarthPlacement #characterRoster .characterCard img{width:34px!important;height:45px!important}
-    .acLockedWarrior{flex-basis:23px!important;min-height:23px!important}
-    #acEarthDeployBtn{flex-basis:26px!important;height:26px!important}
-    .acEarthHint{display:none!important}
-  }`;
-  const style = document.createElement('style');
-  style.id = 'ac-v03220-touch-scroll-hotfix';
-  style.textContent = css;
+  const style=document.createElement('style');
+  style.id='ac-v0331-touch-drag-hotfix';
+  style.textContent=`
+    #acEarthRoster{touch-action:pan-y!important;-webkit-overflow-scrolling:touch!important;overflow-y:auto!important}
+    #acEarthRoster .acUnitCard{touch-action:pan-y!important}
+    #acEarthRoster .acUnitArt{touch-action:none!important;-webkit-user-select:none!important;user-select:none!important;-webkit-user-drag:none!important;cursor:grab!important}
+    #acEarthRoster .acUnitArt.acDragging{opacity:.55!important;cursor:grabbing!important}
+    .acRoom.acDropTarget{border-color:#7fffc2!important;box-shadow:0 0 15px rgba(127,255,194,.28),inset 0 0 16px rgba(127,255,194,.08)!important}
+    .acPlacedArt{width:64%!important;height:70%!important;object-fit:contain!important;pointer-events:none!important}
+    .acPlacedName{left:5px!important;bottom:4px!important;color:#8fffd0!important}
+  `;
   document.head.appendChild(style);
 
-  let activeTouch = null;
-  let syntheticPointerId = 901;
+  let drag=null;
 
-  function dispatchPointer(type, target, x, y, pointerId){
-    try{
-      target.dispatchEvent(new PointerEvent(type,{
-        bubbles:true,cancelable:true,clientX:x,clientY:y,
-        pointerId,pointerType:'mouse',isPrimary:true,buttons:type==='pointerup'?0:1,button:0
-      }));
-    }catch{}
+  function getState(){return window.__AC_DEPLOYMENT_STATE||null}
+  function getRoot(){return document.getElementById('acEarthDeployRoot')}
+  function getCards(){return [...document.querySelectorAll('#acEarthRoster .acUnitCard')]}
+  function getRooms(){return [...document.querySelectorAll('#acEarthRooms .acRoom')]}
+  function artFor(unit){return document.querySelector('#acEarthRoster .acUnitCard[data-unit="'+unit+'"] .acUnitArt')?.src||''}
+  function displayName(unit){return unit==='radio_man'?'COMBAT CONTROLLER':unit==='sniper'?'SNIPER':'BOMBARDIER'}
+
+  function renameController(){
+    const card=document.querySelector('#acEarthRoster .acUnitCard[data-unit="radio_man"]');
+    if(!card)return;
+    const name=card.querySelector('.acUnitName');
+    const weapon=card.querySelector('.acUnitWeapon');
+    const desc=card.querySelector('.acUnitDesc');
+    if(name)name.textContent='COMBAT CONTROLLER';
+    if(weapon)weapon.textContent='TACTICAL UPLINK • TARGET LOCATOR';
+    if(desc)desc.textContent='Battlefield command specialist for target marking, tactical uplink and allied fire support.';
+    const img=card.querySelector('.acUnitArt');if(img)img.alt='COMBAT CONTROLLER';
   }
 
-  function installEarthTouchControls(){
-    const roster = document.getElementById('characterRoster');
-    if(!roster || roster.dataset.acTouch20 === '1') return;
-    roster.dataset.acTouch20 = '1';
+  function ready(state){
+    if(!state?.placements)return false;
+    const vals=['bombardier','sniper','radio_man'].map(k=>state.placements[k]);
+    return vals.every(Number.isInteger)&&new Set(vals).size===3;
+  }
 
-    roster.addEventListener('pointerdown',(e)=>{
-      const card = e.target.closest?.('.characterCard');
-      if(!card) return;
-      const image = e.target.closest?.('.characterCard img');
-      if(e.pointerType === 'touch'){
-        e.stopImmediatePropagation();
-        return;
+  function render(){
+    const state=getState(),root=getRoot();if(!state||!root)return;
+    renameController();
+    const placements=state.placements||{};
+    let count=0;
+    getCards().forEach(card=>{
+      const placed=Number.isInteger(placements[card.dataset.unit]);
+      if(placed)count++;
+      card.classList.toggle('placed',placed);
+    });
+    getRooms().forEach(room=>{
+      const idx=Number(room.dataset.room);
+      const unit=['bombardier','sniper','radio_man'].find(k=>placements[k]===idx)||null;
+      room.classList.toggle('filled',!!unit);
+      room.querySelectorAll('.acPlacedArt,.acPlacedName').forEach(n=>n.remove());
+      const plus=room.querySelector('.acRoomPlus');
+      if(plus)plus.style.display=unit?'none':'';
+      if(unit){
+        const img=document.createElement('img');img.className='acPlacedArt';img.src=artFor(unit);img.alt=displayName(unit);
+        const label=document.createElement('span');label.className='acPlacedName';label.textContent=displayName(unit);
+        room.append(img,label);
       }
-      if(!image) e.stopImmediatePropagation();
-    },true);
-
-    roster.addEventListener('touchstart',(e)=>{
-      const image = e.target.closest?.('.characterCard img');
-      if(!image) return;
-      const touch = e.changedTouches?.[0];
-      if(!touch) return;
-      e.preventDefault();
-      e.stopPropagation();
-      syntheticPointerId += 1;
-      activeTouch = {id:touch.identifier,pointerId:syntheticPointerId,image,x:touch.clientX,y:touch.clientY};
-      dispatchPointer('pointerdown',image,touch.clientX,touch.clientY,syntheticPointerId);
-    },{passive:false,capture:true});
-
-    window.addEventListener('touchmove',(e)=>{
-      if(!activeTouch) return;
-      const touch = Array.from(e.changedTouches||[]).find(t=>t.identifier===activeTouch.id) || Array.from(e.touches||[]).find(t=>t.identifier===activeTouch.id);
-      if(!touch) return;
-      e.preventDefault();
-      activeTouch.x=touch.clientX;activeTouch.y=touch.clientY;
-      dispatchPointer('pointermove',document,touch.clientX,touch.clientY,activeTouch.pointerId);
-    },{passive:false,capture:true});
-
-    const finish=(e)=>{
-      if(!activeTouch) return;
-      const touch = Array.from(e.changedTouches||[]).find(t=>t.identifier===activeTouch.id);
-      const x=touch?.clientX ?? activeTouch.x, y=touch?.clientY ?? activeTouch.y;
-      e.preventDefault();
-      dispatchPointer('pointerup',document,x,y,activeTouch.pointerId);
-      activeTouch=null;
-    };
-    window.addEventListener('touchend',finish,{passive:false,capture:true});
-    window.addEventListener('touchcancel',finish,{passive:false,capture:true});
+    });
+    const title=document.getElementById('acEarthFortressTitle');if(title)title.textContent='FORTRESS INTERIOR • '+count+' / 3 PLACED';
+    const btn=document.getElementById('acEarthDeployBtn');if(btn){const ok=ready(state);btn.disabled=!ok;btn.classList.toggle('ready',ok);btn.textContent=ok?'DEPLOY':'PLACE WARRIOR'}
   }
 
-  const observer = new MutationObserver(()=>installEarthTouchControls());
+  function ghost(){
+    let g=document.getElementById('acEarthGhost');
+    if(!g){g=document.createElement('img');g.id='acEarthGhost';document.body.appendChild(g)}
+    return g;
+  }
+  function moveGhost(x,y){
+    const g=ghost();g.style.display='block';g.style.left=(x-33)+'px';g.style.top=(y-39)+'px';
+    const hit=document.elementsFromPoint(x,y).find(el=>el.classList?.contains('acRoom'));
+    getRooms().forEach(r=>r.classList.toggle('acDropTarget',r===hit));
+  }
+  function begin(e,img){
+    const unit=img.dataset.dragUnit;if(!unit||!getState())return;
+    e.preventDefault();e.stopImmediatePropagation();
+    drag={unit,pointerId:e.pointerId,img};
+    img.classList.add('acDragging');
+    const g=ghost();g.src=img.src;moveGhost(e.clientX,e.clientY);
+    try{img.setPointerCapture(e.pointerId)}catch{}
+  }
+  function move(e){
+    if(!drag||e.pointerId!==drag.pointerId)return;
+    e.preventDefault();e.stopImmediatePropagation();moveGhost(e.clientX,e.clientY);
+  }
+  function end(e){
+    if(!drag||e.pointerId!==drag.pointerId)return;
+    e.preventDefault();e.stopImmediatePropagation();
+    const state=getState();
+    const room=document.elementsFromPoint(e.clientX,e.clientY).find(el=>el.classList?.contains('acRoom'));
+    if(state&&room){
+      const idx=Number(room.dataset.room);
+      const occupied=['bombardier','sniper','radio_man'].find(k=>k!==drag.unit&&state.placements[k]===idx);
+      if(!occupied)state.placements[drag.unit]=idx;
+    }
+    drag.img?.classList.remove('acDragging');
+    try{drag.img?.releasePointerCapture(e.pointerId)}catch{}
+    drag=null;ghost().style.display='none';getRooms().forEach(r=>r.classList.remove('acDropTarget'));render();
+  }
+
+  document.addEventListener('pointerdown',e=>{
+    const img=e.target.closest?.('#acEarthRoster .acUnitArt');
+    if(!img)return;
+    begin(e,img);
+  },true);
+  document.addEventListener('pointermove',move,true);
+  document.addEventListener('pointerup',end,true);
+  document.addEventListener('pointercancel',end,true);
+
+  const observer=new MutationObserver(()=>{if(getRoot()){renameController();render()}});
   observer.observe(document.documentElement,{childList:true,subtree:true});
-  installEarthTouchControls();
+  if(getRoot()){renameController();render()}
 })();
