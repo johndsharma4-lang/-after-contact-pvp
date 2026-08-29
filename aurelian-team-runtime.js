@@ -21,9 +21,11 @@ export function patchAurelianTeamRuntime(html) {
     "spatial_disintegrator:'/spatial-disintegrator.webp',sun_disk_gunner:'/sun-disk-gunner-l2.webp',sunadier:'/sunadier-l2.webp'"
   );
 
-  patched = patched.replaceAll("deployReadyLabel.textContent=`EARTH TEAM • ${placed}/${required} PLACED`", "deployReadyLabel.textContent=`${(FACTION_META[selectedFaction]?.short||selectedFaction||'TEAM').toUpperCase()} TEAM • ${placed}/${required} PLACED`");
-  patched = patched.replaceAll("deployReadyLabel.textContent=`EARTH TEAM • ${required}/${required} READY`", "deployReadyLabel.textContent=`${(FACTION_META[selectedFaction]?.short||selectedFaction||'TEAM').toUpperCase()} TEAM • ${required}/${required} READY`");
-  patched = patched.replaceAll("deployReadyLabel.textContent=deployed<required?`EARTH TEAM • ${deployed}/${required} PLACED`:'EARTH TEAM • 3/3 READY';", "deployReadyLabel.textContent=deployed<required?`${(FACTION_META[selectedFaction]?.short||selectedFaction||'TEAM').toUpperCase()} TEAM • ${deployed}/${required} PLACED`:`${(FACTION_META[selectedFaction]?.short||selectedFaction||'TEAM').toUpperCase()} TEAM • ${required}/${required} READY`;" );
+  // Do not reference FACTION_META inside deployment functions that can run before its const initialization.
+  // selectedFaction is already available and is sufficient for a safe label.
+  patched = patched.replaceAll("deployReadyLabel.textContent=`EARTH TEAM • ${placed}/${required} PLACED`", "deployReadyLabel.textContent=`${selectedFaction==='aurelian'?'AURELIAN':'EARTH'} TEAM • ${placed}/${required} PLACED`");
+  patched = patched.replaceAll("deployReadyLabel.textContent=`EARTH TEAM • ${required}/${required} READY`", "deployReadyLabel.textContent=`${selectedFaction==='aurelian'?'AURELIAN':'EARTH'} TEAM • ${required}/${required} READY`");
+  patched = patched.replaceAll("deployReadyLabel.textContent=deployed<required?`EARTH TEAM • ${deployed}/${required} PLACED`:'EARTH TEAM • 3/3 READY';", "deployReadyLabel.textContent=deployed<required?`${selectedFaction==='aurelian'?'AURELIAN':'EARTH'} TEAM • ${deployed}/${required} PLACED`:`${selectedFaction==='aurelian'?'AURELIAN':'EARTH'} TEAM • ${required}/${required} READY`;" );
 
   patched = patched.replace(
     "if(multiplayer&&Number.isInteger(deployment[0])){",
@@ -35,8 +37,8 @@ export function patchAurelianTeamRuntime(html) {
     "diag('STARTER ART','Earth + Aurelian Level-2 roster art embedded');"
   );
 
-  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.33');
-  patched = patched.replace(/build=2026-08-28_[A-Z0-9_]+/g, 'build=2026-08-28_AURELIAN_THREE_WARRIOR_DEPLOYMENT');
-  patched = patched.replace('</head>', '<meta name="ac-aurelian-team-runtime" content="three-warrior-deployment solar-lancer sun-disk-gunner sunadier">\n</head>');
+  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.34');
+  patched = patched.replace(/build=2026-08-28_[A-Z0-9_]+/g, 'build=2026-08-28_AURELIAN_DEPLOY_INIT_FIX');
+  patched = patched.replace('</head>', '<meta name="ac-aurelian-team-runtime" content="three-warrior-deployment init-order-safe solar-lancer sun-disk-gunner sunadier">\n</head>');
   return patched;
 }
