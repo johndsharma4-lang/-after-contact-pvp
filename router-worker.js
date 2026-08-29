@@ -3,6 +3,7 @@ import { patchIndexHtml } from './game-html-patcher.js';
 import { patchEarthSpecialistsRuntime } from './earth-specialists-runtime.js';
 import { patchSolarLancerRuntime } from './solar-lancer-runtime.js';
 import { patchAurelianDeploymentRuntime } from './aurelian-deployment-runtime.js';
+import { patchAurelianTeamRuntime } from './aurelian-team-runtime.js';
 export { MyDurableObject } from './after-contact-worker.js';
 
 function isDocumentRequest(request, url) {
@@ -33,6 +34,7 @@ export default {
       html = patchEarthSpecialistsRuntime(html);
       html = patchSolarLancerRuntime(html);
       html = patchAurelianDeploymentRuntime(html);
+      html = patchAurelianTeamRuntime(html);
       return new Response(html, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
     }
     return baseWorker.fetch(request, env, ctx);
