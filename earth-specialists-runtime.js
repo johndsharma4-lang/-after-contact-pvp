@@ -1,8 +1,8 @@
 export function patchEarthSpecialistsRuntime(html) {
   let patched = html;
 
-  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.30');
-  patched = patched.replace(/build=2026-08-28_[A-Z0-9_]+/g, 'build=2026-08-28_TRAJECTORY_TARGETING_MATCH');
+  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.32');
+  patched = patched.replace(/build=2026-08-28_[A-Z0-9_]+/g, 'build=2026-08-28_CONTROLLER_RAY_ORIGIN_FIX');
 
   const aimingHelpers = `let sniperAimSmooth=null;
 function smoothSniperProjectedPoint(x,y){
@@ -35,7 +35,8 @@ function drawControllerReticle(attacker,startWorld,pt){
   patched = patched.replace(/const hit=sniperRoomHit\(attacker,pt\),target=hit\?\.end\|\|targetPlanePointForOpponent\(attacker,pt\)/, "const hit=controllerRayHit(attacker,start,pt),target=hit?.end||targetPlanePointForOpponent(attacker,pt)");
   patched = patched.replace("combat_controller:{name:'COMBAT CONTROLLER',kind:'locator',aim:'arc'", "combat_controller:{name:'COMBAT CONTROLLER',kind:'locator',aim:'straight'");
 
-  patched = patched.replace("const sniperProjected=wp.kind==='sniper',guideLen=sniperProjected?Math.max(430,Math.min(690,dist*2.9)):330,ratio=dist>0?guideLen/dist:0,gx=a.x+dx*ratio,gy=a.y+dy*ratio;", "const controllerTarget=wp.kind==='locator';if(controllerTarget){aimDot.style.opacity='0';if(sniperCrosshair)sniperCrosshair.setAttribute('opacity','0');drawControllerReticle(selected,selected.muzzle.getWorldPosition(new THREE.Vector3()),b);return}const sniperProjected=wp.kind==='sniper',guideLen=sniperProjected?Math.max(430,Math.min(690,dist*2.9)):330,ratio=dist>0?guideLen/dist:0,rawGX=a.x+dx*ratio,rawGY=a.y+dy*ratio,eased=sniperProjected?smoothSniperProjectedPoint(rawGX,rawGY):{x:rawGX,y:rawGY},gx=eased.x,gy=eased.y;");
+  patched = patched.replace("const sniperProjected=wp.kind==='sniper',guideLen=sniperProjected?Math.max(430,Math.min(690,dist*2.9)):330,ratio=dist>0?guideLen/dist:0,gx=a.x+dx*ratio,gy=a.y+dy*ratio;", "const controllerTarget=wp.kind==='locator';if(controllerTarget){aimDot.style.opacity='0';if(sniperCrosshair)sniperCrosshair.setAttribute('opacity','0');const controllerOrigin=muzzleWorld(selected,b);drawControllerReticle(selected,controllerOrigin,b);return}const sniperProjected=wp.kind==='sniper',guideLen=sniperProjected?Math.max(430,Math.min(690,dist*2.9)):330,ratio=dist>0?guideLen/dist:0,rawGX=a.x+dx*ratio,rawGY=a.y+dy*ratio,eased=sniperProjected?smoothSniperProjectedPoint(rawGX,rawGY):{x:rawGX,y:rawGY},gx=eased.x,gy=eased.y;");
+  patched = patched.replace("drawControllerReticle(selected,selected.muzzle.getWorldPosition(new THREE.Vector3()),b);return", "drawControllerReticle(selected,muzzleWorld(selected,b),b);return");
   patched = patched.replace("const releasePt=selected?.weaponKey==='sniper'&&aimOriginStage?", "const releasePt=selected?.weaponKey==='sniper'&&sniperAimSmooth?{x:sniperAimSmooth.x,y:sniperAimSmooth.y}:selected?.weaponKey==='sniper'&&aimOriginStage?");
 
   patched = patched.replace("if(firedKind!=='laser'&&firedKind!=='explosive'&&firedKind!=='acid')endSoloPlayerTurnAfterShot();", "if(firedKind!=='laser'&&firedKind!=='explosive'&&firedKind!=='acid'&&firedKind!=='locator')endSoloPlayerTurnAfterShot();");
@@ -50,13 +51,13 @@ function drawControllerReticle(attacker,startWorld,pt){
   for(const lane of samples){const sim=he9BallisticStagePath(selected,a,b,p.power,lane,true),hit=sim.hit;if(hit)counts.set(hit.roomIndex,(counts.get(hit.roomIndex)||0)+1)}
   if(enemyAimOutlineLayer){enemyAimOutlineLayer.innerHTML='';const t=performance.now()*.0045,breathe=.84+.16*Math.sin(t),scores=[];for(let i=0;i<rooms.length;i++){let score=(counts.get(i)||0)/samples.length;if(score<=0){let nearest=0;for(const [j,n] of counts){const r1=Math.floor(i/3),c1=i%3,r2=Math.floor(j/3),c2=j%3,d=Math.abs(r1-r2)+Math.abs(c1-c2);nearest=Math.max(nearest,(n/samples.length)*Math.max(0,.34-d*.12))}score=nearest}if(score>.05)scores.push({i,score})}
     for(const s of scores){const r=objectScreenRect(rooms[s.i].hitPlane,0),rect=document.createElementNS('http://www.w3.org/2000/svg','rect'),confidence=Math.min(.74,s.score*.66)*breathe;rect.setAttribute('x',r.x1-2);rect.setAttribute('y',r.y1-2);rect.setAttribute('width',Math.max(1,r.x2-r.x1+4));rect.setAttribute('height',Math.max(1,r.y2-r.y1+4));rect.setAttribute('rx','8');rect.setAttribute('fill','rgba(255,151,35,'+(confidence*.42).toFixed(3)+')');rect.setAttribute('stroke','rgba(255,202,85,'+(confidence*.82).toFixed(3)+')');rect.setAttribute('stroke-width',s.score>.5?'2.6':'1.5');rect.setAttribute('stroke-dasharray',s.score>.5?'9 5':'5 7');rect.style.filter='drop-shadow(0 0 '+Math.round(4+8*s.score)+'px rgba(255,135,20,'+confidence.toFixed(3)+'))';enemyAimOutlineLayer.appendChild(rect)}diag('HE9 TRAJECTORY PREVIEW','power='+Math.round(p.power)+' rooms='+scores.map(s=>(s.i+1)+':'+Math.round(s.score*100)).join(','))}
-  const d=pts.length?pts.map((q,i)=>(i?'L ':'M ')+q.x.toFixed(2)+' '+q.y.toFixed(2)).join(' '):('M '+a.x+' '+a.y+' L '+b.x+' '+b.y);return{d,end:pts.length?pts[pts.length-1]:b,profile:p};
+  const visibleCount=Math.max(2,Math.ceil(pts.length*.5)),visiblePts=pts.slice(0,visibleCount),d=visiblePts.length?visiblePts.map((q,i)=>(i?'L ':'M ')+q.x.toFixed(2)+' '+q.y.toFixed(2)).join(' '):('M '+a.x+' '+a.y+' L '+b.x+' '+b.y);return{d,end:visiblePts.length?visiblePts[visiblePts.length-1]:b,profile:p};
 }`;
   patched = patched.replace(/function bombardierAimGuide\(a,b\)\{[\s\S]*?\n\}\nfunction bombardierDescentPreview/, impactPrediction+'\nfunction bombardierDescentPreview');
   patched = patched.replace("aimPath.setAttribute('d',guide.d);if(wp.kind==='explosive')aimPath.style.opacity='0';", "aimPath.setAttribute('d',guide.d);if(wp.kind==='explosive'){aimPath.style.stroke='#69cfff';aimPath.style.strokeWidth='3';aimPath.style.strokeDasharray='10 8';aimPath.style.opacity='.78';aimPath.style.filter='drop-shadow(0 0 5px #2caeff)'}");
   patched = patched.replace("aimPath.setAttribute('d',guide.d);", "aimPath.setAttribute('d',guide.d);if(wp.kind==='explosive'){aimPath.style.stroke='#69cfff';aimPath.style.strokeWidth='3';aimPath.style.strokeDasharray='10 8';aimPath.style.opacity='.78';aimPath.style.filter='drop-shadow(0 0 5px #2caeff)'}");
   patched = patched.replace("function clearAim(){", "function clearAim(){sniperAimSmooth=null;if(enemyAimOutlineLayer)enemyAimOutlineLayer.innerHTML='';");
 
-  patched = patched.replace('</head>', '<meta name="ac-earth-specialists-runtime" content="controller-visible-ray-lock bombardier-visible-trajectory-probability sniper-smoothed-explosive support-queue">\n</head>');
+  patched = patched.replace('</head>', '<meta name="ac-earth-specialists-runtime" content="controller-safe-origin-ray-lock bombardier-half-guide-probability sniper-smoothed-explosive support-queue">\n</head>');
   return patched;
 }
