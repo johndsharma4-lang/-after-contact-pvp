@@ -5,6 +5,7 @@ import { patchSolarLancerRuntime } from './solar-lancer-runtime.js';
 import { patchAurelianDeploymentRuntime } from './aurelian-deployment-runtime.js';
 import { patchAurelianTeamRuntime } from './aurelian-team-runtime.js';
 import { patchAurelianCombatRuntime } from './aurelian-combat-runtime.js';
+import { patchCombatPresentationLockRuntime } from './combat-presentation-lock-runtime.js';
 export { MyDurableObject } from './after-contact-worker.js';
 
 function isDocumentRequest(request, url) {
@@ -47,6 +48,7 @@ export default {
       html = patchAurelianDeploymentRuntime(html);
       html = patchAurelianTeamRuntime(html);
       html = patchAurelianCombatRuntime(html);
+      html = patchCombatPresentationLockRuntime(html);
       html = installSharedDeploymentController(html);
       return new Response(html, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
     }
