@@ -8,6 +8,7 @@ import { patchAurelianCombatRuntime } from './aurelian-combat-runtime.js';
 import { patchCombatPresentationLockRuntime } from './combat-presentation-lock-runtime.js';
 import { patchSoloEarthRoundRobinRuntime } from './solo-earth-round-robin-runtime.js';
 import { patchDestructionCinematicRuntime } from './destruction-cinematic-runtime.js';
+import { patchEarthCombatClarityRuntime } from './earth-combat-clarity-runtime.js';
 export { MyDurableObject } from './after-contact-worker.js';
 
 function isDocumentRequest(request, url) {
@@ -53,6 +54,7 @@ export default {
       html = patchCombatPresentationLockRuntime(html);
       html = patchSoloEarthRoundRobinRuntime(html);
       html = patchDestructionCinematicRuntime(html);
+      html = patchEarthCombatClarityRuntime(html);
       html = installSharedDeploymentController(html);
       return new Response(html, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
     }
