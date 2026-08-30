@@ -15,12 +15,12 @@ export function patchAurelianTeamRuntime(html) {
 
   patched = patched.replace(
     "spatial_disintegrator:'/spatial-disintegrator.webp'",
-    "spatial_disintegrator:'/spatial-disintegrator.webp',sun_disk_gunner:'/sun-disk-gunner-hq.png',sunadier:'/sunadier-hq.png'"
+    "spatial_disintegrator:'/spatial-disintegrator.webp',sun_disk_gunner:'/sun-disk-gunner-hq.png',sunadier:'/sunadier-hq.svg'"
   );
 
   patched = patched.replace(
     "function starterArt(type){return OFFICIAL_STARTER_ART[type]||starter3DArtCache[type]||null}",
-    "function starterArt(type){const aurelianArt={sun_disk_gunner:'/sun-disk-gunner-hq.png',sunadier:'/sunadier-hq.png'};return aurelianArt[type]||OFFICIAL_STARTER_ART[type]||starter3DArtCache[type]||null}"
+    "function starterArt(type){const aurelianArt={sun_disk_gunner:'/sun-disk-gunner-hq.png',sunadier:'/sunadier-hq.svg'};return aurelianArt[type]||OFFICIAL_STARTER_ART[type]||starter3DArtCache[type]||null}"
   );
 
   patched = patched.replace(
