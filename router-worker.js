@@ -2,9 +2,6 @@ import baseWorker from './after-contact-worker.js';
 import { patchIndexHtml } from './game-html-patcher.js';
 import { patchEarthSpecialistsRuntime } from './earth-specialists-runtime.js';
 import { patchSolarLancerRuntime } from './solar-lancer-runtime.js';
-import { patchAurelianDeploymentRuntime } from './aurelian-deployment-runtime.js';
-import { patchAurelianTeamRuntime } from './aurelian-team-runtime.js';
-import { patchAurelianCombatRuntime } from './aurelian-combat-runtime.js';
 export { MyDurableObject } from './after-contact-worker.js';
 
 function isDocumentRequest(request, url) {
@@ -34,9 +31,6 @@ export default {
       let html = patchIndexHtml(await assetResponse.text());
       html = patchEarthSpecialistsRuntime(html);
       html = patchSolarLancerRuntime(html);
-      html = patchAurelianDeploymentRuntime(html);
-      html = patchAurelianTeamRuntime(html);
-      html = patchAurelianCombatRuntime(html);
       return new Response(html, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
     }
     return baseWorker.fetch(request, env, ctx);
