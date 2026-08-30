@@ -15,12 +15,12 @@ export function patchAurelianTeamRuntime(html) {
 
   patched = patched.replace(
     "spatial_disintegrator:'/spatial-disintegrator.webp'",
-    "spatial_disintegrator:'/spatial-disintegrator.webp',sun_disk_gunner:'/sun-disk-gunner-l2.svg',sunadier:'/sunadier-l2.svg'"
+    "spatial_disintegrator:'/spatial-disintegrator.webp',sun_disk_gunner:'/sun-disk-gunner-hq.png',sunadier:'/sunadier-hq.png'"
   );
 
   patched = patched.replace(
     "function starterArt(type){return OFFICIAL_STARTER_ART[type]||starter3DArtCache[type]||null}",
-    "function starterArt(type){const aurelianArt={sun_disk_gunner:'/sun-disk-gunner-l2.svg',sunadier:'/sunadier-l2.svg'};return aurelianArt[type]||OFFICIAL_STARTER_ART[type]||starter3DArtCache[type]||null}"
+    "function starterArt(type){const aurelianArt={sun_disk_gunner:'/sun-disk-gunner-hq.png',sunadier:'/sunadier-hq.png'};return aurelianArt[type]||OFFICIAL_STARTER_ART[type]||starter3DArtCache[type]||null}"
   );
 
   patched = patched.replace(
@@ -48,10 +48,10 @@ export function patchAurelianTeamRuntime(html) {
   patched = patched.replaceAll("deployReadyLabel.textContent=deployed<required?`EARTH TEAM • ${deployed}/${required} PLACED`:'EARTH TEAM • 3/3 READY';", "deployReadyLabel.textContent=deployed<required?`${selectedFaction==='aurelian'?'AURELIAN':'EARTH'} TEAM • ${deployed}/${required} PLACED`:`${selectedFaction==='aurelian'?'AURELIAN':'EARTH'} TEAM • ${required}/${required} READY`;" );
 
   patched = patched.replace("if(multiplayer&&Number.isInteger(deployment[0])){", "if(multiplayer&&hasValidDeployment()){");
-  patched = patched.replace("diag('STARTER ART','transparent Acid Brute + Spatial Disintegrator cutouts embedded');", "diag('STARTER ART','Earth + Aurelian Level-2 roster art static assets');");
+  patched = patched.replace("diag('STARTER ART','transparent Acid Brute + Spatial Disintegrator cutouts embedded');", "diag('STARTER ART','Earth + Aurelian HQ roster art static assets');");
 
-  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.41');
-  patched = patched.replace(/build=2026-08-(28|29|30)_[A-Z0-9_]+/g, 'build=2026-08-30_AURELIAN_STATIC_ART_MATCH_EARTH');
-  patched = patched.replace('</head>', '<style>.acUnifiedRow img.acWarriorGlyph{display:block!important;width:52px!important;height:54px!important;object-fit:contain!important;background:transparent!important}.acUnifiedRow>div:first-child{display:flex!important;align-items:center!important;justify-content:center!important;overflow:visible!important}@media(max-width:760px){.acUnifiedRow img.acWarriorGlyph{width:43px!important;height:46px!important}}</style><meta name="ac-aurelian-team-runtime" content="three-warrior-deployment earth-style-static-art distinct-art unique-material specialist-route-lock turn-guard solar-lancer sun-disk-gunner sunadier">\n</head>');
+  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.42');
+  patched = patched.replace(/build=2026-08-(28|29|30)_[A-Z0-9_]+/g, 'build=2026-08-30_AURELIAN_HQ_STATIC_ART');
+  patched = patched.replace('</head>', '<style>.acUnifiedRow img.acWarriorGlyph{display:block!important;width:52px!important;height:54px!important;object-fit:contain!important;background:transparent!important}.acUnifiedRow>div:first-child{display:flex!important;align-items:center!important;justify-content:center!important;overflow:visible!important}@media(max-width:760px){.acUnifiedRow img.acWarriorGlyph{width:43px!important;height:46px!important}}</style><meta name="ac-aurelian-team-runtime" content="three-warrior-deployment earth-style-hq-static-art distinct-art unique-material specialist-route-lock turn-guard solar-lancer sun-disk-gunner sunadier">\n</head>');
   return patched;
 }
