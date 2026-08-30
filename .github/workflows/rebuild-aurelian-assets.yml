@@ -1,0 +1,31 @@
+name: Rebuild Aurelian assets
+on:
+  push:
+    paths:
+      - '.asset-upload/READY'
+permissions:
+  contents: write
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild WebPs
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .asset-upload/sun-disk/chunk-* | base64 -d > sun-disk-gunner-hq.webp
+          cat .asset-upload/sunadier/chunk-* | base64 -d > sunadier-hq.webp
+          test "$(stat -c%s sun-disk-gunner-hq.webp)" = "171438"
+          test "$(stat -c%s sunadier-hq.webp)" = "179944"
+          echo 'db1032c28938d9641181c8e854e8a3cd42f7f9e2a25a19e9af305cb404864b11  sun-disk-gunner-hq.webp' | sha256sum -c -
+          echo '45b9b264d458b26021e817b919e76edb9300da4c1fbc5439f633049f4a02bd01  sunadier-hq.webp' | sha256sum -c -
+          rm -rf .asset-upload
+      - name: Commit rebuilt assets
+        shell: bash
+        run: |
+          git config user.name 'after-contact-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add sun-disk-gunner-hq.webp sunadier-hq.webp .asset-upload
+          git commit -m 'Install verified HQ Aurelian WebP assets'
+          git push
