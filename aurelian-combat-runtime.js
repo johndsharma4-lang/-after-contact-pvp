@@ -50,7 +50,7 @@ function spawnSunadier(attacker,start,pt,power,weapon){
   if (!patched.includes('function spawnSunDisk(')) {
     patched = patched.replace('function spawnSolarLancerBeam(attacker,start,beamPath,weapon){', helpers + '\nfunction spawnSolarLancerBeam(attacker,start,beamPath,weapon){');
   }
-  patched = patched.replace("const rooms=opposingRooms(attacker).userData.rooms,row=Math.floor(hit.roomIndex/3),col=hit.roomIndex%3,candidates=[];for(let radius=1;radius<=2;radius++)for(const [dr,dc] of [[0,-radius],[0,radius],[-radius,0],[radius,0]]){const r=row+dr,c=col+dc,i=r*3+c;if(r>=0&&r<3&&c>=0&&c<3&&i!==hit.roomIndex&&!candidates.includes(i))candidates.push(i)}", "const rooms=opposingRooms(attacker).userData.rooms,row=Math.floor(hit.roomIndex/3),col=hit.roomIndex%3,candidates=[...rooms.keys()].filter(i=>i!==hit.roomIndex).sort((a,b)=>{const ar=Math.floor(a/3),ac=a%3,br=Math.floor(b/3),bc=b%3;return Math.abs(ar-row)+Math.abs(ac-col)-(Math.abs(br-row)+Math.abs(bc-col))||a-b})");
+  patched = patched.replace("const rooms=opposingRooms(attacker).userData.rooms,row=Math.floor(hit.roomIndex/3),col=hit.roomIndex%3,candidates=[];for(let radius=1;radius<=2;radius++)for(const [dr,dc] of [[0,-radius],[0,radius],[-radius,0],[radius,0]]){const r=row+dr,c=col+dc,i=r*3+c;if(r>=0&&r<3&&c>=0&&c<3&&i!==hit.roomIndex&&!candidates.includes(i))candidates.push(i)}", "const rooms=opposingRooms(attacker).userData.rooms,row=Math.floor(hit.roomIndex/3),col=hit.roomIndex%3,candidates=[...rooms.keys()].filter(i=>i!==hit.roomIndex).sort((a,b)=>{const ar=Math.floor(a/3),ac=a%3,br=Math.floor(b/3),bc=b%3;return Math.abs(ar-row)+Math.abs(ac-col)-(Math.abs(br-row)+Math.abs(bc-col))||a-b});");
   patched = patched.replace("const room=rooms[ri];if(!room||room.erased)return;", "const room=rooms[ri];if(!room)return;");
   patched = patched.replace("resolveHit(attacker,hit,{...weapon,impactStrength:1.85})", "resolveHit(attacker,hit,{...weapon,kind:'explosive',impactStrength:1.85})");
   patched = patched.replace("{...weapon,name:'SUNADIER PLASMA SCATTER',armorDamage:11", "{...weapon,kind:'explosive',name:'SUNADIER PLASMA SCATTER',armorDamage:11");
@@ -70,8 +70,8 @@ function spawnSunadier(attacker,start,pt,power,weapon){
   patched = patched.replace("opacity:.36,blending:THREE.AdditiveBlending", "opacity:.68,blending:THREE.AdditiveBlending");
   patched = patched.replace("b.outer.material.opacity=.24+.12*Math.sin(elapsed*.018);b.core.material.opacity=.88+.12*Math.sin(elapsed*.025)", "b.outer.material.opacity=.58+.20*Math.sin(elapsed*.018);b.core.material.opacity=.94+.06*Math.sin(elapsed*.025)");
 
-  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.46');
-  patched = patched.replace(/build=2026-08-(28|29|30)_[A-Z0-9_]+/g, 'build=2026-08-30_AURELIAN_OPEN_CHANNEL_HIT_TRUTH');
+  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.47');
+  patched = patched.replace(/build=2026-08-(28|29|30)_[A-Z0-9_]+/g, 'build=2026-08-30_BOOT_RESTORE_OPEN_CHANNEL');
   patched = patched.replace('</head>', '<meta name="ac-aurelian-combat" content="destructo-style-solar-disk sunadier-primary-hit-truth five-plasma-scatter scatter-open-channel laser-open-channel-routing">\n</head>');
   return patched;
 }
