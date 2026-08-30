@@ -4,11 +4,17 @@ import { patchEarthSpecialistsRuntime } from './earth-specialists-runtime.js';
 import { patchSolarLancerRuntime } from './solar-lancer-runtime.js';
 import { patchAurelianDeploymentRuntime } from './aurelian-deployment-runtime.js';
 import { patchAurelianTeamRuntime } from './aurelian-team-runtime.js';
+import { patchAurelianCombatRuntime } from './aurelian-combat-runtime.js';
 export { MyDurableObject } from './after-contact-worker.js';
 
 function isDocumentRequest(request, url) {
   if (request.method !== 'GET' && request.method !== 'HEAD') return false;
   return url.pathname === '/' || url.pathname === '/index.html';
+}
+
+function isStaticAssetRequest(request, url) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return false;
+  return /\.(?:webp|png|jpg|jpeg|svg|gif|mp3|wav|css|js)$/i.test(url.pathname);
 }
 
 function documentHeaders(response) {
@@ -40,9 +46,11 @@ export default {
       html = patchSolarLancerRuntime(html);
       html = patchAurelianDeploymentRuntime(html);
       html = patchAurelianTeamRuntime(html);
+      html = patchAurelianCombatRuntime(html);
       html = installSharedDeploymentController(html);
       return new Response(html, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
     }
+    if (isStaticAssetRequest(request, url)) return env.ASSETS.fetch(request);
     return baseWorker.fetch(request, env, ctx);
   },
 };
