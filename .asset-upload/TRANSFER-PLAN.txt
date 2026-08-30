@@ -1,0 +1,5 @@
+Aurelian HQ asset transfer in progress.
+Expected final files:
+sun-disk-gunner-hq.webp 171438 bytes sha256 db1032c28938d9641181c8e854e8a3cd42f7f9e2a25a19e9af305cb404864b11
+sunadier-hq.webp 179944 bytes sha256 45b9b264d458b26021e817b919e76edb9300da4c1fbc5439f633049f4a02bd01
+READY must not be created until all chunks are present.
