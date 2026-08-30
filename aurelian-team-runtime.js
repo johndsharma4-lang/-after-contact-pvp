@@ -21,6 +21,26 @@ export function patchAurelianTeamRuntime(html) {
     "spatial_disintegrator:'/spatial-disintegrator.webp',sun_disk_gunner:'/sun-disk-gunner-l2.webp',sunadier:'/sunadier-l2.webp'"
   );
 
+  patched = patched.replace(
+    "function starterArt(type){return OFFICIAL_STARTER_ART[type]||starter3DArtCache[type]||null}",
+    "function starterArt(type){const aurelianArt={sun_disk_gunner:'/sun-disk-gunner-l2.webp',sunadier:'/sunadier-l2.webp'};return aurelianArt[type]||OFFICIAL_STARTER_ART[type]||starter3DArtCache[type]||null}"
+  );
+
+  patched = patched.replace(
+    "w.weaponKey=type;w.faction=profile.faction;w.maxHp=profile.stats?.hp||100;w.hp=Math.min(w.hp,w.maxHp);w.sprite.material.color.setHex(profile.color);if(w.nameText)w.nameText.textContent=profile.name;",
+    "w.weaponKey=type;w.faction=profile.faction;w.maxHp=profile.stats?.hp||100;w.hp=Math.min(w.hp,w.maxHp);if(w.sprite?.material&&!w.userData?.acUniqueMaterial){w.sprite.material=w.sprite.material.clone();w.userData=w.userData||{};w.userData.acUniqueMaterial=true}w.sprite.material.color.setHex(profile.color);if(w.nameText)w.nameText.textContent=profile.name;"
+  );
+
+  patched = patched.replace(
+    "const choice=document.querySelector(`.characterCard[data-warrior=\"${type}\"]`),src=choice?.querySelector('img')?.src||starterArt(type)||(type==='bombardier'?'/bombardier.webp':type==='solar_lancer'?'/solar-lancer.webp':null);",
+    "const choice=document.querySelector(`.characterCard[data-warrior=\"${type}\"]`),src=starterArt(type)||choice?.querySelector('img')?.src||(type==='bombardier'?'/bombardier.webp':type==='solar_lancer'?'/solar-lancer.webp':null);"
+  );
+
+  patched = patched.replace(
+    "function endSoloPlayerTurnAfterShot(){\n  if(multiplayer||!battleStarted||matchEnded)return;",
+    "function endSoloPlayerTurnAfterShot(){\n  if(multiplayer||!battleStarted||matchEnded)return;\n  if(soloTurn!=='aurelian'){diag('TURN GUARD','duplicate player-turn handoff blocked current='+soloTurn);return;}"
+  );
+
   patched = patched.replaceAll("deployReadyLabel.textContent=`EARTH TEAM • ${placed}/${required} PLACED`", "deployReadyLabel.textContent=`${selectedFaction==='aurelian'?'AURELIAN':'EARTH'} TEAM • ${placed}/${required} PLACED`");
   patched = patched.replaceAll("deployReadyLabel.textContent=`EARTH TEAM • ${required}/${required} READY`", "deployReadyLabel.textContent=`${selectedFaction==='aurelian'?'AURELIAN':'EARTH'} TEAM • ${required}/${required} READY`");
   patched = patched.replaceAll("deployReadyLabel.textContent=deployed<required?`EARTH TEAM • ${deployed}/${required} PLACED`:'EARTH TEAM • 3/3 READY';", "deployReadyLabel.textContent=deployed<required?`${selectedFaction==='aurelian'?'AURELIAN':'EARTH'} TEAM • ${deployed}/${required} PLACED`:`${selectedFaction==='aurelian'?'AURELIAN':'EARTH'} TEAM • ${required}/${required} READY`;" );
@@ -35,8 +55,8 @@ export function patchAurelianTeamRuntime(html) {
     "diag('STARTER ART','Earth + Aurelian Level-2 roster art embedded');"
   );
 
-  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.34');
-  patched = patched.replace(/build=2026-08-28_[A-Z0-9_]+/g, 'build=2026-08-28_AURELIAN_DEPLOY_INIT_FIX');
-  patched = patched.replace('</head>', '<meta name="ac-aurelian-team-runtime" content="three-warrior-deployment init-order-safe solar-lancer sun-disk-gunner sunadier">\n</head>');
+  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.39');
+  patched = patched.replace(/build=2026-08-(28|29)_[A-Z0-9_]+/g, 'build=2026-08-29_AURELIAN_IDENTITY_TURN_FIX');
+  patched = patched.replace('</head>', '<style>.acUnifiedRow img.acWarriorGlyph{display:block!important;width:52px!important;height:54px!important;object-fit:contain!important;background:transparent!important}.acUnifiedRow>div:first-child{display:flex!important;align-items:center!important;justify-content:center!important;overflow:visible!important}@media(max-width:760px){.acUnifiedRow img.acWarriorGlyph{width:43px!important;height:46px!important}}</style><meta name="ac-aurelian-team-runtime" content="three-warrior-deployment distinct-art unique-material turn-guard solar-lancer sun-disk-gunner sunadier">\n</head>');
   return patched;
 }
