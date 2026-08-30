@@ -1,6 +1,23 @@
 export function patchEarthCombatClarityRuntime(html) {
   let patched=html;
 
+  const specialistHelpers=`let sniperAimSmooth=null;
+function smoothSniperProjectedPoint(x,y){
+  if(!sniperAimSmooth){sniperAimSmooth={x,y};return sniperAimSmooth}
+  const dx=x-sniperAimSmooth.x,dy=y-sniperAimSmooth.y,dist=Math.hypot(dx,dy),ax=dist>55?.46:dist>24?.34:.24,ay=dist>55?.52:dist>24?.42:.34;
+  if(Math.abs(dx)>1.1)sniperAimSmooth.x+=dx*ax;if(Math.abs(dy)>.9)sniperAimSmooth.y+=dy*ay;return sniperAimSmooth
+}
+function controllerRayHit(attacker,startWorld,aimPt){
+  const start=worldToStage(startWorld),dx=aimPt.x-start.x,dy=aimPt.y-start.y,mag=Math.hypot(dx,dy)||1;if(mag<8)return null;const ux=dx/mag,uy=dy/mag,rooms=opposingRooms(attacker).userData.rooms,warriors=opposing(attacker);let best=null;
+  function rayRect(rect){const pad=8,r={x1:rect.x1-pad,y1:rect.y1-pad,x2:rect.x2+pad,y2:rect.y2+pad};let tmin=0,tmax=1600;for(const axis of ['x','y']){const o=start[axis],d=axis==='x'?ux:uy,lo=axis==='x'?r.x1:r.y1,hi=axis==='x'?r.x2:r.y2;if(Math.abs(d)<1e-6){if(o<lo||o>hi)return null;continue}let a=(lo-o)/d,b=(hi-o)/d;if(a>b){const z=a;a=b;b=z}tmin=Math.max(tmin,a);tmax=Math.min(tmax,b);if(tmax<tmin)return null}return tmin>=0?tmin:null}
+  for(let i=0;i<rooms.length;i++){const room=rooms[i];if(room.erased)continue;const rect=objectScreenRect(room.hitPlane,0),t=rayRect(rect);if(t==null)continue;if(!best||t<best.t){const cx=(rect.x1+rect.x2)/2,cy=(rect.y1+rect.y2)/2;best={t,room,roomIndex:i,end:stagePointToRoomWorld({x:cx,y:cy},room),warrior:warriors.find(w=>w.roomIndex===i&&w.hp>0)||null,direct:true,quality:1,placement:'TACTICAL RAY LOCK',screenCenter:{x:cx,y:cy},screenRect:rect,lineEnd:{x:start.x+ux*Math.min(760,t+40),y:start.y+uy*Math.min(760,t+40)}}}}
+  return best
+}
+function drawControllerReticle(attacker,startWorld,pt){
+  if(!enemyAimOutlineLayer)return null;enemyAimOutlineLayer.innerHTML='';const hit=controllerRayHit(attacker,startWorld,pt),start=worldToStage(startWorld),dx=pt.x-start.x,dy=pt.y-start.y,mag=Math.hypot(dx,dy)||1,ux=dx/mag,uy=dy/mag,ns='http://www.w3.org/2000/svg',fallback={x:start.x+ux*680,y:start.y+uy*680},lineEnd=hit?.screenCenter||fallback;
+  aimPath.setAttribute('d','M '+start.x+' '+start.y+' L '+lineEnd.x+' '+lineEnd.y);aimPath.style.stroke='#5edcff';aimPath.style.strokeWidth='4';aimPath.style.strokeDasharray='12 7';aimPath.style.opacity='.92';aimPath.style.filter='drop-shadow(0 0 7px #20bfff)';if(!hit)return null;const r=hit.screenRect,cx=hit.screenCenter.x,cy=hit.screenCenter.y,pulse=.78+.22*Math.sin(performance.now()*.009),glow=document.createElementNS(ns,'rect');glow.setAttribute('x',r.x1-5);glow.setAttribute('y',r.y1-5);glow.setAttribute('width',Math.max(1,r.x2-r.x1+10));glow.setAttribute('height',Math.max(1,r.y2-r.y1+10));glow.setAttribute('rx','8');glow.setAttribute('fill','rgba(0,160,255,'+(0.22*pulse).toFixed(3)+')');glow.setAttribute('stroke','#7eeaff');glow.setAttribute('stroke-width','6');glow.style.filter='drop-shadow(0 0 14px #20bfff)';enemyAimOutlineLayer.appendChild(glow);const ring=document.createElementNS(ns,'circle');ring.setAttribute('cx',cx);ring.setAttribute('cy',cy);ring.setAttribute('r','28');ring.setAttribute('fill','rgba(70,205,255,.10)');ring.setAttribute('stroke','#ffffff');ring.setAttribute('stroke-width','3');ring.setAttribute('stroke-dasharray','9 5');enemyAimOutlineLayer.appendChild(ring);const label=document.createElementNS(ns,'text');label.setAttribute('x',cx);label.setAttribute('y',Math.max(18,r.y1-10));label.setAttribute('text-anchor','middle');label.setAttribute('fill','#eaffff');label.setAttribute('stroke','#063654');label.setAttribute('stroke-width','3');label.setAttribute('paint-order','stroke');label.setAttribute('font-size','13');label.setAttribute('font-weight','900');label.textContent='ROOM '+(hit.roomIndex+1)+' • DESIGNATED';enemyAimOutlineLayer.appendChild(label);diag('TAC-LINK RAY LOCK','room='+(hit.roomIndex+1));return hit
+}
+`;
   const sniper=`function spawnSniperRound(attacker,start,pt,weapon){
   const hit=sniperRoomHit(attacker,pt),target=(hit?.end||targetPlanePointForOpponent(attacker,pt)).clone(),direction=target.clone().sub(start),distance=Math.max(.01,direction.length()),unit=direction.clone().normalize(),group=new THREE.Group();
   const shellMat=new THREE.MeshBasicMaterial({color:0x332714,transparent:true,opacity:1,depthWrite:false}),hotMat=new THREE.MeshBasicMaterial({color:0xffffdf,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false});
@@ -18,6 +35,10 @@ export function patchEarthCombatClarityRuntime(html) {
   (function fly(now){if(!dart.parent)return;const t=Math.min(1,(now-launched)/1050),p=curve.getPoint(t);dart.position.copy(p);dart.rotation.z+=.16;ring.rotation.z-=.24;tether.geometry.setFromPoints(curve.getPoints(Math.max(3,Math.round(t*38))));tether.computeLineDistances();if(t<1){requestAnimationFrame(fly);return}scene.remove(dart,tether);if(!battleStarted||matchEnded)return;if(!hit){spawnImpactBurst(target,0x47dfff);resolveHit(attacker,null,{...weapon,name:'TAC-LINK LOCATOR'});return}const marker=new THREE.Group(),beacon=glowSphere(.46,0x38dfff,16),bracket=new THREE.Mesh(new THREE.TorusGeometry(.76,.08,8,28),new THREE.MeshBasicMaterial({color:0xcffbff,transparent:true,opacity:.96,blending:THREE.AdditiveBlending,depthWrite:false}));bracket.rotation.x=Math.PI/2;marker.add(beacon,bracket);marker.position.set(0,0,.48);marker.renderOrder=111;hit.room.hitPlane.add(marker);supportCalls[attacker.side]={attacker,hit,weapon,marker};supportCooldown[attacker.side]=3;attacker.supportCooldown=3;resolveHit(attacker,hit,{...weapon,name:'TAC-LINK DESIGNATOR',kind:'locator',armorDamage:3,damage:2,splash:0,impactStrength:.25});statusEl.textContent=\`TARGET DESIGNATED • ROOM ${'${'}hit.roomIndex+1} • C-130 GUNSHIP NEXT EARTH TURN\`;diag('TAC-LINK ATTACHED',\`${'${'}attacker.side} room=${'${'}hit.roomIndex+1} gunship=NEXT_TEAM_TURN cooldown=3\`)})(launched);return true
 }`;
   patched=patched.replace(/function spawnTacLocator\(attacker,start,pt,power,weapon\)\{[\s\S]*?\n\}\nfunction fireWarriorFromStage/,locator+'\nfunction fireWarriorFromStage');
+  if(!patched.includes('function controllerRayHit(')){
+    const helpers=patched.includes('let sniperAimSmooth=')?specialistHelpers.replace('let sniperAimSmooth=null;\n',''):specialistHelpers;
+    patched=patched.replace('function spawnSniperRound(attacker,start,pt,weapon){',helpers+'function spawnSniperRound(attacker,start,pt,weapon){');
+  }
 
   const support=`let earthSupportPresentationLock=false;
 function makeSupportC130(color=0x5f6972){const plane=new THREE.Group(),mat=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.96,depthWrite:false}),dark=new THREE.MeshBasicMaterial({color:0x17212a,transparent:true,opacity:.98,depthWrite:false});const body=new THREE.Mesh(new THREE.CylinderGeometry(.62,.92,7.2,12),mat);body.rotation.z=Math.PI/2;const wing=new THREE.Mesh(new THREE.BoxGeometry(5.8,.16,1.12),mat),tail=new THREE.Mesh(new THREE.BoxGeometry(2.3,.14,.76),mat),nose=glowSphere(.24,0xd7f3ff,10);tail.position.x=-2.65;tail.position.y=.72;nose.position.x=3.62;plane.add(body,wing,tail,nose);for(const x of[-1.55,1.55]){const engine=new THREE.Mesh(new THREE.CylinderGeometry(.24,.24,.78,10),dark);engine.rotation.z=Math.PI/2;engine.position.set(x,0,.82);plane.add(engine)}plane.renderOrder=108;return plane}
@@ -41,8 +62,8 @@ function advanceSupportTurn(side){const call=supportCalls[side];diag(call?'SUPPO
   patched=patched.replace("new THREE.TorusGeometry(.34,.14,9,16)","new THREE.TorusGeometry(.43,.115,10,20)");
   patched=patched.replace("color:0xf0baff,transparent:true,opacity:1,blending:THREE.AdditiveBlending","color:0x6d2f8f,transparent:true,opacity:.24");
   patched=patched.replace("0xffffc4,2.15","0xffb52f,2.15");
-  patched=patched.replace(/3D LAB • MOBILE PVP TEST • v0\.33\.\d+/g,'3D LAB • MOBILE PVP TEST • v0.33.49');
-  patched=patched.replace(/MATCH RECORDER v0\.33\.\d+/g,'MATCH RECORDER v0.33.49');
-  patched=patched.replace(/build=2026-08-(28|29|30)_[A-Z0-9_]+/g,'build=2026-08-30_EARTH_SPECIALIST_VISUAL_TRUTH');
-  return patched.replace('</head>','<meta name="ac-earth-combat-clarity" content="sniper-visible-projectile controller-tac-link-only delayed-c130-gunship earth-airborne-rangers reptilian-seal-raft-c4 solo-support-lock">\n</head>');
+  patched=patched.replace(/3D LAB • MOBILE PVP TEST • v0\.33\.\d+/g,'3D LAB • MOBILE PVP TEST • v0.33.50');
+  patched=patched.replace(/MATCH RECORDER v0\.33\.\d+/g,'MATCH RECORDER v0.33.50');
+  patched=patched.replace(/build=2026-08-(28|29|30)_[A-Z0-9_]+/g,'build=2026-08-30_AIM_CUTAWAY_HELPERS_RESTORED');
+  return patched.replace('</head>','<meta name="ac-earth-combat-clarity" content="aim-helpers-restored cutaway-unblocked sniper-visible-projectile controller-tac-link-only delayed-c130-gunship earth-airborne-rangers reptilian-seal-raft-c4 solo-support-lock">\n</head>');
 }
