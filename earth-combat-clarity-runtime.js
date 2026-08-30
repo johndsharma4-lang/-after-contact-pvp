@@ -52,18 +52,13 @@ function advanceSupportTurn(side){const call=supportCalls[side];diag(call?'SUPPO
   patched=patched.replace("function runSoloEarthTurn(){\n  if(multiplayer||!battleStarted||matchEnded||soloTurn!=='earth')return;", "function runSoloEarthTurn(){\n  if(multiplayer||!battleStarted||matchEnded||soloTurn!=='earth')return;if(earthSupportPresentationLock){clearSoloAiTimer();soloAiTimer=setTimeout(()=>{soloAiTimer=null;runSoloEarthTurn()},180);return}");
   patched=patched.replace("finishSoloEarthSpecialistTurn('SNIPER',1450)","finishSoloEarthSpecialistTurn('SNIPER',2050)");
   patched=patched.replace("finishSoloEarthSpecialistTurn('COMBAT CONTROLLER',1900)","finishSoloEarthSpecialistTurn('COMBAT CONTROLLER',2350)");
-  patched=patched.replace("(now-t0)/1600","(now-t0)/2150");
-  patched=patched.replace("new THREE.RingGeometry(.92,2.58,48)","new THREE.RingGeometry(1.10,3.28,64)");
-  patched=patched.replace("new THREE.TorusGeometry(2.62,.22,12,64)","new THREE.TorusGeometry(3.34,.27,14,72)");
-  patched=patched.replace("Math.cos(a)*2.88,Math.sin(a)*2.88","Math.cos(a)*3.68,Math.sin(a)*3.68");
-  patched=patched.replace("new THREE.RingGeometry(1.05,2.48,36)","new THREE.RingGeometry(1.28,3.20,48)");
-  patched=patched.replace("core=glowSphere(radius*.52,0xffffdf,26),plasma=glowSphere(radius*.88,0xff7a12,13)","core=glowSphere(radius*.40,0xff8a12,26),plasma=glowSphere(radius*.88,0xff3d08,13)");
-  patched=patched.replace("color:0x9f45e4,transparent:true,opacity:1,blending:THREE.AdditiveBlending","color:0x35104f,transparent:true,opacity:.98");
-  patched=patched.replace("new THREE.TorusGeometry(.34,.14,9,16)","new THREE.TorusGeometry(.43,.115,10,20)");
-  patched=patched.replace("color:0xf0baff,transparent:true,opacity:1,blending:THREE.AdditiveBlending","color:0x6d2f8f,transparent:true,opacity:.24");
-  patched=patched.replace("0xffffc4,2.15","0xffb52f,2.15");
-  patched=patched.replace(/3D LAB • MOBILE PVP TEST • v0\.33\.\d+/g,'3D LAB • MOBILE PVP TEST • v0.33.50');
-  patched=patched.replace(/MATCH RECORDER v0\.33\.\d+/g,'MATCH RECORDER v0.33.50');
-  patched=patched.replace(/build=2026-08-(28|29|30)_[A-Z0-9_]+/g,'build=2026-08-30_AIM_CUTAWAY_HELPERS_RESTORED');
-  return patched.replace('</head>','<meta name="ac-earth-combat-clarity" content="aim-helpers-restored cutaway-unblocked sniper-visible-projectile controller-tac-link-only delayed-c130-gunship earth-airborne-rangers reptilian-seal-raft-c4 solo-support-lock">\n</head>');
+  patched=patched.replace("const hit=sniperRoomHit(attacker,pt),target=(hit?.end","const hit=sniperRoomHit(attacker,pt)||controllerRayHit(attacker,start,pt),target=(hit?.end");
+  patched=patched.replace("statusEl.textContent=`TARGET DESIGNATED • ROOM ${hit.roomIndex+1} • C-130 GUNSHIP NEXT EARTH TURN`;diag('TAC-LINK ATTACHED',`${attacker.side} room=${hit.roomIndex+1} gunship=NEXT_TEAM_TURN cooldown=3`)","const targetFaction=factionForWorldSide(attacker.side==='aurelian'?'earth':'aurelian'),supportLabel=targetFaction==='earth'?'AIRBORNE RANGERS':targetFaction==='lizard'?'SEAL TEAM SIX • C4':'C-130 GUNSHIP';statusEl.textContent=`TARGET DESIGNATED • ROOM ${hit.roomIndex+1} • ${supportLabel} NEXT TEAM TURN`;diag('TAC-LINK ATTACHED',`${attacker.side} room=${hit.roomIndex+1} support=${supportLabel} cooldown=3`)");
+  patched=patched.replace("plane.renderOrder=108;return plane","plane.scale.set(1.36,1.36,1.36);plane.renderOrder=108;return plane");
+  patched=patched.replace("new THREE.SphereGeometry(.72,16,8","new THREE.SphereGeometry(1.02,18,9");
+  patched=patched.replace("new THREE.CapsuleGeometry(.16,.52,4,8)","new THREE.CapsuleGeometry(.24,.78,5,10)");
+  patched=patched.replace(/3D LAB • MOBILE PVP TEST • v0\.33\.\d+/g,'3D LAB • MOBILE PVP TEST • v0.33.51');
+  patched=patched.replace(/MATCH RECORDER v0\.33\.\d+/g,'MATCH RECORDER v0.33.51');
+  patched=patched.replace(/build=2026-08-(28|29|30)_[A-Z0-9_]+/g,'build=2026-08-30_COMBAT_CLARITY_DESTRUCTION_PASS');
+  return patched.replace('</head>','<meta name="ac-earth-combat-clarity" content="aim-helpers-restored cutaway-unblocked sniper-visible-projectile sniper-tracer-hit-truth controller-tac-link-only delayed-c130-gunship earth-airborne-rangers reptilian-seal-raft-c4 readable-support-scale solo-support-lock">\n</head>');
 }

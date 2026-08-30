@@ -27,10 +27,10 @@ function sunDiskRayHits(attacker,start,pt){
 }
 function makeSunDiskVisual(start){
  const group=new THREE.Group(),spinner=new THREE.Group(),bladeMat=new THREE.MeshBasicMaterial({color:0xffad16,transparent:true,opacity:.98,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}),hotMat=new THREE.MeshBasicMaterial({color:0xffffe5,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}),darkMat=new THREE.MeshBasicMaterial({color:0x351400,transparent:true,opacity:.88,depthWrite:false,side:THREE.DoubleSide});group.add(spinner);group.rotation.x=Math.PI/2;
- const blade=new THREE.Mesh(new THREE.RingGeometry(.92,2.58,48),bladeMat),hub=new THREE.Mesh(new THREE.CircleGeometry(.88,36),darkMat),core=new THREE.Mesh(new THREE.RingGeometry(.30,.74,36),hotMat),rim=new THREE.Mesh(new THREE.TorusGeometry(2.62,.22,12,64),bladeMat);
- spinner.add(blade,hub,core,rim);for(let i=0;i<24;i++){const tooth=new THREE.Mesh(new THREE.ConeGeometry(.25,.78,3),i%2?bladeMat:hotMat);const a=i*Math.PI*2/24;tooth.position.set(Math.cos(a)*2.88,Math.sin(a)*2.88,0);tooth.rotation.z=a-Math.PI/2;spinner.add(tooth)}for(let i=0;i<12;i++){const spoke=new THREE.Mesh(new THREE.PlaneGeometry(2.15,.10),hotMat);const a=i*Math.PI*2/12;spoke.position.set(Math.cos(a)*1.45,Math.sin(a)*1.45,.035);spoke.rotation.z=a;spinner.add(spoke)}
+ const blade=new THREE.Mesh(new THREE.RingGeometry(1.10,3.28,64),bladeMat),hub=new THREE.Mesh(new THREE.CircleGeometry(.88,36),darkMat),core=new THREE.Mesh(new THREE.RingGeometry(.30,.74,36),hotMat),rim=new THREE.Mesh(new THREE.TorusGeometry(3.34,.27,14,72),bladeMat);
+ spinner.add(blade,hub,core,rim);for(let i=0;i<24;i++){const tooth=new THREE.Mesh(new THREE.ConeGeometry(.25,.78,3),i%2?bladeMat:hotMat);const a=i*Math.PI*2/24;tooth.position.set(Math.cos(a)*3.68,Math.sin(a)*3.68,0);tooth.rotation.z=a-Math.PI/2;spinner.add(tooth)}for(let i=0;i<12;i++){const spoke=new THREE.Mesh(new THREE.PlaneGeometry(2.15,.10),hotMat);const a=i*Math.PI*2/12;spoke.position.set(Math.cos(a)*1.45,Math.sin(a)*1.45,.035);spoke.rotation.z=a;spinner.add(spoke)}
  group.position.copy(start);group.renderOrder=96;scene.add(group);
- const ghosts=[];for(let i=0;i<5;i++){const ghost=new THREE.Mesh(new THREE.RingGeometry(1.05,2.48,36),new THREE.MeshBasicMaterial({color:0xff8a18,transparent:true,opacity:.24-i*.032,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));ghost.position.copy(start);ghost.rotation.x=Math.PI/2;ghost.renderOrder=94-i;scene.add(ghost);ghosts.push(ghost)}
+ const ghosts=[];for(let i=0;i<5;i++){const ghost=new THREE.Mesh(new THREE.RingGeometry(1.28,3.20,48),new THREE.MeshBasicMaterial({color:0xff8a18,transparent:true,opacity:.24-i*.032,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));ghost.position.copy(start);ghost.rotation.x=Math.PI/2;ghost.renderOrder=94-i;scene.add(ghost);ghosts.push(ghost)}
  const trail=new THREE.Line(new THREE.BufferGeometry().setFromPoints([start,start]),new THREE.LineBasicMaterial({color:0xffc23d,transparent:true,opacity:.76,blending:THREE.AdditiveBlending,depthWrite:false}));scene.add(trail);return{group,spinner,ghosts,trail}
 }
 function spawnSunDisk(attacker,start,pt,weapon){
@@ -57,6 +57,19 @@ function spawnSunadier(attacker,start,pt,power,weapon){
   patched = patched.replace("const room=rooms[ri];if(!room||room.erased)return;", "const room=rooms[ri];if(!room)return;");
   patched = patched.replace("resolveHit(attacker,hit,{...weapon,impactStrength:1.85})", "resolveHit(attacker,hit,{...weapon,kind:'explosive',impactStrength:1.85})");
   patched = patched.replace("{...weapon,name:'SUNADIER PLASMA SCATTER',armorDamage:11", "{...weapon,kind:'explosive',name:'SUNADIER PLASMA SCATTER',armorDamage:11");
+
+  // Aurelian weapon presentation is owned here so later faction runtimes do not rewrite it.
+  patched = patched.replace("const t=Math.min(1,(now-t0)/1600)","const t=Math.min(1,(now-t0)/2800)");
+  patched = patched.replace("visual.spinner.rotation.z+=1.42;","visual.spinner.rotation.z=t*Math.PI*18;");
+  patched = patched.replace("},i*190));setTimeout(()=>finishAurelianWeaponAction(attacker,'SUN DISK CUTTER'),1150)","},i*360));setTimeout(()=>finishAurelianWeaponAction(attacker,'SUN DISK CUTTER'),2100)");
+  patched = patched.replace("core=glowSphere(radius*.52,0xffffdf,26),plasma=glowSphere(radius*.88,0xff7a12,13)","core=glowSphere(radius*.40,0xff8a12,26),plasma=glowSphere(radius*.88,0xff3d08,13)");
+  patched = patched.replace("color:0x9f45e4,transparent:true,opacity:1,blending:THREE.AdditiveBlending","color:0x35104f,transparent:true,opacity:.98");
+  patched = patched.replace("new THREE.TorusGeometry(.34,.14,9,16)","new THREE.TorusGeometry(.50,.16,10,22)");
+  patched = patched.replace("color:0xf0baff,transparent:true,opacity:1,blending:THREE.AdditiveBlending","color:0xb767e0,transparent:true,opacity:.48");
+  patched = patched.replace("const t=Math.min(1,(now-t0)/1580),p=curve.getPoint(t);","const t=Math.min(1,(now-t0)/2250),p=curve.getPoint(t);");
+  patched = patched.replace("0xffffc4,2.15","0xffb52f,2.15");
+  patched = patched.replace("makeSolarPlasmaGrenade(.72)","makeSolarPlasmaGrenade(.88)");
+  patched = patched.replace("(time-a)/1280","(time-a)/1650");
 
   patched = patched.replace(
     "if(wp.aim==='straight'){\n    if(wp.kind==='laser'){",

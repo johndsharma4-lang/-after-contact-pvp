@@ -40,6 +40,13 @@ function endMatch(outcome,reason,fromNetwork=false){clearSoloAiTimer();
   const loser=multiplayer?(outcome==='VICTORY'?opponentSide():localSide):(outcome==='VICTORY'?'earth':'aurelian');playDefeatCinematic(loser,outcome,reason);
 }`;
   patched=replaceExact(patched,oldEnd,newEnd,status,'endMatch');
+  patched=patched.replace("function clearEndCinematic(){endCinematicToken++;","function clearEndCinematic(){clearImpactFocus();endCinematicToken++;");
+  patched=patched.replace("},step*285));","},step*520));");
+  patched=patched.replace("const collapseAt=order.length*285+180;","const collapseAt=order.length*520+320;beginImpactFocus(loser,4,'FINAL DESTRUCTION',6900,true);");
+  patched=patched.replace("spawnExplosionVisual(point,color,1.05+step*.06);spawnDebris(point,loser==='aurelian'?0x9a6b20:0x596570,12,.20,.62)","spawnExplosionVisual(point,color,1.28+step*.075);spawnDebris(point,loser==='aurelian'?0x9a6b20:0x596570,18,.20,.78)");
+  patched=patched.replace("const vanishAt=collapseAt+520,start=performance.now();","const vanishAt=collapseAt+760,start=performance.now();");
+  patched=patched.replace("(now-start-collapseAt)/900","(now-start-collapseAt)/1250");
+  patched=patched.replace("},vanishAt+620);","},vanishAt+980);");
 
   patched=replaceExact(
     patched,

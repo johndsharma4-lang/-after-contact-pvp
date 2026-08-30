@@ -14,7 +14,15 @@ export function patchCombatPresentationLockRuntime(html) {
     actionTurn:false,
     multiplayerFire:false,
     multiplayerTurn:false,
-    destructionEnd:false
+    destructionEnd:false,
+    impactCamera:false,
+    impactTrigger:false,
+    earthCutaway:false,
+    earthHullPanels:false,
+    xrayCamera:false,
+    damageCallout:false,
+    tornWreck:false,
+    particleBudget:false
   };
 
   patched = replaceExact(
@@ -160,10 +168,77 @@ export function patchCombatPresentationLockRuntime(html) {
     "const room=hit.room,index=hit.roomIndex,before=room.armor,channelOcc=opposing(attacker).find(w=>w.roomIndex===index&&w.hp>0);if((room.erased||room.armor<=0)&&!channelOcc){const channelDamage=applyStructureDamage(attacker,weapon.armorDamage||4,'SOLAR OPEN CHANNEL');spawnImpactBurst(hit.end,0xffe8a4);diag('SOLAR OPEN CHANNEL',`room=${index+1} rearHull=${channelDamage}`);continue}\n    const shield=absorbShieldHit(attacker,index,weapon.armorDamage||4,'SOLAR EXACT RAY',hit.end);"
   );
 
+  const impactHelpers = `let impactFocusSide=null,impactFocusUntil=0,impactFocusTimer=null;
+function beginImpactFocus(side,roomIndex,label,duration=1750,force=false){
+  if(xrayOpen||(!force&&matchEnded))return;impactFocusSide=side;impactFocusUntil=performance.now()+duration;document.body.classList.add('acImpactFocus');clearTimeout(impactFocusTimer);impactFocusTimer=setTimeout(()=>{impactFocusSide=null;impactFocusUntil=0;document.body.classList.remove('acImpactFocus');if(battleStarted)updateBattleCamera()},duration+140);diag('IMPACT CAMERA',\`side=\${side} room=\${Number.isInteger(roomIndex)?roomIndex+1:'HULL'} label=\${label||'IMPACT'} hold=\${duration}\`)
+}
+function clearImpactFocus(){clearTimeout(impactFocusTimer);impactFocusTimer=null;impactFocusSide=null;impactFocusUntil=0;document.body.classList.remove('acImpactFocus')}
+`;
+  patched = replaceExact(patched,'let cameraLastUpdate=performance.now();',impactHelpers+'let cameraLastUpdate=performance.now();',status,'impactCamera');
+  patched = replaceExact(
+    patched,
+    `  }else{
+    desiredPos=new THREE.Vector3(midX,(tactical?27.5:23.5)+midY*.11+altExtra*.22,safeZ);`,
+    `  }else if(impactFocusSide&&now<impactFocusUntil){
+    const focusRoot=impactFocusSide==='aurelian'?aure:earth,focus=focusRoot.getWorldPosition(new THREE.Vector3());desiredPos=new THREE.Vector3(focus.x,focus.y+3.2,focus.z+34);desiredLook=new THREE.Vector3(focus.x,focus.y+1.0,focus.z);desiredZoom=1.34;
+  }else{
+    impactFocusSide=null;desiredPos=new THREE.Vector3(midX,(tactical?27.5:23.5)+midY*.11+altExtra*.22,safeZ);`,
+    status,
+    'impactCamera'
+  );
+  patched = replaceExact(
+    patched,
+    "const impactSide=structureTargetSide(attacker),impactStrength=Math.max(.45,Math.min(1.8,weapon.impactStrength||1));",
+    "const impactSide=structureTargetSide(attacker),impactStrength=Math.max(.45,Math.min(1.8,weapon.impactStrength||1)),focusHold=weapon.kind==='sunadier'?2300:weapon.kind==='solar_disk'?1900:weapon.kind==='laser'?1450:weapon.kind==='explosive'?1550:1750;beginImpactFocus(impactSide,hit.roomIndex,weapon.name,focusHold);",
+    status,
+    'impactTrigger'
+  );
+
+  patched = replaceExact(
+    patched,
+    "g.position.copy(roomRoot.position);if(factionForWorldSide(localXraySide())==='earth')g.position.x=0;g.rotation.copy(roomRoot.rotation);g.scale.copy(roomRoot.scale);",
+    "g.position.copy(roomRoot.position);g.rotation.copy(roomRoot.rotation);g.scale.copy(roomRoot.scale);",
+    status,
+    'earthCutaway'
+  );
+  patched = patched.replace("const centerX=(minX+maxX)/2,centerY=(minY+maxY)/2,spreadX=faction==='earth'?1.35:1.12,spreadY=faction==='earth'?1.28:.72;","const centerX=(minX+maxX)/2,centerY=(minY+maxY)/2,spreadX=faction==='earth'?1.08:1.12,spreadY=faction==='earth'?.84:.72;");
+  patched = patched.replace("xrayBasic(0x0d0b08,faction==='earth'?.92:0,false)","xrayBasic(0x0d0b08,faction==='earth'?.08:0,false)");
+  patched = patched.replace("map:earthFortressCutawayTex,color:0xffffff,transparent:true,opacity:.58","map:earthFortressCutawayTex,color:0xffffff,transparent:true,opacity:.24");
+  patched = replaceExact(
+    patched,
+    "g.add(hinge)}",
+    "g.add(hinge)}else{g.userData.earthHullCutaway=true;const rear=markXray(new THREE.Mesh(new THREE.BoxGeometry(width*1.08,height*1.10,.30),xrayBasic(0x101820,.34,false)),67);rear.position.set(0,0,.02);g.add(rear);for(const side of[-1,1]){const panel=markXray(new THREE.Mesh(new THREE.BoxGeometry(width*.50,height*1.04,.34),xrayBasic(side<0?0x4f6572:0x394b57,.94,false)),70);panel.position.set(side*width*.53,.18,1.05);panel.rotation.y=side*.76;panel.rotation.z=side*.035;g.add(panel);const ribs=markXray(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(width*.50,height*1.04,.38)),new THREE.LineBasicMaterial({color:0xaad7ee,transparent:true,opacity:.78,depthTest:false,depthWrite:false})),71);ribs.position.copy(panel.position);ribs.rotation.copy(panel.rotation);g.add(ribs)}for(const y of[-1,1]){const rail=markXray(new THREE.Mesh(new THREE.BoxGeometry(width*1.08,.18,.20),xrayBasic(0x8ca6b3,.88,true)),72);rail.position.set(0,y*height*.54,.72);g.add(rail)}}",
+    status,
+    'earthHullPanels'
+  );
+  patched = patched.replace("xrayBasic(0x4b5961,faction==='earth' ? .22 : .035,false)","xrayBasic(0x4b5961,faction==='earth' ? .07 : .035,false)");
+  patched = patched.replace("xrayBasic(0x111820,faction==='earth' ? .34 : .12,false)","xrayBasic(0x111820,faction==='earth' ? .16 : .12,false)");
+  patched = patched.replace("opacity:faction==='earth'?.74:.16","opacity:faction==='earth'?.24:.16");
+  patched = patched.replace("const fullH=w.passive?1.70:(faction==='aurelian'?4.20:2.62),fullW=w.passive?.96:(faction==='aurelian'?2.75:1.50);","const fullH=w.passive?1.52:(faction==='aurelian'?4.20:3.55),fullW=w.passive?.88:(faction==='aurelian'?2.75:2.18);");
+  patched = replaceExact(
+    patched,
+    "desiredPos=new THREE.Vector3(xrayCenter.x,xrayCenter.y+2.8,xrayCenter.z+46);\n    desiredLook=new THREE.Vector3(xrayCenter.x,xrayCenter.y,xrayCenter.z);\n    desiredZoom=1.14;",
+    "desiredPos=new THREE.Vector3(xrayCenter.x,xrayCenter.y+2.4,xrayCenter.z+38);\n    desiredLook=new THREE.Vector3(xrayCenter.x,xrayCenter.y,xrayCenter.z);\n    desiredZoom=1.34;",
+    status,
+    'xrayCamera'
+  );
+
+  const damageCalloutHelper = `function spawnCrewDamageCallout(w,aaDamage,hpDamage){
+  if(!w?.sprite||(!aaDamage&&!hpDamage))return;const room=w.roomGroup?.userData?.rooms?.[w.roomIndex],revealed=room&&warriorShouldBeVisible(w)&&(!w.passive||crewExposureTier(room)>=3);if(!revealed)return;const c=document.createElement('canvas');c.width=384;c.height=112;const x=c.getContext('2d');x.fillStyle='rgba(4,8,12,.90)';x.fillRect(8,8,368,96);x.strokeStyle=hpDamage?'#ff7048':'#79e7ff';x.lineWidth=6;x.strokeRect(8,8,368,96);x.fillStyle='#ffffff';x.textAlign='center';x.textBaseline='middle';x.font='900 34px system-ui';x.fillText((aaDamage?'−'+Math.round(aaDamage)+' AA':'')+(aaDamage&&hpDamage?'  •  ':'')+(hpDamage?'−'+Math.round(hpDamage)+' HP':''),192,56);const map=new THREE.CanvasTexture(c);map.colorSpace=THREE.SRGBColorSpace;const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map,transparent:true,opacity:1,depthTest:false,depthWrite:false}));sprite.scale.set(5.4,1.58,1);sprite.position.copy(warriorWorld(w)).add(new THREE.Vector3(0,2.65,1.0));sprite.renderOrder=120;scene.add(sprite);effects.push({objects:[sprite],life:1.20,max:1.20})
+}
+`;
+  if(!patched.includes('function spawnCrewDamageCallout(')){const next=patched.replace('function spawnCrewDamageReaction(w,amount,killed=false){',damageCalloutHelper+'function spawnCrewDamageReaction(w,amount,killed=false){');status.damageCallout=next!==patched;patched=next}
+  patched = patched.replace("if(hpDamage>0)spawnCrewDamageReaction(w,hpDamage,w.hp===0);","if(aaDamage||hpDamage)spawnCrewDamageCallout(w,aaDamage,hpDamage);if(hpDamage>0)spawnCrewDamageReaction(w,hpDamage,w.hp===0);");
+  patched = patched.replace("const token=(w.damageReactionSeq||0)+1;w.damageReactionSeq=token;const sprite=w.sprite,base=sprite.position.clone(),baseScale=sprite.scale.clone(),oldColor=sprite.material.color.clone(),oldRotation=sprite.material.rotation||0,start=performance.now(),duration=killed?620:360;","const token=(w.damageReactionSeq||0)+1;w.damageReactionSeq=token;const sprite=w.sprite,base=sprite.position.clone(),baseScale=sprite.scale.clone(),oldColor=sprite.material.color.clone(),oldRotation=sprite.material.rotation||0,start=performance.now(),duration=killed?980:660;");
+  patched = patched.replace("sprite.scale.copy(baseScale).multiplyScalar(1+.08*Math.sin(Math.PI*t));","sprite.scale.copy(baseScale).multiplyScalar(1.38+.18*Math.sin(Math.PI*t));");
+
+  patched = replaceExact(patched,"if(room.exteriorScar){room.exteriorScar.visible=true;room.exteriorScar.material.color.setHex(0x020104);room.exteriorScar.material.opacity=.96}","if(room.exteriorScar)room.exteriorScar.visible=false",status,'tornWreck');
+  patched = replaceExact(patched,"Math.min(24,Math.round(10+scale*3))","Math.min(14,Math.round(7+scale*2))",status,'particleBudget');
+
   patched = patched.replace(/3D LAB • MOBILE PVP TEST • v0\.33\.\d+/g, '3D LAB • MOBILE PVP TEST • v0.33.48');
   patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.48');
   patched = patched.replace(/build=2026-08-(28|29|30)_[A-Z0-9_]+/g, 'build=2026-08-30_AURELIAN_CINEMATIC_ROUND_ROBIN');
   const summary = Object.entries(status).map(([key,value])=>`${key}:${value?'OK':'MISS'}`).join(' ');
-  patched = patched.replace('</head>', `<meta name="ac-combat-presentation-lock" content="${summary}">\n</head>`);
+  patched = patched.replace('</head>', `<style id="ac-combat-presentation-css">body.acImpactFocus #movePad,body.acImpactFocus #aimHud{opacity:.10!important;pointer-events:none!important}body.acImpactFocus #rangeBadge{opacity:.18!important}body.acImpactFocus #status{background:rgba(3,9,14,.88)!important;border-color:#ffd36a!important}#damageFlash{font-size:clamp(16px,2.2vw,28px)!important;text-shadow:0 2px 7px #000,0 0 12px currentColor!important}.xrayCrewCard.show{backdrop-filter:blur(7px)}</style><meta name="ac-combat-presentation-lock" content="${summary}">\n</head>`);
   return patched;
 }
