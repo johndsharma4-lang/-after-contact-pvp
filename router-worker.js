@@ -21,6 +21,11 @@ function documentHeaders(response) {
   return headers;
 }
 
+function installSharedDeploymentController(html) {
+  if (html.includes('deployment-controller-v03313.js')) return html;
+  return html.replace('</body>', '<script src="/deployment-controller-v03313.js"></script>\n</body>');
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -35,6 +40,7 @@ export default {
       html = patchSolarLancerRuntime(html);
       html = patchAurelianDeploymentRuntime(html);
       html = patchAurelianTeamRuntime(html);
+      html = installSharedDeploymentController(html);
       return new Response(html, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
     }
     return baseWorker.fetch(request, env, ctx);
