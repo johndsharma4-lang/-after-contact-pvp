@@ -72,6 +72,7 @@ export function patchCombatPresentationLockRuntime(html) {
     "const earthInterior=factionForWorldSide(localXraySide())==='earth';v.shell.material.opacity=(earthInterior?.20:.025)+b*(earthInterior?.08:.025);v.cavity.material.opacity=(earthInterior?.30:.10)+b*(earthInterior?.04:.04);v.edge.material.opacity=(earthInterior?.64:.14)+pulse*(earthInterior?.10:.04)-b*(earthInterior?.14:.03);v.damage.material.opacity=b>0?.05+b*.34:0;"
   );
   patched = patched.replace("statusEl.textContent='FORTRESS CUTAWAY • TAP A NAMED WARRIOR'", "statusEl.textContent=factionForWorldSide(localXraySide())==='aurelian'?'AURELIAN HULL OPEN • SELECT WARRIOR':'FORTRESS CUTAWAY • TAP A NAMED WARRIOR'");
+  patched = patched.replace("statusEl.textContent='FORTRESS CUTAWAY • SELECT YOUR WARRIOR'", "statusEl.textContent=factionForWorldSide(localXraySide())==='aurelian'?'AURELIAN HULL OPEN • SELECT WARRIOR':'FORTRESS CUTAWAY • SELECT YOUR WARRIOR'");
 
   patched = replaceExact(
     patched,
