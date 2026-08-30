@@ -73,6 +73,19 @@ export function patchCombatPresentationLockRuntime(html) {
   );
   patched = patched.replace("statusEl.textContent='FORTRESS CUTAWAY • TAP A NAMED WARRIOR'", "statusEl.textContent=factionForWorldSide(localXraySide())==='aurelian'?'AURELIAN HULL OPEN • SELECT WARRIOR':'FORTRESS CUTAWAY • TAP A NAMED WARRIOR'");
   patched = patched.replace("statusEl.textContent='FORTRESS CUTAWAY • SELECT YOUR WARRIOR'", "statusEl.textContent=factionForWorldSide(localXraySide())==='aurelian'?'AURELIAN HULL OPEN • SELECT WARRIOR':'FORTRESS CUTAWAY • SELECT YOUR WARRIOR'");
+  patched = patched.replace("if(w.sprite)w.sprite.visible=show&&!xrayMine&&!enemyExposed;", "if(w.sprite)w.sprite.visible=show&&!xrayMine&&(!enemyExposed||!w.passive);");
+  patched = patched.replace("if(w.healthBase)w.healthBase.visible=healthVisible;", "if(w.healthBase)w.healthBase.visible=healthVisible&&w.passive;");
+  patched = patched.replace("if(w.healthFill){w.healthFill.visible=healthVisible;", "if(w.healthFill){w.healthFill.visible=healthVisible&&w.passive;");
+
+  const damageReactionHelper = `function spawnCrewDamageReaction(w,amount,killed=false){
+  if(!w?.sprite||!w.active)return;const room=w.roomGroup?.userData?.rooms?.[w.roomIndex],revealed=warriorShouldBeVisible(w)&&(!w.passive||crewExposureTier(room)>=3);if(!room||!revealed)return;const point=warriorWorld(w),objects=[],flare=glowSphere(killed?1.10:.72,killed?0xff542f:0xffd27a,14);flare.material.transparent=true;flare.material.opacity=.86;flare.position.copy(point);scene.add(flare);objects.push(flare);const ring=new THREE.Mesh(new THREE.RingGeometry(.34,killed?1.25:.86,32),new THREE.MeshBasicMaterial({color:killed?0xff5533:0xffe5a1,transparent:true,opacity:.92,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));ring.position.copy(point);ring.lookAt(camera.position);scene.add(ring);objects.push(ring);for(let i=0;i<8;i++){const spark=glowSphere(.07+Math.random()*.08,i%3?0xff9b39:0xffffff,8);spark.material.transparent=true;spark.material.opacity=.92;spark.position.copy(point).add(new THREE.Vector3((Math.random()-.5)*1.2,(Math.random()-.5)*1.7,.35));scene.add(spark);objects.push(spark)}effects.push({objects,life:killed?.82:.48,max:killed?.82:.48});const token=(w.damageReactionSeq||0)+1;w.damageReactionSeq=token;const sprite=w.sprite,base=sprite.position.clone(),baseScale=sprite.scale.clone(),oldColor=sprite.material.color.clone(),start=performance.now(),duration=killed?620:360;(function react(now){if(w.damageReactionSeq!==token||!sprite.parent)return;const t=Math.min(1,(now-start)/duration),kick=Math.sin(Math.PI*t)*(killed?1.25:.62),side=w.side==='earth'?-1:1;sprite.position.copy(base).add(new THREE.Vector3(side*kick,-(killed?t*t*.85:Math.sin(Math.PI*t)*.12),.18*Math.sin(Math.PI*t)));sprite.rotation.z=side*(killed?.62:.20)*Math.sin(Math.PI*t);sprite.scale.copy(baseScale).multiplyScalar(1+.08*Math.sin(Math.PI*t));sprite.material.color.setHex(t<.34?0xffffff:t<.68?0xff7a45:w.assignedColor);if(t<1){requestAnimationFrame(react);return}sprite.position.copy(base);sprite.rotation.z=0;sprite.scale.copy(baseScale);sprite.material.color.copy(oldColor)})(start);diag('CREW DAMAGE REACTION',(w.displayName||STARTER_PROFILES[w.weaponKey]?.name||'WARRIOR')+' hpHit='+Math.round(amount)+' killed='+(killed?'Y':'N'))
+}
+`;
+  if(!patched.includes('function spawnCrewDamageReaction('))patched=patched.replace('function applyWarriorDamage(w,amount,label,attacker=null){', damageReactionHelper+'function applyWarriorDamage(w,amount,label,attacker=null){');
+  patched = patched.replace("oldColor=sprite.material.color.clone(),start=performance.now()", "oldColor=sprite.material.color.clone(),oldRotation=sprite.material.rotation||0,start=performance.now()");
+  patched = patched.replace("sprite.rotation.z=side*(killed?.62:.20)*Math.sin(Math.PI*t);", "sprite.material.rotation=oldRotation+side*(killed?.62:.20)*Math.sin(Math.PI*t);");
+  patched = patched.replace("sprite.position.copy(base);sprite.rotation.z=0;sprite.scale.copy(baseScale);", "sprite.position.copy(base);sprite.material.rotation=oldRotation;sprite.scale.copy(baseScale);");
+  patched = patched.replace("if(hpDamage>0&&w.sprite){const old=w.sprite.material.color.clone();w.sprite.material.color.setHex(0xff7048);setTimeout(()=>{if(w.sprite?.material)w.sprite.material.color.copy(old)},140)}", "if(hpDamage>0)spawnCrewDamageReaction(w,hpDamage,w.hp===0)");
 
   patched = replaceExact(
     patched,
@@ -132,7 +145,7 @@ export function patchCombatPresentationLockRuntime(html) {
 
   patched = patched.replace(
     "const rect=objectScreenRect(rooms[i].hitPlane,0),entry=lineRectEntry(startStage,farStage,rect);if(entry)hits.push({room:rooms[i],roomIndex:i,entry,source:'exact-ray'});",
-    "const rect=objectScreenRect(rooms[i].hitPlane,18),entry=lineRectEntry(startStage,farStage,rect);if(entry)hits.push({room:rooms[i],roomIndex:i,entry,source:'visible-ray'});"
+    "const room=rooms[i],occupant=warriors.find(w=>w.roomIndex===i&&w.hp>0)||null;if((room.erased||room.armor<=0)&&!occupant)continue;const rect=objectScreenRect(room.hitPlane,18),entry=lineRectEntry(startStage,farStage,rect);if(entry)hits.push({room,roomIndex:i,entry,source:'visible-ray'});"
   );
   patched = patched.replace(
     "hits.sort((a,b)=>a.entry.t-b.entry.t);const path=hits.slice(0,maxCompartments).map(h=>{const warrior=warriors.find(w=>w.roomIndex===h.roomIndex&&w.hp>0)||null;return{room:h.room,roomIndex:h.roomIndex,end:stagePointToRoomWorld(h.entry,h.room),warrior,direct:!!warrior,source:'exact-ray'}});",
@@ -142,10 +155,14 @@ export function patchCombatPresentationLockRuntime(html) {
     "function resolveCaptainElimination(w,attacker){\n  if(!w?.isCaptain)return false;\n  if(FEATURE_FLAGS.multiWarriorSwitching){awardCaptainDamageBonus(w,attacker);return false}\n  const localCaptain=w.side===localWorldSide(),meta=FACTION_META[factionForSide(w.side)]||FACTION_META.earth;\n  diag('CAPTAIN MATCH END',`side=${w.side} local=${localCaptain?'Y':'N'} switching=N`);endMatch(localCaptain?'DEFEAT':'VICTORY',`${meta.short} CAPTAIN ELIMINATED`);return true\n}",
     "function resolveCaptainElimination(w,attacker){\n  if(!w?.isCaptain)return false;awardCaptainDamageBonus(w,attacker);diag('CAPTAIN ELIMINATION CONTINUES',`side=${w.side} structure=${Math.round(structureHp[w.side]||0)} crew remaining=${(w.side==='aurelian'?aCrew:eCrew).filter(x=>x.active&&x.hp>0).length}`);return false\n}"
   );
+  patched = patched.replace(
+    "const room=hit.room,index=hit.roomIndex,before=room.armor;\n    const shield=absorbShieldHit(attacker,index,weapon.armorDamage||4,'SOLAR EXACT RAY',hit.end);",
+    "const room=hit.room,index=hit.roomIndex,before=room.armor,channelOcc=opposing(attacker).find(w=>w.roomIndex===index&&w.hp>0);if((room.erased||room.armor<=0)&&!channelOcc){const channelDamage=applyStructureDamage(attacker,weapon.armorDamage||4,'SOLAR OPEN CHANNEL');spawnImpactBurst(hit.end,0xffe8a4);diag('SOLAR OPEN CHANNEL',`room=${index+1} rearHull=${channelDamage}`);continue}\n    const shield=absorbShieldHit(attacker,index,weapon.armorDamage||4,'SOLAR EXACT RAY',hit.end);"
+  );
 
-  patched = patched.replace(/3D LAB • MOBILE PVP TEST • v0\.33\.\d+/g, '3D LAB • MOBILE PVP TEST • v0.33.45');
-  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.45');
-  patched = patched.replace(/build=2026-08-(28|29|30)_[A-Z0-9_]+/g, 'build=2026-08-30_AURELIAN_CUTAWAY_PLASMA_CHAOS');
+  patched = patched.replace(/3D LAB • MOBILE PVP TEST • v0\.33\.\d+/g, '3D LAB • MOBILE PVP TEST • v0.33.46');
+  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.46');
+  patched = patched.replace(/build=2026-08-(28|29|30)_[A-Z0-9_]+/g, 'build=2026-08-30_AURELIAN_OPEN_CHANNEL_HIT_TRUTH');
   const summary = Object.entries(status).map(([key,value])=>`${key}:${value?'OK':'MISS'}`).join(' ');
   patched = patched.replace('</head>', `<meta name="ac-combat-presentation-lock" content="${summary}">\n</head>`);
   return patched;
