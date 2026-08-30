@@ -26,7 +26,7 @@ export function patchCombatPresentationLockRuntime(html) {
   );
   patched = patched.replace(
     "const centerX=(minX+maxX)/2,centerY=(minY+maxY)/2,spreadX=faction==='earth'?1.35:2.35,spreadY=faction==='earth'?1.28:1.30;",
-    "const centerX=(minX+maxX)/2,centerY=(minY+maxY)/2,spreadX=faction==='earth'?1.35:.90,spreadY=faction==='earth'?1.28:.88;"
+    "const centerX=(minX+maxX)/2,centerY=(minY+maxY)/2,spreadX=faction==='earth'?1.35:1.12,spreadY=faction==='earth'?1.28:.72;"
   );
   patched = patched.replace(
     "const cutaway=markXray(new THREE.Mesh(new THREE.BoxGeometry(width,height,.32),xrayBasic(0x0d0b08,.92,false)),68);",
@@ -34,7 +34,7 @@ export function patchCombatPresentationLockRuntime(html) {
   );
   patched = patched.replace(
     "const cutaway=markXray(new THREE.Mesh(new THREE.BoxGeometry(width,height,.32),xrayBasic(0x0d0b08,faction==='earth'?.92:0,false)),68);cutaway.position.set(0,0,.10);g.add(cutaway);",
-    "const cutaway=markXray(new THREE.Mesh(new THREE.BoxGeometry(width,height,.32),xrayBasic(0x0d0b08,faction==='earth'?.92:0,false)),68);cutaway.position.set(0,0,.10);g.add(cutaway);if(faction==='aurelian'){const aperture=markXray(new THREE.Mesh(new THREE.CircleGeometry(width*.48,64),xrayBasic(0x120603,.78,false)),67);aperture.scale.set(1,.43,1);aperture.position.set(0,0,.08);g.add(aperture);const apertureRim=markXray(new THREE.Mesh(new THREE.RingGeometry(width*.46,width*.50,64),xrayBasic(0xffb52c,.88,true)),69);apertureRim.scale.set(1,.43,1);apertureRim.position.set(0,0,.12);g.add(apertureRim);const openedHull=markXray(new THREE.Mesh(new THREE.CircleGeometry(width*.48,64,0,Math.PI),xrayBasic(0xc87b23,.92,false)),69);openedHull.scale.set(1,.43,1);openedHull.position.set(0,height*.56,1.28);openedHull.rotation.x=-.62;g.add(openedHull);const openedEdge=markXray(new THREE.Mesh(new THREE.RingGeometry(width*.46,width*.50,64,1,0,Math.PI),xrayBasic(0xffe19a,.98,true)),70);openedEdge.scale.set(1,.43,1);openedEdge.position.copy(openedHull.position);openedEdge.rotation.copy(openedHull.rotation);g.add(openedEdge)}"
+    "const cutaway=markXray(new THREE.Mesh(new THREE.BoxGeometry(width,height,.32),xrayBasic(0x0d0b08,faction==='earth'?.92:0,false)),68);cutaway.position.set(0,0,.10);g.add(cutaway);if(faction==='aurelian'){g.userData.aurelianHullCutaway=true;const aperture=markXray(new THREE.Mesh(new THREE.CircleGeometry(width*.50,72),xrayBasic(0x120603,.82,false)),67);aperture.scale.set(1,.38,1);aperture.position.set(0,0,.08);g.add(aperture);const hullShoulder=markXray(new THREE.Mesh(new THREE.RingGeometry(width*.50,width*.66,72),xrayBasic(0xb96d1e,.92,false)),68);hullShoulder.scale.set(1,.38,1);hullShoulder.position.set(0,0,.10);g.add(hullShoulder);const apertureRim=markXray(new THREE.Mesh(new THREE.RingGeometry(width*.485,width*.515,72),xrayBasic(0xffd669,.98,true)),70);apertureRim.scale.set(1,.38,1);apertureRim.position.set(0,0,.22);g.add(apertureRim);for(const side of[-1,1]){const panel=markXray(new THREE.Mesh(new THREE.CircleGeometry(width*.35,56,side<0?0:Math.PI,Math.PI),xrayBasic(0xd5892c,.96,false)),70);panel.scale.set(1,.38,1);panel.position.set(side*width*.42,height*.28,1.10);panel.rotation.z=side*.18;panel.rotation.y=side*.72;g.add(panel);const edge=markXray(new THREE.Mesh(new THREE.RingGeometry(width*.33,width*.355,56,1,side<0?0:Math.PI,Math.PI),xrayBasic(0xffffb0,1,true)),71);edge.scale.copy(panel.scale);edge.position.copy(panel.position);edge.rotation.copy(panel.rotation);g.add(edge)}const hinge=markXray(new THREE.Mesh(new THREE.BoxGeometry(width*.72,.20,.20),xrayBasic(0xffc65f,.96,true)),72);hinge.position.set(0,height*.25,.72);g.add(hinge)}"
   );
   patched = patched.replace(
     "new THREE.LineBasicMaterial({color:0xd69a46,transparent:true,opacity:.76,depthTest:false,depthWrite:false})",
@@ -55,7 +55,7 @@ export function patchCombatPresentationLockRuntime(html) {
   patched = replaceExact(
     patched,
     "const fullH=w.passive?1.70:2.62,fullW=w.passive ? .96 : 1.50;",
-    "const fullH=w.passive?1.70:(faction==='aurelian'?3.88:2.62),fullW=w.passive?.96:(faction==='aurelian'?2.48:1.50);",
+    "const fullH=w.passive?1.70:(faction==='aurelian'?4.20:2.62),fullW=w.passive?.96:(faction==='aurelian'?2.75:1.50);",
     status,
     'cutawayArt'
   );
@@ -138,7 +138,7 @@ export function patchCombatPresentationLockRuntime(html) {
   patched = replaceExact(
     patched,
     "function completeTurn(){turnsTaken=Math.min(TURN_LIMIT,turnsTaken+1);diag('TURN COMPLETE',`${turnsTaken}/${TURN_LIMIT}`);return turnsTaken>=TURN_LIMIT&&resolveTurnLimit()}",
-    "function completeTurn(){turnsTaken+=1;diag('TURN COMPLETE',`${turnsTaken} • destruction victory mode`);checkMatchEnd();return matchEnded}",
+    "function completeTurn(){turnsTaken+=1;diag('TURN COMPLETE',`${turnsTaken} • two-condition victory mode`);checkMatchEnd();return matchEnded}",
     status,
     'destructionEnd'
   );
@@ -160,9 +160,9 @@ export function patchCombatPresentationLockRuntime(html) {
     "const room=hit.room,index=hit.roomIndex,before=room.armor,channelOcc=opposing(attacker).find(w=>w.roomIndex===index&&w.hp>0);if((room.erased||room.armor<=0)&&!channelOcc){const channelDamage=applyStructureDamage(attacker,weapon.armorDamage||4,'SOLAR OPEN CHANNEL');spawnImpactBurst(hit.end,0xffe8a4);diag('SOLAR OPEN CHANNEL',`room=${index+1} rearHull=${channelDamage}`);continue}\n    const shield=absorbShieldHit(attacker,index,weapon.armorDamage||4,'SOLAR EXACT RAY',hit.end);"
   );
 
-  patched = patched.replace(/3D LAB • MOBILE PVP TEST • v0\.33\.\d+/g, '3D LAB • MOBILE PVP TEST • v0.33.47');
-  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.47');
-  patched = patched.replace(/build=2026-08-(28|29|30)_[A-Z0-9_]+/g, 'build=2026-08-30_BOOT_RESTORE_OPEN_CHANNEL');
+  patched = patched.replace(/3D LAB • MOBILE PVP TEST • v0\.33\.\d+/g, '3D LAB • MOBILE PVP TEST • v0.33.48');
+  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.48');
+  patched = patched.replace(/build=2026-08-(28|29|30)_[A-Z0-9_]+/g, 'build=2026-08-30_AURELIAN_CINEMATIC_ROUND_ROBIN');
   const summary = Object.entries(status).map(([key,value])=>`${key}:${value?'OK':'MISS'}`).join(' ');
   patched = patched.replace('</head>', `<meta name="ac-combat-presentation-lock" content="${summary}">\n</head>`);
   return patched;
