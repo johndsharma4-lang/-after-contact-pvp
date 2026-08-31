@@ -224,6 +224,14 @@ function buildPrivateXray(){
     "function resolveCaptainElimination(w,attacker){\n  if(!w?.isCaptain)return false;awardCaptainDamageBonus(w,attacker);diag('CAPTAIN ELIMINATION CONTINUES',`side=${w.side} structure=${Math.round(structureHp[w.side]||0)} crew remaining=${(w.side==='aurelian'?aCrew:eCrew).filter(x=>x.active&&x.hp>0).length}`);return false\n}"
   );
   patched = patched.replace(
+    "const earthAlive=eCrew.some(w=>w.active&&w.hp>0),aurelianAlive=aCrew.some(w=>w.active&&w.hp>0);",
+    "const earthAlive=eWarriors.some(w=>w.active&&w.hp>0),aurelianAlive=aWarriors.some(w=>w.active&&w.hp>0),earthShadowsAlive=eShadows.filter(w=>w.active&&w.hp>0).length,aurelianShadowsAlive=aShadows.filter(w=>w.active&&w.hp>0).length;diag('VICTORY CREW CHECK',`earthCombat=${earthAlive?'ALIVE':'DOWN'} earthBackground=${earthShadowsAlive} aurelianCombat=${aurelianAlive?'ALIVE':'DOWN'} aurelianBackground=${aurelianShadowsAlive}`);"
+  );
+  patched = patched.replace(
+    "if(hit.room.erased){diag('HIT RESULT',`${weapon.name} MISS`);statusEl.textContent=`${weapon.name} • MISS • NO DAMAGE`;updateDamageMonitor(null,-1,0,attacker);flashDamage('MISS');return{armorDamage:0,unitDamage:0}}",
+    "if(hit.room.erased&&weapon.kind==='solar_disk'&&hit.warrior?.active&&hit.warrior.hp>0){const unitDamage=applyWarriorDamage(hit.warrior,weapon.damage||28,'SUN DISK OPEN-COMPARTMENT SLICE',attacker),structureDamage=applyStructureDamage(attacker,Math.max(4,Math.round((weapon.armorDamage||30)*.42)),'SUN DISK OPEN-COMPARTMENT SLICE');diag('SUN DISK EXPOSED CREW SLICE',`room=${hit.roomIndex+1} unit=${unitDamage} hull=${structureDamage}`);statusEl.textContent=`SUN DISK CUTTER • EXPOSED ROOM ${hit.roomIndex+1} • UNIT -${unitDamage}`;flashDamage(`SLICE • -${unitDamage} UNIT`);return{armorDamage:0,unitDamage,structureDamage}}if(hit.room.erased){diag('HIT RESULT',`${weapon.name} MISS`);statusEl.textContent=`${weapon.name} • MISS • NO DAMAGE`;updateDamageMonitor(null,-1,0,attacker);flashDamage('MISS');return{armorDamage:0,unitDamage:0}}"
+  );
+  patched = patched.replace(
     "const room=hit.room,index=hit.roomIndex,before=room.armor;\n    const shield=absorbShieldHit(attacker,index,weapon.armorDamage||4,'SOLAR EXACT RAY',hit.end);",
     "const room=hit.room,index=hit.roomIndex,before=room.armor,channelOcc=opposing(attacker).find(w=>w.roomIndex===index&&w.hp>0);if((room.erased||room.armor<=0)&&!channelOcc){const channelDamage=applyStructureDamage(attacker,weapon.armorDamage||4,'SOLAR OPEN CHANNEL');spawnImpactBurst(hit.end,0xffe8a4);diag('SOLAR OPEN CHANNEL',`room=${index+1} rearHull=${channelDamage}`);continue}\n    const shield=absorbShieldHit(attacker,index,weapon.armorDamage||4,'SOLAR EXACT RAY',hit.end);"
   );
