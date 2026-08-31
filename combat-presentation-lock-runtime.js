@@ -21,6 +21,9 @@ export function patchCombatPresentationLockRuntime(html) {
     earthHullPanels:false,
     xrayCamera:false,
     damageCallout:false,
+    physicalCutaway:false,
+    impactReveal:false,
+    messageSequence:false,
     tornWreck:false,
     particleBudget:false
   };
@@ -85,6 +88,17 @@ export function patchCombatPresentationLockRuntime(html) {
   patched = patched.replace("if(w.healthBase)w.healthBase.visible=healthVisible;", "if(w.healthBase)w.healthBase.visible=healthVisible&&w.passive;");
   patched = patched.replace("if(w.healthFill){w.healthFill.visible=healthVisible;", "if(w.healthFill){w.healthFill.visible=healthVisible&&w.passive;");
 
+  const restoredShell = patched.replace(
+    "function restoreXrayShell(){for(const item of xrayShellState){if(!item.mesh)continue;const originals=new Set(Array.isArray(item.material)?item.material:[item.material]),temporary=Array.isArray(item.mesh.material)?item.mesh.material:[item.mesh.material];for(const m of temporary)if(m&&!originals.has(m))m.dispose?.();item.mesh.material=item.material}xrayShellState=[]}",
+    "function restoreXrayShell(){for(const item of xrayShellState){if(!item.mesh)continue;if(Object.hasOwn(item,'visible'))item.mesh.visible=item.visible;if(item.material){const originals=new Set(Array.isArray(item.material)?item.material:[item.material]),temporary=Array.isArray(item.mesh.material)?item.mesh.material:[item.mesh.material];for(const m of temporary)if(m&&!originals.has(m))m.dispose?.();item.mesh.material=item.material}}xrayShellState=[]}"
+  );
+  status.physicalCutaway = restoredShell !== patched;
+  patched = restoredShell;
+  patched = patched.replace(
+    "  })\n}\nfunction buildPrivateXray(){",
+    "  });const skin=localXraySide()==='aurelian'?factionSkinA:factionSkinE,cavityBox=new THREE.Box3().setFromObject(rooms).expandByScalar(2.4);for(const part of skin?.children||[]){if(!part.visible||part.userData?.wreckPersistent)continue;const partBox=new THREE.Box3().setFromObject(part);if(!partBox.isEmpty()&&partBox.intersectsBox(cavityBox)){xrayShellState.push({mesh:part,visible:part.visible});part.visible=false}}const health=localCommandVessel()?.userData?.vesselHealth;for(const shell of[health?.shield,health?.hull]){if(!shell)continue;xrayShellState.push({mesh:shell,visible:shell.visible});shell.visible=false}\n}\nfunction buildPrivateXray(){"
+  );
+
   const damageReactionHelper = `function spawnCrewDamageReaction(w,amount,killed=false){
   if(!w?.sprite||!w.active)return;const room=w.roomGroup?.userData?.rooms?.[w.roomIndex],revealed=warriorShouldBeVisible(w)&&(!w.passive||crewExposureTier(room)>=3);if(!room||!revealed)return;const point=warriorWorld(w),objects=[],flare=glowSphere(killed?1.10:.72,killed?0xff542f:0xffd27a,14);flare.material.transparent=true;flare.material.opacity=.86;flare.position.copy(point);scene.add(flare);objects.push(flare);const ring=new THREE.Mesh(new THREE.RingGeometry(.34,killed?1.25:.86,32),new THREE.MeshBasicMaterial({color:killed?0xff5533:0xffe5a1,transparent:true,opacity:.92,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));ring.position.copy(point);ring.lookAt(camera.position);scene.add(ring);objects.push(ring);for(let i=0;i<8;i++){const spark=glowSphere(.07+Math.random()*.08,i%3?0xff9b39:0xffffff,8);spark.material.transparent=true;spark.material.opacity=.92;spark.position.copy(point).add(new THREE.Vector3((Math.random()-.5)*1.2,(Math.random()-.5)*1.7,.35));scene.add(spark);objects.push(spark)}effects.push({objects,life:killed?.82:.48,max:killed?.82:.48});const token=(w.damageReactionSeq||0)+1;w.damageReactionSeq=token;const sprite=w.sprite,base=sprite.position.clone(),baseScale=sprite.scale.clone(),oldColor=sprite.material.color.clone(),start=performance.now(),duration=killed?620:360;(function react(now){if(w.damageReactionSeq!==token||!sprite.parent)return;const t=Math.min(1,(now-start)/duration),kick=Math.sin(Math.PI*t)*(killed?1.25:.62),side=w.side==='earth'?-1:1;sprite.position.copy(base).add(new THREE.Vector3(side*kick,-(killed?t*t*.85:Math.sin(Math.PI*t)*.12),.18*Math.sin(Math.PI*t)));sprite.rotation.z=side*(killed?.62:.20)*Math.sin(Math.PI*t);sprite.scale.copy(baseScale).multiplyScalar(1+.08*Math.sin(Math.PI*t));sprite.material.color.setHex(t<.34?0xffffff:t<.68?0xff7a45:w.assignedColor);if(t<1){requestAnimationFrame(react);return}sprite.position.copy(base);sprite.rotation.z=0;sprite.scale.copy(baseScale);sprite.material.color.copy(oldColor)})(start);diag('CREW DAMAGE REACTION',(w.displayName||STARTER_PROFILES[w.weaponKey]?.name||'WARRIOR')+' hpHit='+Math.round(amount)+' killed='+(killed?'Y':'N'))
 }
@@ -94,6 +108,14 @@ export function patchCombatPresentationLockRuntime(html) {
   patched = patched.replace("sprite.rotation.z=side*(killed?.62:.20)*Math.sin(Math.PI*t);", "sprite.material.rotation=oldRotation+side*(killed?.62:.20)*Math.sin(Math.PI*t);");
   patched = patched.replace("sprite.position.copy(base);sprite.rotation.z=0;sprite.scale.copy(baseScale);", "sprite.position.copy(base);sprite.material.rotation=oldRotation;sprite.scale.copy(baseScale);");
   patched = patched.replace("if(hpDamage>0&&w.sprite){const old=w.sprite.material.color.clone();w.sprite.material.color.setHex(0xff7048);setTimeout(()=>{if(w.sprite?.material)w.sprite.material.color.copy(old)},140)}", "if(hpDamage>0)spawnCrewDamageReaction(w,hpDamage,w.hp===0)");
+
+  const sequencedMessages = patched.replace(
+    "function flashDamage(text){\n  const now=performance.now();damageFlash.textContent=text;damageFlash.style.opacity='1';\n  if(!flashDamage.visibleSince||now-flashDamage.visibleSince>620)flashDamage.visibleSince=now;\n  clearTimeout(flashDamage.t);const remaining=Math.max(70,360-(now-flashDamage.visibleSince));\n  flashDamage.t=setTimeout(()=>{damageFlash.style.opacity='0';flashDamage.visibleSince=0},remaining)\n}",
+    "function flashDamage(text){flashDamage.queue=flashDamage.queue||[];if(flashDamage.active){if(flashDamage.queue.length<4)flashDamage.queue.push(text);return}flashDamage.active=true;damageFlash.textContent=text;damageFlash.style.opacity='1';clearTimeout(flashDamage.t);flashDamage.t=setTimeout(()=>{damageFlash.style.opacity='0';setTimeout(()=>{flashDamage.active=false;const next=flashDamage.queue.shift();if(next)flashDamage(next)},110)},480)}"
+  );
+  status.messageSequence = sequencedMessages !== patched;
+  patched = sequencedMessages;
+  patched = patched.replace("flashDamage(`${state} • RESISTED ${absorbed}`);return{absorbed,passed,blocked:passed<=0,openBefore:false}", "diag('SHIELD NOTICE',`${state} resisted=${absorbed}`);return{absorbed,passed,blocked:passed<=0,openBefore:false}");
 
   patched = replaceExact(
     patched,
@@ -168,11 +190,13 @@ export function patchCombatPresentationLockRuntime(html) {
     "const room=hit.room,index=hit.roomIndex,before=room.armor,channelOcc=opposing(attacker).find(w=>w.roomIndex===index&&w.hp>0);if((room.erased||room.armor<=0)&&!channelOcc){const channelDamage=applyStructureDamage(attacker,weapon.armorDamage||4,'SOLAR OPEN CHANNEL');spawnImpactBurst(hit.end,0xffe8a4);diag('SOLAR OPEN CHANNEL',`room=${index+1} rearHull=${channelDamage}`);continue}\n    const shield=absorbShieldHit(attacker,index,weapon.armorDamage||4,'SOLAR EXACT RAY',hit.end);"
   );
 
-  const impactHelpers = `let impactFocusSide=null,impactFocusUntil=0,impactFocusTimer=null;
+  const impactHelpers = `let impactFocusSide=null,impactFocusPoint=null,impactFocusUntil=0,impactFocusTimer=null;
 function beginImpactFocus(side,roomIndex,label,duration=1750,force=false){
-  if(xrayOpen||(!force&&matchEnded))return;impactFocusSide=side;impactFocusUntil=performance.now()+duration;document.body.classList.add('acImpactFocus');clearTimeout(impactFocusTimer);impactFocusTimer=setTimeout(()=>{impactFocusSide=null;impactFocusUntil=0;document.body.classList.remove('acImpactFocus');if(battleStarted)updateBattleCamera()},duration+140);diag('IMPACT CAMERA',\`side=\${side} room=\${Number.isInteger(roomIndex)?roomIndex+1:'HULL'} label=\${label||'IMPACT'} hold=\${duration}\`)
+  if(xrayOpen||(!force&&matchEnded))return;const roomSet=side==='aurelian'?aRooms:eRooms,room=Number.isInteger(roomIndex)?roomSet?.userData?.rooms?.[roomIndex]:null;impactFocusSide=side;impactFocusPoint=room?.hitPlane?.getWorldPosition(new THREE.Vector3())||null;impactFocusUntil=performance.now()+duration;document.body.classList.add('acImpactFocus');clearTimeout(impactFocusTimer);impactFocusTimer=setTimeout(()=>{impactFocusSide=null;impactFocusPoint=null;impactFocusUntil=0;document.body.classList.remove('acImpactFocus');if(battleStarted)updateBattleCamera()},duration+140);diag('IMPACT CAMERA',\`side=\${side} room=\${Number.isInteger(roomIndex)?roomIndex+1:'HULL'} label=\${label||'IMPACT'} hold=\${duration}\`)
 }
-function clearImpactFocus(){clearTimeout(impactFocusTimer);impactFocusTimer=null;impactFocusSide=null;impactFocusUntil=0;document.body.classList.remove('acImpactFocus')}
+function clearImpactFocus(){clearTimeout(impactFocusTimer);impactFocusTimer=null;impactFocusSide=null;impactFocusPoint=null;impactFocusUntil=0;document.body.classList.remove('acImpactFocus')}
+function animatePhysicalCutawayPanels(group){const panels=[];group?.traverse(o=>{if(o.userData?.cutawayPanel)panels.push(o)});const start=performance.now(),duration=620;(function open(now){if(!group?.parent)return;const t=Math.min(1,(now-start)/duration),e=1-Math.pow(1-t,3);for(const p of panels){const d=p.userData.cutawayPanel;p.position.copy(d.closed).lerp(d.open,e);p.rotation.set(d.rotation.x*e,d.rotation.y*e,d.rotation.z*e)}if(t<1)requestAnimationFrame(open)})(start)}
+function spawnImpactCompartmentReveal(attacker,hit,duration=1450){if(!hit?.room)return;const room=hit.room,objects=[],cloneWorld=o=>{if(!o)return null;const c=o.clone();const mats=Array.isArray(c.material)?c.material:[c.material];c.material=mats.map(m=>{const q=m.clone();q.transparent=true;q.opacity=.72;q.depthTest=false;q.depthWrite=false;return q});if(c.material.length===1)c.material=c.material[0];c.position.copy(o.getWorldPosition(new THREE.Vector3()));c.quaternion.copy(o.getWorldQuaternion(new THREE.Quaternion()));c.scale.copy(o.getWorldScale(new THREE.Vector3()));c.renderOrder=111;scene.add(c);objects.push(c);return c};const cavity=cloneWorld(room.cavity),edge=cloneWorld(room.edge),frame=cloneWorld(room.frame);if(cavity?.material)cavity.material.color.setHex(0x101820);if(edge?.material)edge.material.color.setHex(0xffd36a);if(frame?.material)frame.material.opacity=.24;const occupant=opposing(attacker).find(w=>w.active&&w.hp>0&&w.roomIndex===hit.roomIndex);if(occupant?.sprite?.material?.map){occupant.impactRevealUntil=performance.now()+duration;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:occupant.sprite.material.map,color:0xffffff,transparent:true,opacity:.96,depthTest:false,depthWrite:false})),baseScale=occupant.sprite.scale.clone().multiplyScalar(1.65),base=warriorWorld(occupant).add(new THREE.Vector3(0,0,.9)),born=performance.now();s.position.copy(base);s.scale.copy(baseScale);s.renderOrder=114;scene.add(s);objects.push(s);(function react(now){if(!s.parent)return;const t=Math.min(1,(now-born)/duration),pulse=Math.sin(Math.min(1,t*2.8)*Math.PI);s.position.copy(base).add(new THREE.Vector3(Math.sin(t*24)*.22*pulse,-.22*pulse,0));s.scale.copy(baseScale).multiplyScalar(1+.18*pulse);s.material.color.setHex(t<.34?0xff6a3d:t<.58?0xffffff:0xffc0a2);if(t<1)requestAnimationFrame(react)})(born)}if(objects.length)effects.push({objects,life:duration/1000,max:duration/1000});diag('IMPACT COMPARTMENT REVEAL',\`side=\${structureTargetSide(attacker)} room=\${hit.roomIndex+1} occupant=\${occupant?'Y':'N'}\`)}
 `;
   patched = replaceExact(patched,'let cameraLastUpdate=performance.now();',impactHelpers+'let cameraLastUpdate=performance.now();',status,'impactCamera');
   patched = replaceExact(
@@ -180,7 +204,7 @@ function clearImpactFocus(){clearTimeout(impactFocusTimer);impactFocusTimer=null
     `  }else{
     desiredPos=new THREE.Vector3(midX,(tactical?27.5:23.5)+midY*.11+altExtra*.22,safeZ);`,
     `  }else if(impactFocusSide&&now<impactFocusUntil){
-    const focusRoot=impactFocusSide==='aurelian'?aure:earth,focus=focusRoot.getWorldPosition(new THREE.Vector3());desiredPos=new THREE.Vector3(focus.x,focus.y+3.2,focus.z+34);desiredLook=new THREE.Vector3(focus.x,focus.y+1.0,focus.z);desiredZoom=1.34;
+    const focusRoot=impactFocusSide==='aurelian'?aure:earth,rootPoint=focusRoot.getWorldPosition(new THREE.Vector3()),focus=impactFocusPoint?rootPoint.clone().lerp(impactFocusPoint,.44):rootPoint;desiredPos=new THREE.Vector3(focus.x,focus.y+5.0,focus.z+52);desiredLook=new THREE.Vector3(focus.x,focus.y+.8,focus.z);desiredZoom=1.08;
   }else{
     impactFocusSide=null;desiredPos=new THREE.Vector3(midX,(tactical?27.5:23.5)+midY*.11+altExtra*.22,safeZ);`,
     status,
@@ -189,7 +213,7 @@ function clearImpactFocus(){clearTimeout(impactFocusTimer);impactFocusTimer=null
   patched = replaceExact(
     patched,
     "const impactSide=structureTargetSide(attacker),impactStrength=Math.max(.45,Math.min(1.8,weapon.impactStrength||1));",
-    "const impactSide=structureTargetSide(attacker),impactStrength=Math.max(.45,Math.min(1.8,weapon.impactStrength||1)),focusHold=weapon.kind==='sunadier'?2300:weapon.kind==='solar_disk'?1900:weapon.kind==='laser'?1450:weapon.kind==='explosive'?1550:1750;beginImpactFocus(impactSide,hit.roomIndex,weapon.name,focusHold);",
+    "const impactSide=structureTargetSide(attacker),impactStrength=Math.max(.45,Math.min(1.8,weapon.impactStrength||1)),focusHold=weapon.kind==='sunadier'?2300:weapon.kind==='solar_disk'?1900:weapon.kind==='laser'?1450:weapon.kind==='explosive'?1550:1750;beginImpactFocus(impactSide,hit.roomIndex,weapon.name,focusHold);spawnImpactCompartmentReveal(attacker,hit,focusHold);",
     status,
     'impactTrigger'
   );
@@ -215,19 +239,38 @@ function clearImpactFocus(){clearTimeout(impactFocusTimer);impactFocusTimer=null
   patched = patched.replace("xrayBasic(0x111820,faction==='earth' ? .34 : .12,false)","xrayBasic(0x111820,faction==='earth' ? .16 : .12,false)");
   patched = patched.replace("opacity:faction==='earth'?.74:.16","opacity:faction==='earth'?.24:.16");
   patched = patched.replace("const fullH=w.passive?1.70:(faction==='aurelian'?4.20:2.62),fullW=w.passive?.96:(faction==='aurelian'?2.75:1.50);","const fullH=w.passive?1.52:(faction==='aurelian'?4.20:3.55),fullW=w.passive?.88:(faction==='aurelian'?2.75:2.18);");
+  patched = patched.replace("marker.position.set(p.x,p.y-(dead?cellH*.25:0),.82);", "marker.position.set(p.x,p.y-(dead?cellH*.25:0),.58);");
+  patched = patched.replace(
+    "panel.scale.set(1,.38,1);panel.position.set(side*width*.42,height*.28,1.10);panel.rotation.z=side*.18;panel.rotation.y=side*.72;g.add(panel);",
+    "panel.scale.set(1,.38,1);panel.position.set(0,0,.34);panel.userData.cutawayPanel={closed:panel.position.clone(),open:new THREE.Vector3(side*width*.42,height*.28,1.10),rotation:new THREE.Euler(0,side*.72,side*.18)};g.add(panel);"
+  );
+  patched = patched.replace(
+    "edge.scale.copy(panel.scale);edge.position.copy(panel.position);edge.rotation.copy(panel.rotation);g.add(edge)",
+    "edge.scale.copy(panel.scale);edge.position.set(0,0,.36);edge.userData.cutawayPanel={closed:edge.position.clone(),open:new THREE.Vector3(side*width*.42,height*.28,1.12),rotation:new THREE.Euler(0,side*.72,side*.18)};g.add(edge)"
+  );
+  patched = patched.replace(
+    "panel.position.set(side*width*.53,.18,1.05);panel.rotation.y=side*.76;panel.rotation.z=side*.035;g.add(panel);",
+    "panel.position.set(side*width*.25,.18,.34);panel.userData.cutawayPanel={closed:panel.position.clone(),open:new THREE.Vector3(side*width*.60,.18,1.05),rotation:new THREE.Euler(0,side*.76,side*.035)};g.add(panel);"
+  );
+  patched = patched.replace(
+    "ribs.position.copy(panel.position);ribs.rotation.copy(panel.rotation);g.add(ribs)",
+    "ribs.position.copy(panel.position);ribs.userData.cutawayPanel={closed:ribs.position.clone(),open:new THREE.Vector3(side*width*.60,.18,1.08),rotation:new THREE.Euler(0,side*.76,side*.035)};g.add(ribs)"
+  );
+  patched = patched.replace("xrayGroup=g;localCommandVessel().add(g);refreshPrivateXrayVisuals()", "xrayGroup=g;localCommandVessel().add(g);animatePhysicalCutawayPanels(g);refreshPrivateXrayVisuals()");
   patched = replaceExact(
     patched,
     "desiredPos=new THREE.Vector3(xrayCenter.x,xrayCenter.y+2.8,xrayCenter.z+46);\n    desiredLook=new THREE.Vector3(xrayCenter.x,xrayCenter.y,xrayCenter.z);\n    desiredZoom=1.14;",
-    "desiredPos=new THREE.Vector3(xrayCenter.x,xrayCenter.y+2.4,xrayCenter.z+38);\n    desiredLook=new THREE.Vector3(xrayCenter.x,xrayCenter.y,xrayCenter.z);\n    desiredZoom=1.34;",
+    "desiredPos=new THREE.Vector3(xrayCenter.x,xrayCenter.y+3.4,xrayCenter.z+50);\n    desiredLook=new THREE.Vector3(xrayCenter.x,xrayCenter.y,xrayCenter.z);\n    desiredZoom=1.10;",
     status,
     'xrayCamera'
   );
 
   const damageCalloutHelper = `function spawnCrewDamageCallout(w,aaDamage,hpDamage){
-  if(!w?.sprite||(!aaDamage&&!hpDamage))return;const room=w.roomGroup?.userData?.rooms?.[w.roomIndex],revealed=room&&warriorShouldBeVisible(w)&&(!w.passive||crewExposureTier(room)>=3);if(!revealed)return;const c=document.createElement('canvas');c.width=384;c.height=112;const x=c.getContext('2d');x.fillStyle='rgba(4,8,12,.90)';x.fillRect(8,8,368,96);x.strokeStyle=hpDamage?'#ff7048':'#79e7ff';x.lineWidth=6;x.strokeRect(8,8,368,96);x.fillStyle='#ffffff';x.textAlign='center';x.textBaseline='middle';x.font='900 34px system-ui';x.fillText((aaDamage?'−'+Math.round(aaDamage)+' AA':'')+(aaDamage&&hpDamage?'  •  ':'')+(hpDamage?'−'+Math.round(hpDamage)+' HP':''),192,56);const map=new THREE.CanvasTexture(c);map.colorSpace=THREE.SRGBColorSpace;const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map,transparent:true,opacity:1,depthTest:false,depthWrite:false}));sprite.scale.set(5.4,1.58,1);sprite.position.copy(warriorWorld(w)).add(new THREE.Vector3(0,2.65,1.0));sprite.renderOrder=120;scene.add(sprite);effects.push({objects:[sprite],life:1.20,max:1.20})
+  if(!w?.sprite||(!aaDamage&&!hpDamage))return;const room=w.roomGroup?.userData?.rooms?.[w.roomIndex],revealed=room&&((w.impactRevealUntil||0)>performance.now()||(warriorShouldBeVisible(w)&&(!w.passive||crewExposureTier(room)>=3)));if(!revealed)return;const c=document.createElement('canvas');c.width=384;c.height=112;const x=c.getContext('2d');x.fillStyle='rgba(4,8,12,.90)';x.fillRect(8,8,368,96);x.strokeStyle=hpDamage?'#ff7048':'#79e7ff';x.lineWidth=6;x.strokeRect(8,8,368,96);x.fillStyle='#ffffff';x.textAlign='center';x.textBaseline='middle';x.font='900 34px system-ui';x.fillText((aaDamage?'−'+Math.round(aaDamage)+' AA':'')+(aaDamage&&hpDamage?'  •  ':'')+(hpDamage?'−'+Math.round(hpDamage)+' HP':''),192,56);const map=new THREE.CanvasTexture(c);map.colorSpace=THREE.SRGBColorSpace;const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map,transparent:true,opacity:1,depthTest:false,depthWrite:false}));sprite.scale.set(5.4,1.58,1);sprite.position.copy(warriorWorld(w)).add(new THREE.Vector3(0,2.65,1.0));sprite.renderOrder=120;scene.add(sprite);effects.push({objects:[sprite],life:1.20,max:1.20})
 }
 `;
   if(!patched.includes('function spawnCrewDamageCallout(')){const next=patched.replace('function spawnCrewDamageReaction(w,amount,killed=false){',damageCalloutHelper+'function spawnCrewDamageReaction(w,amount,killed=false){');status.damageCallout=next!==patched;patched=next}
+  status.impactReveal = patched.includes('function spawnImpactCompartmentReveal(') && patched.includes('IMPACT COMPARTMENT REVEAL');
   patched = patched.replace("if(hpDamage>0)spawnCrewDamageReaction(w,hpDamage,w.hp===0);","if(aaDamage||hpDamage)spawnCrewDamageCallout(w,aaDamage,hpDamage);if(hpDamage>0)spawnCrewDamageReaction(w,hpDamage,w.hp===0);");
   patched = patched.replace("const token=(w.damageReactionSeq||0)+1;w.damageReactionSeq=token;const sprite=w.sprite,base=sprite.position.clone(),baseScale=sprite.scale.clone(),oldColor=sprite.material.color.clone(),oldRotation=sprite.material.rotation||0,start=performance.now(),duration=killed?620:360;","const token=(w.damageReactionSeq||0)+1;w.damageReactionSeq=token;const sprite=w.sprite,base=sprite.position.clone(),baseScale=sprite.scale.clone(),oldColor=sprite.material.color.clone(),oldRotation=sprite.material.rotation||0,start=performance.now(),duration=killed?980:660;");
   patched = patched.replace("sprite.scale.copy(baseScale).multiplyScalar(1+.08*Math.sin(Math.PI*t));","sprite.scale.copy(baseScale).multiplyScalar(1.38+.18*Math.sin(Math.PI*t));");
@@ -239,6 +282,6 @@ function clearImpactFocus(){clearTimeout(impactFocusTimer);impactFocusTimer=null
   patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.48');
   patched = patched.replace(/build=2026-08-(28|29|30)_[A-Z0-9_]+/g, 'build=2026-08-30_AURELIAN_CINEMATIC_ROUND_ROBIN');
   const summary = Object.entries(status).map(([key,value])=>`${key}:${value?'OK':'MISS'}`).join(' ');
-  patched = patched.replace('</head>', `<style id="ac-combat-presentation-css">body.acImpactFocus #movePad,body.acImpactFocus #aimHud{opacity:.10!important;pointer-events:none!important}body.acImpactFocus #rangeBadge{opacity:.18!important}body.acImpactFocus #status{background:rgba(3,9,14,.88)!important;border-color:#ffd36a!important}#damageFlash{font-size:clamp(16px,2.2vw,28px)!important;text-shadow:0 2px 7px #000,0 0 12px currentColor!important}.xrayCrewCard.show{backdrop-filter:blur(7px)}</style><meta name="ac-combat-presentation-lock" content="${summary}">\n</head>`);
+  patched = patched.replace('</head>', `<style id="ac-combat-presentation-css">body.acImpactFocus #movePad,body.acImpactFocus #aimHud{opacity:.10!important;pointer-events:none!important}body.acImpactFocus #rangeBadge{opacity:.18!important}body.acImpactFocus #status{background:rgba(3,9,14,.88)!important;border-color:#ffd36a!important}#damageFlash{max-width:38%!important;font-size:clamp(12px,1.55vw,20px)!important;padding:4px 10px!important;text-shadow:0 2px 7px #000,0 0 8px currentColor!important}.xrayCrewCard.show{backdrop-filter:blur(7px)}</style><meta name="ac-combat-presentation-lock" content="${summary}">\n</head>`);
   return patched;
 }

@@ -57,8 +57,8 @@ function advanceSupportTurn(side){const call=supportCalls[side];diag(call?'SUPPO
   patched=patched.replace("plane.renderOrder=108;return plane","plane.scale.set(1.36,1.36,1.36);plane.renderOrder=108;return plane");
   patched=patched.replace("new THREE.SphereGeometry(.72,16,8","new THREE.SphereGeometry(1.02,18,9");
   patched=patched.replace("new THREE.CapsuleGeometry(.16,.52,4,8)","new THREE.CapsuleGeometry(.24,.78,5,10)");
-  patched=patched.replace(/3D LAB • MOBILE PVP TEST • v0\.33\.\d+/g,'3D LAB • MOBILE PVP TEST • v0.33.51');
-  patched=patched.replace(/MATCH RECORDER v0\.33\.\d+/g,'MATCH RECORDER v0.33.51');
-  patched=patched.replace(/build=2026-08-(28|29|30)_[A-Z0-9_]+/g,'build=2026-08-30_COMBAT_CLARITY_DESTRUCTION_PASS');
+  patched=patched.replace(/3D LAB • MOBILE PVP TEST • v0\.33\.\d+/g,'3D LAB • MOBILE PVP TEST • v0.33.52');
+  patched=patched.replace(/MATCH RECORDER v0\.33\.\d+/g,'MATCH RECORDER v0.33.52');
+  patched=patched.replace(/build=2026-08-(28|29|30)_[A-Z0-9_]+/g,'build=2026-08-30_PHYSICAL_CUTAWAY_WEAPON_TRUTH');
   return patched.replace('</head>','<meta name="ac-earth-combat-clarity" content="aim-helpers-restored cutaway-unblocked sniper-visible-projectile sniper-tracer-hit-truth controller-tac-link-only delayed-c130-gunship earth-airborne-rangers reptilian-seal-raft-c4 readable-support-scale solo-support-lock">\n</head>');
 }
