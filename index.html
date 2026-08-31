@@ -854,7 +854,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
   <div id="powerTray">POWER-UP STORAGE • RESERVED</div>
   <div id="damageMonitor"><div class="dmgTitle">TARGET DAMAGE</div><div class="dmgRow"><span class="dmgLabel">TARGET</span><span class="dmgValue" id="targetRoom">—</span></div><div class="dmgRow"><span class="dmgLabel">ARMOR</span><span class="dmgValue" id="targetArmor">—</span></div><div class="dmgRow"><span class="dmgLabel">BREACH</span><span class="dmgValue" id="targetBreach">—</span></div><div class="dmgRow"><span class="dmgLabel">WARRIOR</span><span class="dmgValue" id="targetUnit">HIDDEN</span></div></div>
   <div id="damageFlash"></div>
-  <div id="xrayCrewCard" aria-hidden="true" aria-live="polite"><div id="xrayCrewColor"></div><div><div id="xrayCrewName">SELECT CREW</div><div id="xrayCrewMeta">TAP A LABELED SILHOUETTE</div><div id="xrayCrewAbility">TACTICAL CREW SELECTION</div></div><button id="xrayExitBtn" type="button">EXIT X-RAY</button></div>
+  <div id="xrayCrewCard" aria-hidden="true" aria-live="polite"><div id="xrayCrewColor"></div><div><div id="xrayCrewName">SELECT CREW</div><div id="xrayCrewMeta">TAP A VISIBLE WARRIOR</div><div id="xrayCrewAbility">PHYSICAL CUTAWAY CREW SELECTION</div></div><button id="xrayExitBtn" type="button">EXIT CUTAWAY</button></div>
   <button id="ownerDbgBtn" type="button">DEBUG</button>
   <div id="ownerDbgPanel" aria-hidden="true"><div class="dbgHead"><span>MATCH RECORDER • v0.31.21</span><div class="dbgHeadActions"><button id="ownerDbgTopCopy" type="button">COPY</button><button id="ownerDbgClose" type="button">✕</button></div></div><div class="dbgHint">Records automatically. COPY stays pinned above the log. If the browser blocks clipboard access, the selectable fallback opens automatically.</div><div id="ownerDbgText">DEBUG READY</div><textarea id="ownerDbgSelect" readonly aria-label="Selectable debug log"></textarea><div id="ownerDbgNotice" aria-live="polite"></div><div id="ownerNdaLedger" style="display:none;margin-top:8px;padding:8px;border:1px solid rgba(121,240,172,.28);border-radius:9px;background:rgba(4,18,18,.7)">
 <div style="font:900 8px system-ui;color:#9fffc8;margin-bottom:6px">OWNER • NDA LEDGER</div>
@@ -4294,50 +4294,37 @@ function refreshXrayCrewCard(){
   const w=xraySelectedCrew;if(!w){xrayCrewName.textContent='FORTRESS CUTAWAY';xrayCrewMeta.textContent='TAP A NAMED WARRIOR TO SELECT';xrayCrewAbility.textContent='ACTIVE TEAM IN FULL COLOR • PASSIVE CREW DIMMED';return}
   const profile=STARTER_PROFILES[w.weaponKey],name=w.passive?'PASSIVE CREW':(profile?.name||'WARRIOR');xrayCrewName.textContent=`${name} • ROOM ${w.roomIndex+1}${w.hp<=0?' • DOWN':''}`;xrayCrewMeta.textContent=`ATMOSPHERE ARMOR ${Math.round(w.aa)}/${w.maxAa}  •  HP ${Math.round(w.hp)}/${w.maxHp}`;xrayCrewAbility.textContent=w.hp<=0?'DOWN • CANNOT MOVE OR FIRE':w.passive?'BACKGROUND PERSONNEL • NOT SELECTABLE':`${name} SELECTED • WEAPON DEVELOPMENT PENDING`;const hex=`#${w.assignedColor.toString(16).padStart(6,'0')}`;xrayCrewColor.style.background=w.passive?'#65727a':hex;xrayCrewColor.style.color=w.passive?'#65727a':hex
 }
-function restoreXrayShell(){for(const item of xrayShellState){if(!item.mesh)continue;const originals=new Set(Array.isArray(item.material)?item.material:[item.material]),temporary=Array.isArray(item.mesh.material)?item.mesh.material:[item.mesh.material];for(const m of temporary)if(m&&!originals.has(m))m.dispose?.();item.mesh.material=item.material}xrayShellState=[]}
+function restoreXrayShell(){for(const item of xrayShellState){if(!item.mesh)continue;if(Object.hasOwn(item,'visible'))item.mesh.visible=item.visible;if(item.material){const originals=new Set(Array.isArray(item.material)?item.material:[item.material]),temporary=Array.isArray(item.mesh.material)?item.mesh.material:[item.mesh.material];for(const m of temporary)if(m&&!originals.has(m))m.dispose?.();item.mesh.material=item.material}}xrayShellState=[]}
 function applyXrayShell(){
-  restoreXrayShell();const root=localCommandVessel(),rooms=localXrayRooms(),pal=localXrayPaletteSet();
-  root.traverse(o=>{if(!o.isMesh||!o.visible||isDescendantOf(o,rooms)||o.userData?.xrayVisual)return;const original=o.material;if(!original)return;
-    const cloneOne=m=>{const c=m.clone();c.transparent=true;c.opacity=Math.min(.035,c.opacity??1);c.depthWrite=false;c.depthTest=true;if(c.emissive){c.emissive.setHex(0x271a0d);c.emissiveIntensity=.20}c.needsUpdate=true;return c};
-    xrayShellState.push({mesh:o,material:original});o.material=Array.isArray(original)?original.map(cloneOne):cloneOne(original)
-  })
+  restoreXrayShell();const side=localXraySide(),skin=side==='aurelian'?factionSkinA:factionSkinE,modules=skin?.userData?.damageModules||[];for(const module of modules){if(!module)continue;xrayShellState.push({mesh:module,visible:module.visible});module.visible=false}const health=localCommandVessel()?.userData?.vesselHealth;for(const shell of[health?.shield,health?.hull]){if(!shell)continue;xrayShellState.push({mesh:shell,visible:shell.visible});shell.visible=false}diag('PHYSICAL CUTAWAY SHELL',`side=${side} panelsHidden=${modules.filter(Boolean).length}`)
 }
 function buildPrivateXray(){
   if(xrayGroup){localCommandVessel().remove(xrayGroup);disposeXrayObject(xrayGroup)}
   const roomRoot=localXrayRooms(),rooms=roomRoot.userData.rooms,pal=localXrayPaletteSet(),faction=factionForWorldSide(localXraySide());xrayRoomVisuals=[];
-  const g=new THREE.Group();g.name='PRIVATE_XRAY_LOCAL_ONLY';g.userData.xrayVisual=true;g.position.copy(roomRoot.position);g.position.x=0;g.rotation.copy(roomRoot.rotation);g.scale.copy(roomRoot.scale);
+  const g=new THREE.Group();g.name='PRIVATE_PHYSICAL_CUTAWAY_LOCAL_ONLY';g.userData.xrayVisual=true;g.position.copy(roomRoot.position);g.rotation.copy(roomRoot.rotation);g.scale.copy(roomRoot.scale);
   let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
   rooms.forEach(room=>{minX=Math.min(minX,room.local.x);maxX=Math.max(maxX,room.local.x);minY=Math.min(minY,room.local.y);maxY=Math.max(maxY,room.local.y)});
-  const centerX=(minX+maxX)/2,centerY=(minY+maxY)/2,spreadX=faction==='earth'?1.35:2.35,spreadY=faction==='earth'?1.28:1.30;
-  const cellW=3.82*spreadX,cellH=2.76*spreadY,width=(maxX-minX)*spreadX+cellW+.55,height=(maxY-minY)*spreadY+cellH+.50;
+  const centerX=(minX+maxX)/2,centerY=(minY+maxY)/2,spreadX=1.04,spreadY=.84;
+  const cellW=3.72,cellH=2.70,width=(maxX-minX)*spreadX+cellW+.65,height=(maxY-minY)*spreadY+cellH+.65;
   const mapped=rooms.map(room=>({x:(room.local.x-centerX)*spreadX,y:(room.local.y-centerY)*spreadY}));
-  const cutaway=markXray(new THREE.Mesh(new THREE.BoxGeometry(width,height,.32),xrayBasic(0x0d0b08,.92,false)),68);cutaway.position.set(0,0,.10);g.add(cutaway);
-  if(faction==='earth'){
-    const approvedInterior=markXray(new THREE.Mesh(new THREE.PlaneGeometry(width-.38,height-.38),new THREE.MeshBasicMaterial({map:earthFortressCutawayTex,color:0xffffff,transparent:true,opacity:.58,depthTest:false,depthWrite:false,side:THREE.DoubleSide})),69);approvedInterior.position.set(0,0,.26);g.add(approvedInterior)
-  }
-  const cutawayEdge=markXray(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(width,height,.36)),new THREE.LineBasicMaterial({color:0xd69a46,transparent:true,opacity:.76,depthTest:false,depthWrite:false})),69);cutawayEdge.position.copy(cutaway.position);g.add(cutawayEdge);
+  const hullColor=faction==='aurelian'?0xa85e1d:0x465761,edgeColor=faction==='aurelian'?0xffcf63:0x9de8ff,interiorMat=xrayBasic(0x101820,.98,false),hullMat=xrayBasic(hullColor,.98,false),litMat=xrayBasic(edgeColor,.94,true);
+  const rear=markXray(new THREE.Mesh(faction==='aurelian'?new THREE.CircleGeometry(width*.52,72):new THREE.BoxGeometry(width,height,.38),interiorMat),67);if(faction==='aurelian')rear.scale.set(1,height/width,1);rear.position.z=-.48;g.add(rear);
+  if(faction==='earth'){const interiorArt=markXray(new THREE.Mesh(new THREE.PlaneGeometry(width-.48,height-.48),new THREE.MeshBasicMaterial({map:earthFortressCutawayTex,color:0xffffff,transparent:true,opacity:.38,depthTest:true,depthWrite:false,side:THREE.DoubleSide})),68);interiorArt.position.z=-.24;g.add(interiorArt)}
+  const rim=markXray(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(width,height,.50)),new THREE.LineBasicMaterial({color:edgeColor,transparent:true,opacity:.88,depthTest:true,depthWrite:false})),70);rim.position.z=-.18;g.add(rim);
+  for(const rowY of mapped.filter((_,i)=>i%3===0).map(p=>p.y-cellH*.42)){const deck=markXray(new THREE.Mesh(new THREE.BoxGeometry(width-.34,.20,1.85),hullMat.clone()),71);deck.position.set(0,rowY,.22);g.add(deck)}
+  for(const x of[-cellW*.52,cellW*.52]){const rib=markXray(new THREE.Mesh(new THREE.BoxGeometry(.16,height-.30,.42),litMat.clone()),72);rib.position.set(x,0,.08);g.add(rib)}
+  for(const side of[-1,1]){const panel=markXray(new THREE.Mesh(new THREE.BoxGeometry(width*.50,height*1.01,.42),hullMat.clone()),74);panel.position.set(side*width*.25,0,.26);panel.userData.cutawayPanel={closed:panel.position.clone(),open:new THREE.Vector3(side*width*.64,.30,1.28),rotation:new THREE.Euler(0,side*.92,side*.05)};g.add(panel)}
   rooms.forEach((room,i)=>{
-    const cell=new THREE.Group();cell.position.set(mapped[i].x,mapped[i].y,.42);cell.userData.xrayVisual=true;g.add(cell);
-    const shell=markXray(new THREE.Mesh(new THREE.BoxGeometry(cellW-.10,cellH-.08,.24),xrayBasic(0x4b5961,faction==='earth' ? .22 : .66,false)),70);cell.add(shell);
-    const cavity=markXray(new THREE.Mesh(new THREE.BoxGeometry(cellW-.42,cellH-.36,.20),xrayBasic(0x111820,faction==='earth' ? .34 : .96,false)),71);cavity.position.z=.04;cell.add(cavity);
-    const edge=markXray(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(cellW,cellH,.28)),new THREE.LineBasicMaterial({color:0xb8894a,transparent:true,opacity:.74,depthTest:false,depthWrite:false})),72);cell.add(edge);
-    const floor=markXray(new THREE.Mesh(new THREE.BoxGeometry(cellW-.46,.18,.30),xrayBasic(0x747b7d,.72,false)),73);floor.position.set(0,-cellH*.37,.18);cell.add(floor);
-    const ceiling=markXray(new THREE.Mesh(new THREE.BoxGeometry(cellW-.46,.11,.24),xrayBasic(0x353d43,.74,false)),73);ceiling.position.set(0,cellH*.37,.16);cell.add(ceiling);
-    const lamp=markXray(new THREE.Mesh(new THREE.BoxGeometry(cellW*.34,.09,.08),xrayBasic(0xffc66d,.92,true)),75);lamp.position.set(0,cellH*.30,.30);cell.add(lamp);
-    const pipe=markXray(new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,cellH*.55,8),xrayBasic(i%2?0x9a5a35:0x467a92,.80,false)),74);pipe.position.set(-cellW*.37,0,.26);cell.add(pipe);
-    const consoleBox=markXray(new THREE.Mesh(new THREE.BoxGeometry(.62,.50,.12),xrayBasic(0x253641,.90,false)),74);consoleBox.position.set(cellW*.31,-cellH*.19,.25);cell.add(consoleBox);
-    const consoleLight=markXray(new THREE.Mesh(new THREE.BoxGeometry(.42,.22,.06),xrayBasic(i%3===0?0xff9e54:0x67cfff,.90,true)),75);consoleLight.position.set(cellW*.31,-cellH*.15,.34);cell.add(consoleLight);
-    const damage=markXray(new THREE.Mesh(new THREE.BoxGeometry(cellW-.62,cellH-.56,.08),xrayBasic(0xff765c,0,true)),73);damage.position.z=.18;cell.add(damage);
-    xrayRoomVisuals.push({room,cell,shell,cavity,edge,damage,index:i})
+    const cell=new THREE.Group();cell.position.set(mapped[i].x,mapped[i].y,.18);cell.userData.xrayVisual=true;g.add(cell);const lamp=markXray(new THREE.Mesh(new THREE.BoxGeometry(cellW*.34,.09,.08),litMat.clone()),75);lamp.position.set(0,cellH*.31,.20);cell.add(lamp);const consoleBox=markXray(new THREE.Mesh(new THREE.BoxGeometry(.62,.48,.20),xrayBasic(0x273944,.94,false)),74);consoleBox.position.set(cellW*.31,-cellH*.20,.22);cell.add(consoleBox);const damage=markXray(new THREE.Mesh(new THREE.PlaneGeometry(cellW-.34,cellH-.30),xrayBasic(0xff5c38,0,true)),73);damage.position.z=-.08;cell.add(damage);xrayRoomVisuals.push({room,cell,damage,lamp,index:i})
   });
   const localCrew=localXrayWarriors();if(!xraySelectedCrew||!localCrew.includes(xraySelectedCrew))xraySelectedCrew=localCrew.find(w=>w.isCaptain)||localCrew[0]||null;
   for(const w of localCrew){
     const p=mapped[w.roomIndex];if(!p)continue;
-    const dead=w.hp<=0,marker=new THREE.Group();marker.userData.xrayVisual=true;if(!w.passive)marker.userData.xrayWarrior=w;marker.position.set(p.x,p.y-(dead?cellH*.25:0),.82);g.add(marker);
-    const fullH=w.passive?1.70:2.62,fullW=w.passive ? .96 : 1.50;
+    const dead=w.hp<=0,marker=new THREE.Group();marker.userData.xrayVisual=true;if(!w.passive)marker.userData.xrayWarrior=w;marker.position.set(p.x,p.y-(dead?cellH*.25:0),.34);g.add(marker);
+    const fullH=w.passive?1.58:3.18,fullW=w.passive?.92:1.96;
     const hit=markXray(new THREE.Mesh(new THREE.PlaneGeometry(Math.min(cellW*.78,5.6),Math.min(cellH*.94,3.5)),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthTest:false,depthWrite:false,side:THREE.DoubleSide})),86);if(!w.passive)hit.userData.xrayWarrior=w;marker.add(hit);
-    const art=w.passive?crewTextureForSide(w.side):xrayArtTextureForWarrior(w),base=markXray(new THREE.Sprite(new THREE.SpriteMaterial({map:art,color:dead?0x11171b:0x050607,transparent:true,opacity:dead ? .64 : .62,rotation:dead?Math.PI/2:0,depthTest:false,depthWrite:false})),78);base.scale.set(dead?fullH*.78:fullW*1.14,dead?fullW*.98:fullH*1.08,1);base.position.set(.08,-.06,-.02);marker.add(base);
-    const fill=markXray(new THREE.Sprite(new THREE.SpriteMaterial({map:art,color:dead?0x687077:w.passive?0x68757a:0xffffff,transparent:true,opacity:dead ? .34 : (w.passive ? .42 : .98),rotation:dead?Math.PI/2:0,depthTest:false,depthWrite:false,blending:THREE.NormalBlending})),80);fill.scale.set(dead?fullH*.72:fullW,dead?fullW*.90:fullH,1);marker.add(fill);
+    const art=w.passive?crewTextureForSide(w.side):xrayArtTextureForWarrior(w),base=markXray(new THREE.Sprite(new THREE.SpriteMaterial({map:art,color:0x050607,transparent:true,opacity:dead?.28:.52,rotation:dead?Math.PI/2:0,depthTest:true,depthWrite:false})),78);base.scale.set(dead?fullH*.74:fullW*1.10,dead?fullW*.94:fullH*1.06,1);base.position.set(.08,-.06,-.03);marker.add(base);
+    const fill=markXray(new THREE.Sprite(new THREE.SpriteMaterial({map:art,color:dead?0x687077:w.passive?0x7b8589:0xffffff,transparent:true,opacity:dead?.30:w.passive?.54:1,rotation:dead?Math.PI/2:0,depthTest:true,depthWrite:false,blending:THREE.NormalBlending})),80);fill.scale.set(dead?fullH*.70:fullW,dead?fullW*.88:fullH,1);marker.add(fill);
     const aura=markXray(new THREE.Mesh(new THREE.RingGeometry(w.passive ? .61 : 1.12,w.passive ? .72 : 1.30,w.passive?24:6),xrayBasic(w.passive?0x66737a:w.assignedColor,w.passive ? .18 : .72,true)),79);aura.rotation.z=w.passive?0:Math.PI/6;marker.add(aura);
     const aaWidth=w.isCaptain?2.75:1.92,aaY=w.isCaptain?1.82:1.38;
     const aaBack=markXray(new THREE.Mesh(new THREE.BoxGeometry(aaWidth,.18,.10),xrayBasic(0x03101a,.82,false)),81);aaBack.position.set(0,aaY,.10);marker.add(aaBack);
@@ -4355,13 +4342,12 @@ function refreshPrivateXrayVisuals(){
       const w=v.warrior,chosen=w===xraySelectedCrew,aa=Math.max(0,Math.min(1,w.aa/w.maxAa));
       if(w.hp<=0){v.base.scale.set(v.fullH*.72,v.fullW*.92,1);v.fill.scale.set(v.fullH*.68,v.fullW*.86,1);v.fill.position.y=0;v.fill.material.opacity=chosen?.42:.28;v.aura.visible=false;v.aaBack.visible=false;v.aaFill.visible=false;v.label.material.opacity=chosen?1:.72;continue}
       const hp=Math.max(.001,Math.min(1,w.hp/w.maxHp)),h=v.fullH;v.aura.visible=true;
-      v.fill.scale.set(v.fullW*(chosen?1.12:1),h*(chosen?1.12:1),1);v.fill.position.y=0;v.fill.material.opacity=chosen?1:Math.max(.48,.74+hp*.22);
+      v.fill.scale.set(v.fullW,h,1);v.base.scale.set(v.fullW*1.10,h*1.06,1);v.fill.position.y=0;v.fill.material.opacity=chosen?1:Math.max(.52,.76+hp*.20);
       v.aaBack.visible=aa>0;v.aaFill.visible=aa>0;v.aaFill.scale.x=Math.max(.001,aa);v.aaFill.position.x=-(v.aaWidth*(1-aa))/2;
       const pulse=Math.abs(Math.sin(now*(w.isCaptain?.0048:.0034)+w.roomIndex*.37));v.aura.material.opacity=chosen?.96:(w.isCaptain?.58:.28)+pulse*(w.isCaptain?.30:.18);v.aura.scale.setScalar((chosen?1.26:1)+pulse*(chosen?.08:(w.isCaptain?.07:.035)));v.label.material.opacity=chosen?1:.82;
       continue
     }
-    const b=Math.max(0,Math.min(100,v.room.breach||0))/100,pulse=.54+.10*Math.abs(Math.sin(now*.003+v.index*.45));
-    const earthInterior=factionForWorldSide(localXraySide())==='earth';v.shell.material.opacity=(earthInterior ? .20 : .62)+b*.08;v.cavity.material.opacity=(earthInterior ? .30 : .92)+b*.04;v.edge.material.opacity=.64+pulse*.10-b*.14;v.damage.material.opacity=b>0?.05+b*.34:0;
+    const b=Math.max(0,Math.min(100,v.room.breach||0))/100,pulse=.54+.10*Math.abs(Math.sin(now*.003+v.index*.45));v.lamp.material.opacity=Math.max(.18,.92-b*.66)+pulse*.08;v.damage.material.opacity=b>0?.08+b*.52:0;
     v.damage.material.color.setHex(b>=.55?0xff4938:b>=.25?0xff8a45:0xffc04d)
   }
   for(const w of localXrayWarriors())syncWarriorConcealment(w);refreshXrayCrewCard()
@@ -4374,10 +4360,10 @@ function openPrivateXray(reason='own vessel tap'){
   xrayOpen=true;xraySelectedCrew=null;tacticalAimView=false;clearAim?.();applyXrayShell();buildPrivateXray();for(const w of localXrayWarriors())syncWarriorConcealment(w);refreshXrayCrewCard();updateBattleCamera();statusEl.textContent='FORTRESS CUTAWAY • TAP A NAMED WARRIOR';diag('CUTAWAY OPEN',`${reason} side=${localXraySide()} local-only=Y activeTeamSelectable=Y passiveCrewSelectable=N fullColorGear=Y`)
 }
 function closePrivateXray(reason='manual'){
-  if(!xrayOpen)return;xrayOpen=false;xraySelectedCrew=null;restoreXrayShell();if(xrayGroup){localCommandVessel().remove(xrayGroup);disposeXrayObject(xrayGroup)}xrayGroup=null;xrayScanBand=null;xrayRoomVisuals=[];refreshXrayCrewCard();for(const w of localXrayWarriors())syncWarriorConcealment(w);updateBattleCamera();diag('XRAY CLOSE',`${reason} side=${localXraySide()}`);const mine=multiplayer?currentTurn===localSide:soloTurn==='aurelian';if(mine&&!matchEnded)statusEl.textContent='YOUR TURN • MOVE OR FIRE • TAP OWN VESSEL FOR X-RAY'
+  if(!xrayOpen)return;xrayOpen=false;xraySelectedCrew=null;restoreXrayShell();if(xrayGroup){localCommandVessel().remove(xrayGroup);disposeXrayObject(xrayGroup)}xrayGroup=null;xrayScanBand=null;xrayRoomVisuals=[];refreshXrayCrewCard();for(const w of localXrayWarriors())syncWarriorConcealment(w);updateBattleCamera();diag('CUTAWAY CLOSE',`${reason} side=${localXraySide()}`);const mine=multiplayer?currentTurn===localSide:soloTurn==='aurelian';if(mine&&!matchEnded)statusEl.textContent='YOUR TURN • MOVE OR FIRE • TAP OWN VESSEL FOR CUTAWAY'
 }
 function togglePrivateXray(reason='own vessel tap'){if(xrayOpen)closePrivateXray(reason);else openPrivateXray(reason)}
-function scheduleXrayForTurn(reason='turn'){if(!battleStarted||matchEnded)return;const key=multiplayer?`${mpCode}:${mpRound}:${currentTurn}`:`solo:${soloRound}:${soloTurn}`;if(key===xrayTurnKey)return;xrayTurnKey=key;if(xrayOpen)closePrivateXray('turn reset');tacticalAimView=false;const mine=multiplayer?currentTurn===localSide:soloTurn==='aurelian';if(mine){statusEl.textContent='YOUR TURN • MOVE OR FIRE • TAP OWN VESSEL FOR X-RAY';diag('XRAY READY',`${reason} side=${localXraySide()} private=Y manualOnly=Y`)}}
+function scheduleXrayForTurn(reason='turn'){if(!battleStarted||matchEnded)return;const key=multiplayer?`${mpCode}:${mpRound}:${currentTurn}`:`solo:${soloRound}:${soloTurn}`;if(key===xrayTurnKey)return;xrayTurnKey=key;if(xrayOpen)closePrivateXray('turn reset');tacticalAimView=false;const mine=multiplayer?currentTurn===localSide:soloTurn==='aurelian';if(mine){statusEl.textContent='YOUR TURN • MOVE OR FIRE • TAP OWN VESSEL FOR CUTAWAY';diag('CUTAWAY READY',`${reason} side=${localXraySide()} private=Y manualOnly=Y`)}}
 function applyExteriorRoomConcealment(){for(const group of [aRooms,eRooms])for(const room of group.userData.rooms){for(const o of [room.frame,room.cavity,room.edge,room.breachMask])if(o)o.visible=false;if(room.hitPlane)room.hitPlane.visible=true}for(const w of allWarriors)setWarriorObjectsVisible(w,false)}
 function selectWarrior(w){diag('SELECT WARRIOR',`${w?.weaponKey||'none'} hp=${w?.hp??'-'} aa=${w?.aa??'-'} room=${Number.isInteger(w?.roomIndex)?w.roomIndex+1:'-'}`);
   if(!w||w.hp<=0||!w.active)return;

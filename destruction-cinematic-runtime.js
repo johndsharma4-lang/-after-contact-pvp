@@ -24,7 +24,7 @@ function showMatchResult(outcome,reason,loser){
 }
 function playDefeatCinematic(loser,outcome,reason){
   const token=++endCinematicToken,root=loser==='aurelian'?aure:earth,rooms=(loser==='aurelian'?aRooms:eRooms).userData.rooms,order=[4,1,7,3,5,0,2,6,8],color=loser==='aurelian'?0xffbd35:0xff7138;
-  statusEl.textContent=\`FINAL DESTRUCTION • ${'${'}(FACTION_META[factionForSide(loser)]||FACTION_META.earth).short}\`;diag('DESTRUCTION CINEMATIC START',\`loser=${'${'}loser} reason=${'${'}reason}\`);
+  statusEl.textContent=\`${'${'}outcome} CONFIRMED • FINAL DESTRUCTION • ${'${'}(FACTION_META[factionForSide(loser)]||FACTION_META.earth).short}\`;diag('DESTRUCTION CINEMATIC START',\`loser=${'${'}loser} outcome=${'${'}outcome} reason=${'${'}reason}\`);
   order.forEach((roomIndex,step)=>queueEndCinematic(()=>{if(token!==endCinematicToken)return;const room=rooms[roomIndex],point=room.hitPlane.getWorldPosition(new THREE.Vector3());spawnExplosionVisual(point,color,1.05+step*.06);spawnDebris(point,loser==='aurelian'?0x9a6b20:0x596570,12,.20,.62);kickCamera(.24+step*.025,.22);kickVesselVisual(loser,.75+step*.05);for(const part of [room.frame,room.cavity,room.edge,room.breachMask])if(part)part.visible=false;diag('DESTRUCTION SECTION',\`${'${'}loser} room=${'${'}roomIndex+1} step=${'${'}step+1}/9\`)},step*285));
   const collapseAt=order.length*285+180;queueEndCinematic(()=>{if(token!==endCinematicToken)return;const center=root.getWorldPosition(new THREE.Vector3());spawnExplosionVisual(center,0xff632e,3.2);spawnExplosionVisual(center.clone().add(new THREE.Vector3(-5,3,2)),0xffd15a,2.1);spawnExplosionVisual(center.clone().add(new THREE.Vector3(5,-2,-1)),0xff8a32,2.4);spawnDebris(center,0x55575a,14,.35,1.15);kickCamera(.62,.75);diag('DESTRUCTION CORE FAILURE',loser)},collapseAt);
   const vanishAt=collapseAt+520,start=performance.now();
@@ -41,12 +41,12 @@ function endMatch(outcome,reason,fromNetwork=false){clearSoloAiTimer();
 }`;
   patched=replaceExact(patched,oldEnd,newEnd,status,'endMatch');
   patched=patched.replace("function clearEndCinematic(){endCinematicToken++;","function clearEndCinematic(){clearImpactFocus();endCinematicToken++;");
-  patched=patched.replace("},step*285));","},step*520));");
-  patched=patched.replace("const collapseAt=order.length*285+180;","const collapseAt=order.length*520+320;beginImpactFocus(loser,4,'FINAL DESTRUCTION',6900,true);");
+  patched=patched.replace("},step*285));","},step*420));");
+  patched=patched.replace("const collapseAt=order.length*285+180;","const collapseAt=order.length*420+240;beginImpactFocus(loser,4,'FINAL DESTRUCTION',5400,true);");
   patched=patched.replace("spawnExplosionVisual(point,color,1.05+step*.06);spawnDebris(point,loser==='aurelian'?0x9a6b20:0x596570,12,.20,.62)","spawnExplosionVisual(point,color,1.28+step*.075);spawnDebris(point,loser==='aurelian'?0x9a6b20:0x596570,18,.20,.78)");
-  patched=patched.replace("const vanishAt=collapseAt+520,start=performance.now();","const vanishAt=collapseAt+760,start=performance.now();");
-  patched=patched.replace("(now-start-collapseAt)/900","(now-start-collapseAt)/1250");
-  patched=patched.replace("},vanishAt+620);","},vanishAt+980);");
+  patched=patched.replace("const vanishAt=collapseAt+520,start=performance.now();","const vanishAt=collapseAt+600,start=performance.now();");
+  patched=patched.replace("(now-start-collapseAt)/900","(now-start-collapseAt)/980");
+  patched=patched.replace("},vanishAt+620);","},vanishAt+700);");
 
   patched=replaceExact(
     patched,
