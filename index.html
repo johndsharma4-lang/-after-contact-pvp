@@ -3635,6 +3635,7 @@ function chooseSoloAiTargetRoom(){
   return candidates[0];
 }
 function solveSoloHe9Shot(attacker,target){
+  attacker.aiHe9FallbackRoomIndex=null;
   const targetStage=worldToStage(target.room.hitPlane.getWorldPosition(new THREE.Vector3())),startStage=worldToStage(muzzleWorld(attacker,targetStage)),toward=attacker.side==='aurelian'?1:-1;
   let firstPhysicalHit=null;
   for(let power=52;power<=96;power+=4){
@@ -3646,7 +3647,7 @@ function solveSoloHe9Shot(attacker,target){
     }
   }
   if(firstPhysicalHit)return{...firstPhysicalHit,exact:false};
-  const direct={x:targetStage.x,y:targetStage.y};return{aim:direct,power:82,elevation:0,exact:false};
+  attacker.aiHe9FallbackRoomIndex=target.index;const direct={x:targetStage.x,y:targetStage.y};return{aim:direct,power:82,elevation:0,exact:false,guidedFallback:true};
 }
 function runSoloEarthTurn(){
   if(multiplayer||!battleStarted||matchEnded||soloTurn!=='earth')return;
@@ -4179,7 +4180,7 @@ function resolveSolarBurnTick(attacker,path,weapon,tickIndex,beam=null){
   if(tickIndex===0&&path.length)weaponImpactSfx('laser',true);
   let totalArmor=0,totalUnit=0;
   for(const hit of path){
-    hit.reached=true;if(beam&&!beam.end.equals(hit.end)){beam.end.copy(hit.end);spawnImpactBurst(hit.end,0xffffff);diag('SOLAR PENETRATION ADVANCE',`room=${hit.roomIndex+1}`)}
+    hit.reached=true;if(beam&&!beam.end.equals(hit.end)){beam.end.copy(hit.end);spawnExplosionVisual(hit.end,0xffc43d,.88);spawnImpactBurst(hit.end,0xffffff);spawnDebris(hit.end,0x5b5147,14,.08,.30);statusEl.textContent=`SOLAR LANCER • PENETRATING ROOM ${hit.roomIndex+1}`;diag('SOLAR PENETRATION ADVANCE',`room=${hit.roomIndex+1} visibleBeamExtended=Y`)}
     const room=hit.room,index=hit.roomIndex,before=room.armor;
     const shield=absorbShieldHit(attacker,index,weapon.armorDamage||4,'SOLAR EXACT RAY',hit.end);if(shield.blocked)break;
     ensureSolarBurnHole(room,hit.end,tickIndex);
@@ -4198,13 +4199,13 @@ function spawnSolarLancerBeam(attacker,start,beamPath,weapon){
   beamPath.path.forEach((h,i)=>h.reached=i===0);const end=(beamPath.path[0]?.end||beamPath.end).clone(),dir=end.clone().sub(start),len=dir.length(),unit=dir.clone().normalize();
   // Focused coherent laser: constant width from emitter to contact. The dim amber sheath only
   // separates the needle-white core from the scene; there is no cone, fan, or flashlight spread.
-  const outer=new THREE.Mesh(new THREE.CylinderGeometry(.24,.24,1,16,1,true),new THREE.MeshBasicMaterial({color:0xffb52e,transparent:true,opacity:.36,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
-  const core=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,1,12,1,true),new THREE.MeshBasicMaterial({color:0xfffff2,transparent:true,opacity:.96,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+  const outer=new THREE.Mesh(new THREE.CylinderGeometry(.82,.82,1,24,1,true),new THREE.MeshBasicMaterial({color:0xffb52e,transparent:true,opacity:.72,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+  const core=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,1,18,1,true),new THREE.MeshBasicMaterial({color:0xfffff2,transparent:true,opacity:.98,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
   for(const beam of [outer,core]){beam.scale.y=.001;beam.position.copy(start);beam.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),unit);scene.add(beam)}
   const muzzleOuter=glowSphere(.34,weapon.color,8);muzzleOuter.material.transparent=true;muzzleOuter.material.opacity=.78;muzzleOuter.position.copy(start);scene.add(muzzleOuter);
   const muzzleCore=glowSphere(.12,0xffffff,10);muzzleCore.material.transparent=true;muzzleCore.material.opacity=1;muzzleCore.position.copy(start);scene.add(muzzleCore);
   const burns=beamPath.path.map(h=>({hit:h,rig:makeSolarContactDrillRig(h.end,unit)}));
-  effects.push({solarBeam:{outer,core,muzzleOuter,muzzleCore,burns,start:start.clone(),end:end.clone(),dir,len,progress:0,hold:0,path:beamPath.path,weapon,attacker,aimStage:worldToStage(end),nextTick:.5,tick:0},life:(weapon.duration||5)+.28,max:(weapon.duration||5)+.28});
+  effects.push({solarBeam:{outer,core,muzzleOuter,muzzleCore,burns,start:start.clone(),end:end.clone(),dir,len,progress:0,hold:0,path:beamPath.path,weapon,attacker,aimStage:worldToStage(end),nextTick:.5,tick:0,impactShown:false},life:(weapon.duration||5)+.28,max:(weapon.duration||5)+.28});
   statusEl.textContent=`SOLAR LANCER • FOCUSED BEAM • ${beamPath.path.length||0}/3 CONTACTS`;diag('SOLAR LANCER',`vfx=FOCUSED_COHERENT_LASER 5s burn rooms=${beamPath.path.map(x=>x.roomIndex+1).join('>')||'MISS'}`);
 }
 
@@ -4324,6 +4325,9 @@ function buildPrivateXray(){
   const mapRoom=room=>({x:((room.local?.x||0)-centerBaseX)*1.10,y:Math.max(-3.35,Math.min(3.80,((room.local?.y||0)-centerBaseY)*.86))});
   for(const row of standardRows){const y=(row-centerBaseY)*.86-1.16,deck=markXray(new THREE.Mesh(new THREE.BoxGeometry(width-.54,.22,depth-.44),hull.clone()),73);deck.position.set(0,y,-.04);g.add(deck)}
   for(const x of[-2.66,2.66]){const bulkhead=markXray(new THREE.Mesh(new THREE.BoxGeometry(.12,7.70,.26),edge.clone()),73);bulkhead.position.set(x,.40,.02);g.add(bulkhead)}
+  const fixtureMat=xrayBasic(faction==='aurelian'?0x50321b:0x263842,.96,false),screenMat=xrayBasic(faction==='aurelian'?0xff9b42:0x55cfff,.82,true),pipeMat=xrayBasic(faction==='aurelian'?0xb8792f:0x718690,.86,false),fixtureRooms=new Set();
+  for(const w of localCrew){if(fixtureRooms.has(w.roomIndex))continue;fixtureRooms.add(w.roomIndex);const p=mapRoom(rooms[w.roomIndex]),station=markXray(new THREE.Group(),75);station.position.set(p.x,p.y-.58,-.34);g.add(station);const consoleBody=markXray(new THREE.Mesh(new THREE.BoxGeometry(1.42,.62,.62),fixtureMat.clone()),76);consoleBody.position.set(-1.02,-.36,0);station.add(consoleBody);const consoleScreen=markXray(new THREE.Mesh(new THREE.PlaneGeometry(.82,.34),screenMat.clone()),78);consoleScreen.position.set(-1.02,-.20,.33);consoleScreen.rotation.x=-.18;station.add(consoleScreen);const locker=markXray(new THREE.Mesh(new THREE.BoxGeometry(.52,1.40,.48),fixtureMat.clone()),76);locker.position.set(1.42,.04,-.05);station.add(locker);for(const x of[-.46,.46]){const pipe=markXray(new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,2.18,8),pipeMat.clone()),74);pipe.rotation.z=Math.PI/2;pipe.position.set(x,.92,-.42);station.add(pipe)}const floorLight=markXray(new THREE.Mesh(new THREE.BoxGeometry(1.58,.08,.12),screenMat.clone()),77);floorLight.position.set(0,-.86,.18);station.add(floorLight)}
+  for(const y of[-2.40,.20,2.80]){const conduit=markXray(new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,width-1.1,8),pipeMat.clone()),74);conduit.rotation.z=Math.PI/2;conduit.position.set(0,y,-.78);g.add(conduit)}
   for(const side of[-1,1]){const panel=markXray(new THREE.Mesh(new THREE.BoxGeometry(width*.50,height,.40),hull.clone()),84);panel.position.set(side*width*.25,0,.34);panel.userData.cutawayPanel={closed:panel.position.clone(),open:new THREE.Vector3(side*width*.72,.18,1.18),rotation:new THREE.Euler(0,side*.86,side*.025)};g.add(panel)}
   const occupancy=new Map();for(const w of localCrew){const p=mapRoom(rooms[w.roomIndex]),key=`${Math.round(p.x*10)}:${Math.round(p.y*10)}`,bucket=occupancy.get(key)||[];bucket.push(w);occupancy.set(key,bucket)}
   if(!xraySelectedCrew||!localCrew.includes(xraySelectedCrew))xraySelectedCrew=localCrew.find(w=>w.hp>0)||localCrew[0]||null;
@@ -4372,6 +4376,7 @@ function scheduleXrayForTurn(reason='turn'){if(!battleStarted||matchEnded)return
 function applyExteriorRoomConcealment(){for(const group of [aRooms,eRooms])for(const room of group.userData.rooms){for(const o of [room.frame,room.cavity,room.edge,room.breachMask])if(o)o.visible=false;if(room.hitPlane)room.hitPlane.visible=true}for(const w of allWarriors)setWarriorObjectsVisible(w,false)}
 function selectWarrior(w){diag('SELECT WARRIOR',`${w?.weaponKey||'none'} hp=${w?.hp??'-'} aa=${w?.aa??'-'} room=${Number.isInteger(w?.roomIndex)?w.roomIndex+1:'-'}`);
   if(!w||w.hp<=0||!w.active)return;
+  if(battleStarted&&w.weaponKey==='combat_controller'&&(supportCooldown[w.side]||0)>0){statusEl.textContent=`COMBAT CONTROLLER • COOLDOWN ${supportCooldown[w.side]} FULL TURN${supportCooldown[w.side]===1?'':'S'} • NOT SELECTABLE`;diag('CONTROLLER SELECTION BLOCK',`${w.side} remaining=${supportCooldown[w.side]}`);return}
   selected=w;
   for(const x of allWarriors){if(x.markerMat)x.markerMat.opacity=(x===w?.35:0)}
   const p=STARTER_PROFILES[w.weaponKey]||STARTER_PROFILES.solar_lancer;
@@ -5100,7 +5105,7 @@ function stageTrajectoryCurve(points,roomHit=null){
 function spawnArc(attacker,start,aimPt,power,weapon){
   const localAction=(!multiplayer&&attacker.side==='aurelian')||(multiplayer&&attacker.side===localSide);
   if(localAction){barrageActionLock=true;diag('ACTION LOCK','HE9_BARRAGE_RESOLUTION');refreshMovePad()}
-  const startStage=worldToStage(start),base=he9BallisticStagePath(attacker,startStage,aimPt,power,0,false);
+  const startStage=worldToStage(start),forcedRoomIndex=Number.isInteger(attacker.aiHe9FallbackRoomIndex)?attacker.aiHe9FallbackRoomIndex:null,base=he9BallisticStagePath(attacker,startStage,aimPt,power,0,false);attacker.aiHe9FallbackRoomIndex=null;
   diag('HE9 FLIGHT',`mode=${base.mode} elevation=${Math.round(base.elevation)} gravity=${base.launch.gravity} control=MANUAL_VECTOR_POWER barrage=10 damageBoost=5%`);
   const strikePlan=[
     {center:false,color:0xff5e18,scale:1.12,lane:-.030},
@@ -5123,10 +5128,13 @@ function spawnArc(attacker,start,aimPt,power,weapon){
   }
   const missiles=[];
   strikePlan.forEach((plan,i)=>{
-    const flight=he9BallisticStagePath(attacker,startStage,aimPt,power,plan.lane,true),built=stageTrajectoryCurve(flight.points,flight.hit);
+    let flight=he9BallisticStagePath(attacker,startStage,aimPt,power,plan.lane,true);
+    if(forcedRoomIndex!=null&&i>0&&i<9){const rooms=opposingRooms(attacker).userData.rooms,row=Math.floor(forcedRoomIndex/3),col=forcedRoomIndex%3,spread=[forcedRoomIndex,forcedRoomIndex,forcedRoomIndex,row*3+Math.max(0,col-1),row*3+Math.min(2,col+1),forcedRoomIndex,forcedRoomIndex,forcedRoomIndex],roomIndex=spread[(i-1)%spread.length],room=rooms[roomIndex],impactStage=worldToStage(room.hitPlane.getWorldPosition(new THREE.Vector3())),points=[];for(let step=0;step<=72;step++){const u=step/72;points.push({x:THREE.MathUtils.lerp(startStage.x,impactStage.x,u),y:THREE.MathUtils.lerp(startStage.y,impactStage.y,u)-Math.sin(u*Math.PI)*(118+Math.abs(plan.lane)*460),t:u})}flight={...flight,points,hit:{room,roomIndex,impactStage},mode:'AI_PHYSICAL_FALLBACK'}}
+    const built=stageTrajectoryCurve(flight.points,flight.hit);
     const mesh=makeHe9Rocket(plan.scale);mesh.position.copy(built.curve.getPoint(0));scene.add(mesh);
     missiles.push({mesh,curve:built.curve,plan,target:built.target,hit:flight.hit,impacted:false,removed:false});
   });
+  if(forcedRoomIndex!=null)diag('AI HE9 FALLBACK GUIDANCE',`room=${forcedRoomIndex+1} physicalImpacts=8/10 visibleCurves=Y`);
   const trail=new THREE.Group();for(const [i,m] of missiles.entries()){const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(m.curve.getPoints(72)),new THREE.LineBasicMaterial({color:m.plan.color,transparent:true,opacity:i===3?.26:.13,depthWrite:false}));trail.add(line)}scene.add(trail);
   effects.push({barrage:true,missiles,trail,t:0,speed:.72,gap:.10,damageResolved:false,attacker,weapon});
 }
@@ -5186,7 +5194,7 @@ function xrayWarriorAtStagePoint(pt){
   return null
 }
 function selectXrayCrew(w){
-  if(!xrayOpen||!w||!w.active)return;xraySelectedCrew=w;if(w.hp>0&&!w.passive)selectWarrior(w);refreshPrivateXrayVisuals();
+  if(!xrayOpen||!w||!w.active)return;if(w.weaponKey==='combat_controller'&&(supportCooldown[w.side]||0)>0){statusEl.textContent=`COMBAT CONTROLLER • LOCKED FOR ${supportCooldown[w.side]} MORE FULL TURN${supportCooldown[w.side]===1?'':'S'}`;diag('CONTROLLER CUTAWAY LOCK',`${w.side} remaining=${supportCooldown[w.side]} selectable=N`);return}xraySelectedCrew=w;if(w.hp>0&&!w.passive)selectWarrior(w);refreshPrivateXrayVisuals();
   const profile=STARTER_PROFILES[w.weaponKey],name=w.passive?'PASSIVE CREW':(profile?.name||'WARRIOR'),state=w.hp<=0?'DEAD':'ALIVE';statusEl.textContent=`CUTAWAY • ${name} • ${state} • ROOM ${w.roomIndex+1} • AA ${Math.round(w.aa)}/${w.maxAa} • HP ${Math.round(w.hp)}/${w.maxHp}`;diag('CUTAWAY WARRIOR SELECT',`${name} state=${state} room=${w.roomIndex+1} aa=${Math.round(w.aa)} hp=${Math.round(w.hp)} passive=${w.passive?'Y':'N'}`)
 }
 bindMobileAction(xrayExitBtn,e=>{stopNative(e);closePrivateXray('exit button')});
@@ -5294,7 +5302,8 @@ let battleSceneWatch=0;const clock=new THREE.Clock();function animate(){requestA
   b.progress=Math.min(1,b.progress+dt/.12);const visibleLen=liveLen*b.progress;
   for(const beam of [b.outer,b.core]){beam.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),liveUnit);beam.scale.y=Math.max(.001,visibleLen);beam.position.copy(liveStart).add(liveUnit.clone().multiplyScalar(visibleLen*.5))}
   if(b.progress>=1){
-    b.hold+=dt;b.outer.material.opacity=.24+.12*Math.abs(Math.sin(b.hold*34));b.core.material.opacity=.82+.18*Math.abs(Math.sin(b.hold*46));
+    if(!b.impactShown){b.impactShown=true;const first=b.path[0];if(first){spawnExplosionVisual(first.end,0xffc43d,1.15);spawnImpactBurst(first.end,0xffffff);spawnDebris(first.end,0x65594c,20,.11,.38);kickCamera(.30,.22);statusEl.textContent=`SOLAR LANCER • HULL IMPACT • DRILLING ROOM ${first.roomIndex+1}`;diag('SOLAR HULL IMPACT',`room=${first.roomIndex+1} stagedPenetration=Y`)}}
+    b.hold+=dt;b.outer.material.opacity=.62+.20*Math.abs(Math.sin(b.hold*34));b.core.material.opacity=.90+.10*Math.abs(Math.sin(b.hold*46));
     b.muzzleOuter.material.opacity=.72+.22*Math.abs(Math.sin(b.hold*30));b.muzzleCore.material.opacity=.88+.12*Math.abs(Math.sin(b.hold*38));
     for(const item of b.burns){
       if(!item.hit.reached){for(const o of item.rig.objects)o.material.opacity=0;for(const e of item.rig.embers)e.mesh.material.opacity=0;for(const d of item.rig.molten||[])d.mesh.material.opacity=0;continue}
