@@ -3072,7 +3072,8 @@ function makeWarriors(side,roomGroup,roomIndices,texture,weaponKey,options={}){
     const roomIndex=roomIndices[i],room=roomGroup.userData.rooms[roomIndex],role=options.role||'captain',isCaptain=role==='captain',assignedColor=options.assignedColors?.[i]??(side==='aurelian'?0xf0c65a:0x74d9ff);
     const markerMat=new THREE.MeshBasicMaterial({color:assignedColor,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide});
     const marker=new THREE.Mesh(new THREE.PlaneGeometry(3.25,4.85),markerMat);marker.position.copy(room.local).add(new THREE.Vector3(0,-.05,-.95));if(side==='aurelian')marker.rotation.y=Math.PI;roomGroup.add(marker);
-    const mat=new THREE.SpriteMaterial({map:texture,color:role==='shadow'?0x25313d:0xffffff,transparent:true,opacity:role==='shadow'?.86:1,depthTest:true,depthWrite:false});
+    const spriteTexture=role==='shadow'?crewTextureForSide(side):texture;
+    const mat=new THREE.SpriteMaterial({map:spriteTexture,color:role==='shadow'?0x25313d:0xffffff,transparent:true,opacity:role==='shadow'?.86:1,depthTest:true,depthWrite:false});
     const spr=new THREE.Sprite(mat);spr.scale.set(role==='shadow'?2.18:2.5,role==='shadow'?3.78:4.2,1);spr.position.copy(room.local).add(new THREE.Vector3(0,-.1,-.75));roomGroup.add(spr);
     const xrayGlowMat=new THREE.SpriteMaterial({map:crewSilhouetteTexture,color:assignedColor,transparent:true,opacity:isCaptain?.62:.26,depthTest:false,depthWrite:false,blending:THREE.AdditiveBlending});
     const xrayGlow=new THREE.Sprite(xrayGlowMat);xrayGlow.scale.set(isCaptain?2.08:1.48,isCaptain?3.64:2.60,1);xrayGlow.position.copy(room.local).add(new THREE.Vector3(0,-.14,.50));xrayGlow.renderOrder=81;xrayGlow.visible=false;roomGroup.add(xrayGlow);
