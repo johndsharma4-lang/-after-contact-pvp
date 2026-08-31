@@ -53,7 +53,7 @@ function finishSoloEarthSpecialistTurn(label,delay){
   try{
     diag('AI HE9 SOLUTION',\`targetRoom=${'${'}target.index+1} result=${'${'}solution.exact?'EXACT':'PHYSICAL_FALLBACK'} elevation=${'${'}Math.round(solution.elevation||0)} power=${'${'}Math.round(power)}\`);
     fireWarriorFromStage(enemy,pt,power,false);
-    diag('AI BARRAGE WAIT','turn held until all five missiles resolve');
+    diag('AI BARRAGE WAIT','turn held until all ten missiles resolve');
   }catch(err){
     diag('AI HE9 RECOVERY',String(err?.stack||err?.message||err));
     barrageActionLock=false;refreshMovePad();
@@ -71,7 +71,7 @@ function finishSoloEarthSpecialistTurn(label,delay){
       statusEl.textContent=\`ROUND ${'${'}soloRound} • EARTH BOMBARDIER FIRING HE-9\`;
       const solution=solveSoloHe9Shot(enemy,target),pt=solution.aim,power=solution.power;
       diag('AI HE9 SOLUTION',\`targetRoom=${'${'}target.index+1} result=${'${'}solution.exact?'EXACT':'PHYSICAL_FALLBACK'} elevation=${'${'}Math.round(solution.elevation||0)} power=${'${'}Math.round(power)}\`);
-      fireWarriorFromStage(enemy,pt,power,false);diag('AI BARRAGE WAIT','turn held until all five missiles resolve');return;
+      fireWarriorFromStage(enemy,pt,power,false);diag('AI BARRAGE WAIT','turn held until all ten missiles resolve');return;
     }
     const pt=worldToStage(target.room.hitPlane.getWorldPosition(new THREE.Vector3()));
     if(enemy.weaponKey==='sniper'){
