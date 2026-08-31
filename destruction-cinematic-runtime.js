@@ -41,12 +41,12 @@ function endMatch(outcome,reason,fromNetwork=false){clearSoloAiTimer();
 }`;
   patched=replaceExact(patched,oldEnd,newEnd,status,'endMatch');
   patched=patched.replace("function clearEndCinematic(){endCinematicToken++;","function clearEndCinematic(){clearImpactFocus();endCinematicToken++;");
-  patched=patched.replace("},step*285));","},step*420));");
-  patched=patched.replace("const collapseAt=order.length*285+180;","const collapseAt=order.length*420+240;beginImpactFocus(loser,4,'FINAL DESTRUCTION',5400,true);");
+  patched=patched.replace("},step*285));","},step*300));");
+  patched=patched.replace("const collapseAt=order.length*285+180;","const collapseAt=order.length*300+160;beginImpactFocus(loser,4,'FINAL DESTRUCTION',3900,true);");
   patched=patched.replace("spawnExplosionVisual(point,color,1.05+step*.06);spawnDebris(point,loser==='aurelian'?0x9a6b20:0x596570,12,.20,.62)","spawnExplosionVisual(point,color,1.28+step*.075);spawnDebris(point,loser==='aurelian'?0x9a6b20:0x596570,18,.20,.78)");
-  patched=patched.replace("const vanishAt=collapseAt+520,start=performance.now();","const vanishAt=collapseAt+600,start=performance.now();");
-  patched=patched.replace("(now-start-collapseAt)/900","(now-start-collapseAt)/980");
-  patched=patched.replace("},vanishAt+620);","},vanishAt+700);");
+  patched=patched.replace("const vanishAt=collapseAt+520,start=performance.now();","const vanishAt=collapseAt+400,start=performance.now();");
+  patched=patched.replace("(now-start-collapseAt)/900","(now-start-collapseAt)/700");
+  patched=patched.replace("},vanishAt+620);","},vanishAt+450);");
 
   patched=replaceExact(
     patched,
