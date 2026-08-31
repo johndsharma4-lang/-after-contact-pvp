@@ -22,6 +22,8 @@ export function patchCombatPresentationLockRuntime(html) {
     actionTurn:false,
     multiplayerFire:false,
     multiplayerTurn:false,
+    multiplayerRecovery:false,
+    multiplayerReject:false,
     destructionEnd:false,
     impactCamera:false,
     impactTrigger:false,
@@ -196,8 +198,14 @@ function buildPrivateXray(){
   patched = replaceExact(patched, oldFireHandler, newFireHandler, status, 'multiplayerFire');
 
   const oldTurnHandler = "if(m.type==='turn'){mpRound=m.round||mpRound;if(Number.isInteger(m.turnCount))turnsTaken=m.turnCount;setMpTurn(m.turn);diag('ACTION TURN RELEASE',`turn=${m.turn} round=${mpRound} action=${turnsTaken}/${TURN_LIMIT}`);return}";
-  const newTurnHandler = "if(m.type==='turn'){const release=()=>{mpRound=m.round||mpRound;if(Number.isInteger(m.turnCount))turnsTaken=m.turnCount;setMpTurn(m.turn);diag('ACTION TURN RELEASE',`turn=${m.turn} round=${mpRound} action=${turnsTaken}`)};if(solarActionLock||barrageActionLock||acidActionLock){const started=Date.now(),wait=()=>{if((solarActionLock||barrageActionLock||acidActionLock)&&Date.now()-started<12000){setTimeout(wait,100);return}release()};diag('ACTION TURN HOLD',`turn=${m.turn} waiting for weapon resolution`);wait();return}release();return}";
+  const newTurnHandler = "if(m.type==='turn'){const nextTurn=m.turn||m.nextTurn||m.side,validTurn=nextTurn==='aurelian'||nextTurn==='earth',release=()=>{if(!validTurn){diag('ACTION TURN ERROR','missing authoritative turn');recoverMpAuthoritativeState('missing turn payload');return}mpRound=m.round||mpRound;if(Number.isInteger(m.turnCount))turnsTaken=m.turnCount;setMpTurn(nextTurn);diag('ACTION TURN RELEASE',`turn=${nextTurn} round=${mpRound} action=${turnsTaken}`)};if(solarActionLock||barrageActionLock||acidActionLock){const started=Date.now(),wait=()=>{if((solarActionLock||barrageActionLock||acidActionLock)&&Date.now()-started<12000){setTimeout(wait,100);return}release()};diag('ACTION TURN HOLD',`turn=${nextTurn||'MISSING'} waiting for weapon resolution`);wait();return}release();return}";
   patched = replaceExact(patched, oldTurnHandler, newTurnHandler, status, 'multiplayerTurn');
+  const oldRecovery = "mpPlayStarted=true;mpPlayReady=true;mpHandshakePhase='battle_recovered';\n      startNetworkBattle({type:'start',deployments:st.deployments,factions:st.factions,turn:st.turn||'aurelian',round:st.round||1,positions:st.positions,moveUsed:st.moveUsed,recovered:true});\n      if(battleStarted){\n        mpRound=st.round||mpRound;setMpTurn(st.turn||currentTurn);applyAuthoritativeMovementState(st,'recovery');ensureLocalBattleWarriorActive('authoritative recovery');rearmMultiplayerInput(`recovery:${reason}`,320);\n      }";
+  const newRecovery = "mpPlayStarted=true;mpPlayReady=true;mpHandshakePhase='battle_recovered';\n      if(!battleStarted)startNetworkBattle({type:'start',deployments:st.deployments,factions:st.factions,turn:st.turn||'aurelian',round:st.round||1,positions:st.positions,moveUsed:st.moveUsed,recovered:true});\n      else{mpRound=st.round||mpRound;setMpTurn(st.turn||currentTurn);applyAuthoritativeMovementState(st,'recovery');ensureLocalBattleWarriorActive('authoritative recovery');rearmMultiplayerInput(`recovery:${reason}`,320);diag('MP LIVE RESUME',`turn=${st.turn||currentTurn} worldReset=N`)}";
+  patched = replaceExact(patched, oldRecovery, newRecovery, status, 'multiplayerRecovery');
+  const oldErrorHandler = "if(m.type==='error'){diag('NETWORK REJECT',`${m.code||'ERROR'} ${m.message||'Unknown network error'}`);statusEl.textContent=`NETWORK • ${m.message}`;mpStatus.textContent=m.message;if(m.code==='INVALID_SHOT'||m.code==='NOT_TURN'||m.code==='MATCH_INACTIVE')rearmMultiplayerInput(`server reject:${m.code}`,240);return}";
+  const newErrorHandler = "if(m.type==='error'){diag('NETWORK REJECT',`${m.code||'ERROR'} ${m.message||'Unknown network error'}`);statusEl.textContent=`NETWORK • ${m.message}`;mpStatus.textContent=m.message;if(m.code==='NOT_TURN'){mpInputArmAt=Date.now()+600;recoverMpAuthoritativeState('server reject:NOT_TURN');return}if(m.code==='ACTION_LOCKED'){setTimeout(()=>{if(multiplayer&&!matchEnded&&currentTurn===localSide)rearmMultiplayerInput('server action lock elapsed',0)},700);return}if(m.code==='INVALID_SHOT'||m.code==='MATCH_INACTIVE')rearmMultiplayerInput(`server reject:${m.code}`,240);return}";
+  patched = replaceExact(patched, oldErrorHandler, newErrorHandler, status, 'multiplayerReject');
   patched = patched.replace(
     "mpTurn.textContent=`TURN ${Math.min(TURN_LIMIT,turnsTaken+1)}/${TURN_LIMIT} • ${mine?'YOUR TURN':`${fm.short} TURN`}`;",
     "mpTurn.textContent=`ROUND ${mpRound} • ${mine?'YOUR TURN':`${fm.short} TURN`}`;"
