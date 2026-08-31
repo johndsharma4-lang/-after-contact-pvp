@@ -23,7 +23,7 @@ export function patchSoloEarthRoundRobinRuntime(html) {
   return candidates[0];
 }`;
   const newChooser = `function chooseSoloAiTargetRoom(attacker=null){
-  const rooms=aRooms.userData.rooms,crew=[...aWarriors,...aShadows];
+  const rooms=aRooms.userData.rooms,crew=[...aWarriors];
   const candidates=rooms.map((room,index)=>{const occupant=crew.find(w=>w.active&&w.hp>0&&w.roomIndex===index),damage=100-Math.max(0,room.armor);let score=damage+Math.random()*24;if(occupant)score+=attacker?.weaponKey==='sniper'?115:62;return{room,index,occupant,score}}).filter(x=>!x.room.erased);
   candidates.sort((a,b)=>b.score-a.score);
   return candidates[0]||null;

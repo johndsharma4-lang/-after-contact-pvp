@@ -1230,7 +1230,7 @@ mpCodeInput.addEventListener('blur',()=>{setTimeout(()=>mpOverlay.classList.remo
 mpCodeInput.addEventListener('input',()=>{mpCodeInput.value=mpCodeInput.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6)});
 if(window.visualViewport){window.visualViewport.addEventListener('resize',()=>{if(document.activeElement===mpCodeInput){mpOverlay.classList.add('typing');setTimeout(()=>{try{mpCodeInput.scrollIntoView({block:'center'})}catch{}},40)}})}
 
-let battleStarted=false,matchEnded=false;const deployment=EARLY_DEPLOYMENT;
+let battleStarted=false,matchEnded=false,terminalCollapseActive=false;const deployment=EARLY_DEPLOYMENT;
 const TURN_LIMIT=28;
 let multiplayer=false,localSide='aurelian',currentTurn='aurelian',mpSocket=null,mpToken='',mpCode='',mpConnected=false,mpBothConnected=false,networkApplying=false,mpRound=1,turnsTaken=0,noProgressActions=0,lastCombatStateSignature='';let mpHandshakePhase='idle',mpHandshakeTimer=null,mpHandshakeBusy=false;
 let mpReconnectTimer=null,mpReconnectAttempts=0,mpSocketGeneration=0,mpPlayStarted=false;
@@ -3097,13 +3097,11 @@ function makeWarriors(side,roomGroup,roomIndices,texture,weaponKey,options={}){
   }
   return out
 }
-// Captains remain the only selectable/firing warriors. Eight passive shadow occupants fill the other
-// compartments and can take AA/HP damage, but they never receive movement, weapon, or turn control.
-const SHADOW_CREW_COLORS=[0x60d9ff,0x7cff9b,0xffd45f,0xc489ff,0xff8c68,0x56e0c5,0xff83c8,0xe8f1ff];
+// Combat truth: each vessel contains only its three playable warriors. Keep the legacy shadow arrays
+// empty so older helpers remain compatible without creating hidden occupants or false deaths.
 const aWarriors=makeWarriors('aurelian',aRooms,[4,5,3],lancerTex,'solar_lancer');const eWarriors=makeWarriors('earth',eRooms,[5,4,3],bombTex,'bombardier');
-const aShadows=makeWarriors('aurelian',aRooms,[0,1,2,3,5,6,7,8],lancerTex,'passive_shadow',{role:'shadow',assignedColors:SHADOW_CREW_COLORS});
-const eShadows=makeWarriors('earth',eRooms,[0,1,2,3,4,6,7,8],bombTex,'passive_shadow',{role:'shadow',assignedColors:[...SHADOW_CREW_COLORS].reverse()});
-const aCrew=[...aWarriors,...aShadows],eCrew=[...eWarriors,...eShadows],allWarriors=[...aCrew,...eCrew];
+const aShadows=[],eShadows=[];
+const aCrew=[...aWarriors],eCrew=[...eWarriors],allWarriors=[...aCrew,...eCrew];
 // v0.27.0 battle-start helpers. These are shared by Solo and Multiplayer and must exist before either
 // battle path can move a deployed warrior from the UI slot into its Three.js compartment.
 function setWarriorRoom(w,roomIndex){
@@ -3124,9 +3122,7 @@ function setWarriorRoom(w,roomIndex){
   return true;
 }
 function arrangePassiveCrew(side){
-  const heroes=(side==='aurelian'?aWarriors:eWarriors).filter(w=>w.active),shadows=side==='aurelian'?aShadows:eShadows;
-  const occupied=new Set(heroes.map(w=>w.roomIndex)),openRooms=[0,1,2,3,4,5,6,7,8].filter(i=>!occupied.has(i));
-  shadows.forEach((w,i)=>{w.active=i<openRooms.length;if(w.active)setWarriorRoom(w,openRooms[i]);else setWarriorObjectsVisible(w,false)});
+  return 0;
 }
 function configureFactionTeam(side,faction,requestedTypes=null){
   const heroes=side==='aurelian'?aWarriors:eWarriors,defaults=factionTeam(faction).map(u=>u.id),types=(Array.isArray(requestedTypes)?requestedTypes:defaults).filter(t=>validateFactionStarter(faction,t)).slice(0,MAX_TEAM_SIZE);
@@ -3693,7 +3689,7 @@ function startBattle(e){if(!multiplayer){diagLines.length=0;diag('MATCH START','
     diag('BATTLE HANDOFF','solo begin');
     const uiToAurelianRoom=idx=>Math.floor(idx/3)*3+(2-(idx%3));
     const teamTypes=configureFactionTeam('aurelian',selectedFaction);configureFactionTeam('earth','earth');
-    deployment.slice(0,teamTypes.length).forEach((roomIndex,i)=>{if(!setWarriorRoom(aWarriors[i],uiToAurelianRoom(roomIndex)))throw new Error(`warrior room ${roomIndex} failed`);aWarriors[i].deploySlotIndex=roomIndex;aWarriors[i].active=true;setWarriorObjectsVisible(aWarriors[i],!exteriorRoomsHidden)});arrangePassiveCrew('aurelian');arrangePassiveCrew('earth');
+    deployment.slice(0,teamTypes.length).forEach((roomIndex,i)=>{if(!setWarriorRoom(aWarriors[i],uiToAurelianRoom(roomIndex)))throw new Error(`warrior room ${roomIndex} failed`);aWarriors[i].deploySlotIndex=roomIndex;aWarriors[i].active=true;setWarriorObjectsVisible(aWarriors[i],!exteriorRoomsHidden)});
     battleStarted=true;xrayInitialSelectionShown=false;gameFlowPhase='battle';matchEnded=false;resultOverlay.classList.remove('show');selected=null;setMusicMode('battle');
     diag('BATTLE HANDOFF','solo state committed');
   }catch(err){
@@ -3723,7 +3719,6 @@ function startNetworkBattle(m){
   const aTypes=configureFactionTeam('aurelian',mpFactionState?.aurelian?.faction||'aurelian',mpFactionState?.aurelian?.warriors),eTypes=configureFactionTeam('earth',mpFactionState?.earth?.faction||'earth',mpFactionState?.earth?.warriors);diag('ATTACK ROUTES',`P1=${aTypes.join(',')} P2=${eTypes.join(',')}`);
   aTypes.forEach((type,i)=>{const room=adep[i]??amap;setWarriorRoom(aWarriors[i],uiToAurelianRoom(room));aWarriors[i].deploySlotIndex=room;aWarriors[i].active=true;setWarriorObjectsVisible(aWarriors[i],!exteriorRoomsHidden)});
   eTypes.forEach((type,i)=>{const room=edep[i]??emap;setWarriorRoom(eWarriors[i],room);eWarriors[i].deploySlotIndex=room;eWarriors[i].active=true;setWarriorObjectsVisible(eWarriors[i],!exteriorRoomsHidden)});
-  arrangePassiveCrew('aurelian');arrangePassiveCrew('earth');
   if(m.positions){applyFortressPosition('aurelian',m.positions.aurelian);applyFortressPosition('earth',m.positions.earth)}
   currentTurn=m.turn||'aurelian';mpRound=m.round||1;turnsTaken=Number.isInteger(m.turnCount)?m.turnCount:0;selected=null;
   moveRemaining=currentTurn===localSide?Math.max(0,5-(m.moveUsed?.[localSide]||0)):5;movePending=false;
@@ -4412,7 +4407,7 @@ function primeSoloBattleSelection(){
 function resetBattleWorld(nextPhase=null){
   if(aiming)clearAim();closePrivateXray('battle reset');xrayTurnKey='';xrayInitialSelectionShown=false;solarActionLock=false;barrageActionLock=false;clearBuildShowcase?.('battle reset');clearAllEffects();if(multiplayer)mpBattleStartKey='';diag('RESET OK','effects cleared');
   for(const side of ['aurelian','earth']){const call=supportCalls[side];if(call?.marker)call.marker.parent?.remove(call.marker);supportCalls[side]=null;supportCooldown[side]=0}
-  clearSoloAiTimer();soloTurn='aurelian';soloRound=1;turnsTaken=0;noProgressActions=0;lastCombatStateSignature='';aure.position.set(-31,selectedFaction==='earth'?EARTH_GROUND_Y:18,-2);earth.position.set(28,EARTH_GROUND_Y,2);for(const side of ['aurelian','earth']){const motion=vesselVisualMotion[side];motion.offset.set(0,0,0);motion.vel.set(0,0,0);motion.tilt=0;motion.tiltVel=0;const skin=visualSkinForSide(side);if(skin){skin.position.set(0,0,0);skin.rotation.z=0}}moveRemaining=5;movePending=false;movePad.classList.remove('show');
+  clearSoloAiTimer();soloTurn='aurelian';soloRound=1;turnsTaken=0;noProgressActions=0;lastCombatStateSignature='';terminalCollapseActive=false;aure.position.set(-31,selectedFaction==='earth'?EARTH_GROUND_Y:18,-2);earth.position.set(28,EARTH_GROUND_Y,2);for(const side of ['aurelian','earth']){const motion=vesselVisualMotion[side];motion.offset.set(0,0,0);motion.vel.set(0,0,0);motion.tilt=0;motion.tiltVel=0;const skin=visualSkinForSide(side);if(skin){skin.position.set(0,0,0);skin.rotation.z=0}}moveRemaining=5;movePending=false;movePad.classList.remove('show');
   const resolvedPhase=nextPhase||(gameFlowPhase==='battle'?'deployment':gameFlowPhase);
   gameFlowPhase=resolvedPhase;
   diag('FLOW RESET',`phase=${resolvedPhase}`);
@@ -4420,7 +4415,7 @@ function resetBattleWorld(nextPhase=null){
   for(const w of allWarriors){w.hp=w.maxHp;w.aa=w.maxAa;w.exposedBySolar=false;w.solarReactionShown=false;w.captainBonusAwarded=false;w.deathConfirmationShown=false;w.fellFromRoom=null;w.fallRecoveryPending=false;w.acidStacks=0;w.acidStackSeq=(w.acidStackSeq||0)+1;w.sprite.material.opacity=w.passive?.68:1;w.sprite.material.rotation=0;}
   for(const room of [...aRooms.userData.rooms,...eRooms.userData.rooms]){room.corrosionTurns=0;room.corroded=false;}
   const resetTeam=factionTeam(selectedFaction).map(u=>u.id);aWarriors.forEach((w,i)=>{w.active=i<resetTeam.length;if(resetTeam[i])applyProfileToWarrior(w,resetTeam[i]);setWarriorObjectsVisible(w,false)});
-  for(const w of eWarriors){w.active=true;setWarriorObjectsVisible(w,false)}for(const w of [...aShadows,...eShadows]){w.active=true;setWarriorObjectsVisible(w,false)}arrangePassiveCrew('aurelian');arrangePassiveCrew('earth');
+  for(const w of eWarriors){w.active=true;setWarriorObjectsVisible(w,false)}
   selected=null;shots=0;shotMetric.textContent='SHOTS 0';matchEnded=false;battleStarted=false;battleLaunchGuard=false;
   resultOverlay.classList.remove('show');targetRoomEl.textContent='—';targetArmorEl.textContent='—';targetBreachEl.textContent='—';targetUnitEl.textContent='HIDDEN';
   statusEl.textContent=nextPhase==='deployment'?'DEPLOYMENT READY • PRESS BATTLE':'MATCH STATE RESET';
@@ -4606,13 +4601,22 @@ function clearRoomHazards(room){
   if(!room)return;for(let i=effects.length-1;i>=0;i--){const q=effects[i];if(q?.room!==room)continue;removeTransientEffectVisuals(q);effects.splice(i,1)}
   room.smokeFx=null;room.fireFx=null;room.acidFx=null
 }
+function prepareTerminalWreckFoundation(side){
+  const rooms=(side==='aurelian'?aRooms:eRooms)?.userData?.rooms||[],skin=side==='aurelian'?factionSkinA:factionSkinE,persistent=new Set(skin?.userData?.persistentWreckParts||[]);
+  for(const room of rooms){clearStructureLossVoid(room);if(room.fallenChunk)room.fallenChunk.visible=false;for(const voidFx of room.fallVoids||[])voidFx.visible=false;for(const o of[room.frame,room.cavity,room.edge,room.breachMask])if(o)o.visible=false}
+  for(const module of skin?.userData?.damageModules||[])if(module)module.visible=false;
+  for(const part of skin?.children||[])if(persistent.has(part)||part.userData?.wreckPersistent)part.visible=true;
+  diag('TERMINAL WRECK FOUNDATION',`side=${side} structure=${Math.round(structureHp[side]||0)} persistentParts=${persistent.size} floatingRooms=0`)
+}
 function relocateCrewFromErasedCompartment(attacker,index){
-  const rooms=opposingRooms(attacker).userData.rooms,crew=opposing(attacker).filter(w=>w.active&&w.roomIndex===index),living=crew.filter(w=>w.hp>0);let destination=index+3;
+  const rooms=opposingRooms(attacker).userData.rooms,crew=opposing(attacker).filter(w=>w.active&&w.roomIndex===index),living=crew.filter(w=>w.hp>0),targetSide=attacker.side==='aurelian'?'earth':'aurelian';let destination=index+3;
   while(destination<rooms.length&&rooms[destination]?.erased)destination+=3;
-  if(destination>=rooms.length){const survivors=rooms.map((room,i)=>({room,i,d:Math.abs(Math.floor(i/3)-Math.floor(index/3))*3+Math.abs(i%3-index%3)})).filter(x=>x.i!==index&&!x.room.erased).sort((a,b)=>a.d-b.d||a.i-b.i);destination=survivors[0]?.i??-1}
-  if(destination<0){let collapseDamage=0;living.sort((a,b)=>Number(b.passive)-Number(a.passive));for(const w of living){w.fellFromRoom=index;w.fallRecoveryPending=false;collapseDamage+=applyWarriorDamage(w,Math.max(1,w.hp+w.aa),'TOTAL COMPARTMENT COLLAPSE',attacker)}diag('CREW TOTAL COLLAPSE',`room=${index+1} living=${living.length} unit=${collapseDamage} reason=NO_PHYSICAL_COMPARTMENT`);return crew.length}
-  let fallDamage=0;const emergency=destination!==index+3;for(const w of crew){setWarriorRoom(w,destination);w.fellFromRoom=index;w.fallRecoveryPending=w.hp>0;if(w.hp>0)fallDamage+=applyWarriorDamage(w,Math.max(1,Math.round(w.maxHp*(emergency?.12:.08))),emergency?'EMERGENCY HULL TRANSFER':'COMPARTMENT DROP',attacker)}
-  diag(emergency?'CREW EMERGENCY REANCHOR':'CREW FALL RELOCATE',`room=${index+1}->${destination+1} crew=${crew.length} living=${crew.filter(w=>w.hp>0).length} unit=${fallDamage} erasedTarget=N`);return crew.length
+  const candidates=rooms.map((room,i)=>({room,i,d:Math.abs(Math.floor(i/3)-Math.floor(index/3))*3+Math.abs(i%3-index%3)})).filter(x=>x.i!==index&&!x.room.erased).sort((a,b)=>a.d-b.d||a.i-b.i);
+  if(destination>=rooms.length)destination=candidates[0]?.i??-1;
+  if(destination<0){prepareTerminalWreckFoundation(targetSide);terminalCollapseActive=true;let collapseDamage=0;living.sort((a,b)=>Number(b.passive)-Number(a.passive));diag('CREW TOTAL COLLAPSE START',`side=${targetSide} room=${index+1} living=${living.length} groupedDeath=Y`);for(const w of living){w.fellFromRoom=index;w.fallRecoveryPending=false;collapseDamage+=applyWarriorDamage(w,Math.max(1,w.hp+w.aa),'TOTAL COMPARTMENT COLLAPSE',attacker)}terminalCollapseActive=false;diag('CREW TOTAL COLLAPSE',`room=${index+1} living=${living.length} unit=${collapseDamage} reason=NO_HABITABLE_COMPARTMENT groupedDeath=Y`);return crew.length}
+  let fallDamage=0;const emergency=destination!==index+3,occupancy=new Map(candidates.map(c=>[c.i,opposing(attacker).filter(w=>w.active&&w.hp>0&&w.roomIndex===c.i).length]));
+  for(const w of crew){if(w.hp<=0)continue;let target=destination;if(emergency&&candidates.length){const ranked=[...candidates].sort((a,b)=>(occupancy.get(a.i)||0)-(occupancy.get(b.i)||0)||a.d-b.d||a.i-b.i);target=ranked[0].i;occupancy.set(target,(occupancy.get(target)||0)+1)}setWarriorRoom(w,target);w.fellFromRoom=index;w.fallRecoveryPending=true;fallDamage+=applyWarriorDamage(w,Math.max(1,Math.round(w.maxHp*(emergency?.12:.08))),emergency?'EMERGENCY HULL TRANSFER':'COMPARTMENT DROP',attacker)}
+  diag(emergency?'CREW EMERGENCY DISTRIBUTION':'CREW FALL RELOCATE',`room=${index+1} destinations=${[...new Set(living.map(w=>w.roomIndex+1))].join(',')} crew=${crew.length} living=${living.filter(w=>w.hp>0).length} unit=${fallDamage} erasedTarget=N`);return crew.length
 }
 function enforceLivingCrewRoomInvariant(attacker){
   const rooms=opposingRooms(attacker).userData.rooms;let repaired=0;for(const w of opposing(attacker).filter(x=>x.active&&x.hp>0)){if(!rooms[w.roomIndex]?.erased)continue;relocateCrewFromErasedCompartment(attacker,w.roomIndex);repaired++}if(repaired)diag('CREW ROOM INVARIANT REPAIR',`side=${attacker.side==='aurelian'?'earth':'aurelian'} repaired=${repaired}`);return repaired
