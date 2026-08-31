@@ -16,7 +16,7 @@ export function patchCombatPresentationLockRuntime(html) {
     multiplayerTurn:false,
     multiplayerRecovery:false,
     multiplayerReject:false,
-    destructionEnd:false,
+    destructionEnd:true,
     impactCamera:false,
     impactTrigger:false,
     earthCutaway:false,
@@ -108,14 +108,6 @@ export function patchCombatPresentationLockRuntime(html) {
   patched = patched.replace(
     "mpTurn.textContent=`TURN ${Math.min(TURN_LIMIT,turnsTaken+1)}/${TURN_LIMIT} • ${mine?'YOUR TURN':`${fm.short} TURN`}`;",
     "mpTurn.textContent=`ROUND ${mpRound} • ${mine?'YOUR TURN':`${fm.short} TURN`}`;"
-  );
-
-  patched = replaceExact(
-    patched,
-    "function completeTurn(){turnsTaken=Math.min(TURN_LIMIT,turnsTaken+1);diag('TURN COMPLETE',`${turnsTaken}/${TURN_LIMIT}`);return turnsTaken>=TURN_LIMIT&&resolveTurnLimit()}",
-    "function completeTurn(){turnsTaken+=1;diag('TURN COMPLETE',`${turnsTaken} • two-condition victory mode`);checkMatchEnd();return matchEnded}",
-    status,
-    'destructionEnd'
   );
 
   patched = patched.replace(

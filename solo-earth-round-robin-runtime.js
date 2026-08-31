@@ -24,7 +24,7 @@ export function patchSoloEarthRoundRobinRuntime(html) {
 }`;
   const newChooser = `function chooseSoloAiTargetRoom(attacker=null){
   const rooms=aRooms.userData.rooms,crew=[...aWarriors,...aShadows];
-  const candidates=rooms.map((room,index)=>{const occupant=crew.find(w=>w.active&&w.hp>0&&w.roomIndex===index),damage=100-Math.max(0,room.armor),open=room.erased||room.armor<=0;let score=damage+Math.random()*24;if(occupant)score+=attacker?.weaponKey==='sniper'?115:62;if(open&&!occupant)score-=90;return{room,index,occupant,score}}).filter(x=>x.score>-60);
+  const candidates=rooms.map((room,index)=>{const occupant=crew.find(w=>w.active&&w.hp>0&&w.roomIndex===index),damage=100-Math.max(0,room.armor);let score=damage+Math.random()*24;if(occupant)score+=attacker?.weaponKey==='sniper'?115:62;return{room,index,occupant,score}}).filter(x=>!x.room.erased);
   candidates.sort((a,b)=>b.score-a.score);
   return candidates[0]||null;
 }
@@ -32,7 +32,7 @@ function chooseSoloEarthWarrior(){
   const order=['bombardier','sniper','combat_controller'];
   for(let offset=0;offset<order.length;offset++){
     const slot=(soloEarthRotationIndex+offset)%order.length,key=order[slot],w=eWarriors.find(x=>x.active&&x.hp>0&&x.weaponKey===key);
-    if(!w)continue;if(key==='combat_controller'&&supportCooldown.earth>0){diag('EARTH AI ROTATION SKIP',\`COMBAT CONTROLLER cooldown=${'${'}supportCooldown.earth}\`);continue}
+    if(!w)continue;if(key==='combat_controller'&&(supportCooldown.earth>0||supportCalls.earth||earthSupportPresentationLock)){diag('AI CONTROLLER LOCK',\`cooldown=${'${'}supportCooldown.earth} queued=${'${'}supportCalls.earth?'Y':'N'} presentation=${'${'}earthSupportPresentationLock?'Y':'N'} selectable=N\`);continue}
     soloEarthRotationIndex=(slot+1)%order.length;diag('EARTH AI ROTATION',\`${'${'}STARTER_PROFILES[key]?.name||key} • slot ${'${'}slot+1}/3\`);return w;
   }
   return null;

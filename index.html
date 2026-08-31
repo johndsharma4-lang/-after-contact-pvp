@@ -1232,7 +1232,7 @@ if(window.visualViewport){window.visualViewport.addEventListener('resize',()=>{i
 
 let battleStarted=false,matchEnded=false;const deployment=EARLY_DEPLOYMENT;
 const TURN_LIMIT=28;
-let multiplayer=false,localSide='aurelian',currentTurn='aurelian',mpSocket=null,mpToken='',mpCode='',mpConnected=false,mpBothConnected=false,networkApplying=false,mpRound=1,turnsTaken=0;let mpHandshakePhase='idle',mpHandshakeTimer=null,mpHandshakeBusy=false;
+let multiplayer=false,localSide='aurelian',currentTurn='aurelian',mpSocket=null,mpToken='',mpCode='',mpConnected=false,mpBothConnected=false,networkApplying=false,mpRound=1,turnsTaken=0,noProgressActions=0,lastCombatStateSignature='';let mpHandshakePhase='idle',mpHandshakeTimer=null,mpHandshakeBusy=false;
 let mpReconnectTimer=null,mpReconnectAttempts=0,mpSocketGeneration=0,mpPlayStarted=false;
 const movePad=document.getElementById('movePad'),moveUp=document.getElementById('moveUp'),moveDown=document.getElementById('moveDown'),moveLeft=document.getElementById('moveLeft'),moveRight=document.getElementById('moveRight'),moveFuel=document.getElementById('moveFuel');
 const mobilityCoreLabel=document.getElementById('mobilityCoreLabel'),mobilityCoreSegments=[...document.querySelectorAll('.coreSeg')];
@@ -1431,7 +1431,7 @@ function debugSocketState(){
   const rs=mpSocket?.readyState;return rs===WebSocket.OPEN?'OPEN':rs===WebSocket.CONNECTING?'CONNECTING':rs===WebSocket.CLOSING?'CLOSING':rs===WebSocket.CLOSED?'CLOSED':'NONE'
 }
 function debugControlState(){
-  const local=multiplayer?localBattleWarrior():aWarriors?.[0]||null;
+  const local=localBattleWarrior?.()||null;
   const selectedKey=selected?.weaponKey||'none',localKey=local?.weaponKey||'none';
   const match=!!(local&&selected===local);
   const mine=!!(battleStarted&&!matchEnded&&(multiplayer?currentTurn===localSide:soloTurn==='aurelian'));
@@ -2024,7 +2024,7 @@ function handleMp(m){
   if(m.type==='fire'){networkApplying=true;const team=m.side==='earth'?eWarriors:aWarriors,w=team.find(x=>x.active&&x.weaponKey===m.warrior)||team.find(x=>x.active&&x.hp>0)||team[0],routed=m.warrior||w?.weaponKey;diag('REMOTE ATTACK ROUTE',`${m.side} faction=${m.faction||mpFactionState?.[m.side]?.faction||'-'} warrior=${routed||'-'}`);fireWarriorFromStage(w,m.point,m.power,true,routed);networkApplying=false;mpRound=m.round||mpRound;if(Number.isInteger(m.turnCount))turnsTaken=m.turnCount;setMpTurn(m.nextTurn);return}
   if(m.type==='turn'){mpRound=m.round||mpRound;if(Number.isInteger(m.turnCount))turnsTaken=m.turnCount;setMpTurn(m.turn);diag('ACTION TURN RELEASE',`turn=${m.turn} round=${mpRound} action=${turnsTaken}/${TURN_LIMIT}`);return}
   if(m.type==='match_end'){if(!matchEnded)endMatch(m.winner===localSide?'VICTORY':'DEFEAT',m.reason||'OPPONENT ELIMINATED',true);return}
-  if(m.type==='turn_limit'){turnsTaken=TURN_LIMIT;setTimeout(()=>{if(!matchEnded)resolveTurnLimit()},2600);return}
+  if(m.type==='turn_limit'){turnsTaken=TURN_LIMIT;statusEl.textContent='FINAL ATTACK RESOLVING • MATCH ADJUDICATION PENDING';setTimeout(()=>{if(!matchEnded)resolveTurnLimit()},6200);return}
   if(m.type==='draw'){if(!matchEnded)endMatch('DRAW',m.reason||'TURN LIMIT COMPLETE',true);return}
   if(m.type==='reset'){mpBattleStartKey='';rearmMultiplayerInput(`network reset:${m.mode||'reset'}`,300);resetBattleWorld(m.mode==='faction'?'faction':'deployment');resultOverlay.classList.remove('show');mpRound=1;if(m.mode==='faction'){stopDeployReadyRetry();stopRoomStatePolling();mpDeployLocked=false;mpDeployReadyAck=false;selectedFaction='';selectedWarriorType=null;deployment.fill(null);factionCards.forEach(c=>c.classList.remove('selected'));factionContinue.disabled=true;showFactionSelect();diag('MP FACTION RESET','same room • both players choose new factions')}else if(m.mode==='redeploy'){stopDeployReadyRetry();stopRoomStatePolling();mpDeployLocked=false;mpDeployReadyAck=false;characterOverlay.classList.add('hidden');deployOverlay.classList.remove('hidden');updateAfterContactOrientationLock();deployOverlay.setAttribute('aria-hidden','false');updateDeployUI();diag('MP REDEPLOY','deployment preserved; ready state cleared')}else{diag('MP REMATCH','clean deployment phase -> authoritative restart');startNetworkBattle(m)}return}
   if(m.type==='error'){diag('NETWORK REJECT',`${m.code||'ERROR'} ${m.message||'Unknown network error'}`);statusEl.textContent=`NETWORK • ${m.message}`;mpStatus.textContent=m.message;if(m.code==='INVALID_SHOT'||m.code==='NOT_TURN'||m.code==='MATCH_INACTIVE')rearmMultiplayerInput(`server reject:${m.code}`,240);return}
@@ -3637,16 +3637,13 @@ function chooseSoloAiTargetRoom(){
 function solveSoloHe9Shot(attacker,target){
   attacker.aiHe9FallbackRoomIndex=null;
   const targetStage=worldToStage(target.room.hitPlane.getWorldPosition(new THREE.Vector3())),startStage=worldToStage(muzzleWorld(attacker,targetStage)),toward=attacker.side==='aurelian'?1:-1;
-  let firstPhysicalHit=null;
   for(let power=52;power<=96;power+=4){
     for(let elevation=24;elevation<=68;elevation+=2){
       const rad=elevation*Math.PI/180,aim={x:startStage.x+toward*Math.cos(rad)*420,y:startStage.y-Math.sin(rad)*420};
       const flight=he9BallisticStagePath(attacker,startStage,aim,power,0,true);
-      if(flight.hit&&!firstPhysicalHit)firstPhysicalHit={aim,power,roomIndex:flight.hit.roomIndex,elevation};
       if(flight.hit?.roomIndex===target.index)return{aim,power,elevation,exact:true};
     }
   }
-  if(firstPhysicalHit)return{...firstPhysicalHit,exact:false};
   attacker.aiHe9FallbackRoomIndex=target.index;const direct={x:targetStage.x,y:targetStage.y};return{aim:direct,power:82,elevation:0,exact:false,guidedFallback:true};
 }
 function runSoloEarthTurn(){
@@ -4236,7 +4233,7 @@ function endMatch(outcome,reason,fromNetwork=false){clearSoloAiTimer();setMusicM
   resultTitle.textContent=outcome;resultReason.textContent=reason;
   const breached=eRooms.userData.rooms.filter(r=>r.breach>=100).length,structureLost=Math.floor((1-Math.max(0,structureHp.earth)/STRUCTURE_MAX)*9+.0001),lost=Math.max(breached,structureLost);
   resultStats.textContent=`SHOTS ${shots} • EARTH COMPARTMENTS LOST ${lost}/9`;
-  resultOverlay.classList.add('show');statusEl.textContent=`MATCH COMPLETE • ${outcome}`;if(multiplayer&&!fromNetwork)sendMp({type:'match_end',winner:outcome==='VICTORY'?localSide:opponentSide(),reason});
+  resultOverlay.classList.add('show');statusEl.textContent=`MATCH COMPLETE • ${outcome}`;if(multiplayer&&!fromNetwork){if(outcome==='DRAW')sendMp({type:'draw',reason});else sendMp({type:'match_end',winner:outcome==='VICTORY'?localSide:opponentSide(),reason})}
 }
 function checkMatchEnd(){
   if(matchEnded||!battleStarted)return;
@@ -4245,14 +4242,24 @@ function checkMatchEnd(){
   if(multiplayer){if(!earthAlive){endMatch(localSide==='aurelian'?'VICTORY':'DEFEAT',`${(FACTION_META[factionForSide('earth')]||FACTION_META.earth).short} CREW ELIMINATED`);return}if(!aurelianAlive)endMatch(localSide==='earth'?'VICTORY':'DEFEAT',`${(FACTION_META[factionForSide('aurelian')]||FACTION_META.aurelian).short} CREW ELIMINATED`);return}
   if(!earthAlive){endMatch('VICTORY',`${(FACTION_META[factionForSide('earth')]||FACTION_META.earth).short} CREW ELIMINATED`);return;}if(!aurelianAlive)endMatch('DEFEAT','YOUR CREW WAS ELIMINATED');
 }
-function turnLimitScore(side){const crew=(side==='aurelian'?aCrew:eCrew).filter(w=>w.active&&w.hp>0);return{structure:Math.max(0,structureHp[side]),shield:Math.max(0,shieldHp[side]),crew:crew.reduce((n,w)=>n+w.hp+w.aa,0)}}
+function turnLimitScore(side){const crew=(side==='aurelian'?aWarriors:eWarriors).filter(w=>w.active&&w.hp>0);return{structure:Math.max(0,structureHp[side]),shield:Math.max(0,shieldHp[side]),crew:crew.reduce((n,w)=>n+w.hp+w.aa,0)}}
+function combatStateSignature(){
+  const roomState=[...aRooms.userData.rooms,...eRooms.userData.rooms].map(r=>`${Math.round(r.armor)}:${Math.round(r.breach)}:${r.erased?1:0}`).join('|'),crewState=allWarriors.filter(w=>w.active).map(w=>`${w.side}:${w.index}:${w.roomIndex}:${Math.round(w.hp)}:${Math.round(w.aa)}`).join('|');
+  return `${Math.round(structureHp.aurelian)}:${Math.round(structureHp.earth)}:${Math.round(shieldHp.aurelian)}:${Math.round(shieldHp.earth)}|${roomState}|${crewState}`
+}
 function resolveTurnLimit(){
   if(matchEnded)return true;checkMatchEnd();if(matchEnded)return true;
   const a=turnLimitScore('aurelian'),e=turnLimitScore('earth'),cmp=a.structure-e.structure||a.shield-e.shield||a.crew-e.crew;
-  const reason=`28 TURN LIMIT • STRUCTURE ${Math.round(a.structure)}-${Math.round(e.structure)} • SHIELD ${Math.round(a.shield)}-${Math.round(e.shield)} • CREW ${Math.round(a.crew)}-${Math.round(e.crew)}`;
-  if(!cmp){endMatch('DRAW',reason,true);return true}const winner=cmp>0?'aurelian':'earth';endMatch(multiplayer?(winner===localSide?'VICTORY':'DEFEAT'):(winner==='aurelian'?'VICTORY':'DEFEAT'),reason,true);return true;
+  const reason=`${turnsTaken>=TURN_LIMIT?'28 TURN LIMIT':'NO-PROGRESS ADJUDICATION'} • STRUCTURE ${Math.round(a.structure)}-${Math.round(e.structure)} • SHIELD ${Math.round(a.shield)}-${Math.round(e.shield)} • COMBAT CREW ${Math.round(a.crew)}-${Math.round(e.crew)}`;
+  if(!cmp){endMatch('DRAW',reason);return true}const winner=cmp>0?'aurelian':'earth';endMatch(multiplayer?(winner===localSide?'VICTORY':'DEFEAT'):(winner==='aurelian'?'VICTORY':'DEFEAT'),reason);return true;
 }
-function completeTurn(){turnsTaken=Math.min(TURN_LIMIT,turnsTaken+1);diag('TURN COMPLETE',`${turnsTaken}/${TURN_LIMIT}`);return turnsTaken>=TURN_LIMIT&&resolveTurnLimit()}
+function completeTurn(){
+  turnsTaken=Math.min(TURN_LIMIT,turnsTaken+1);checkMatchEnd();if(matchEnded)return true;
+  const signature=combatStateSignature();if(lastCombatStateSignature&&signature===lastCombatStateSignature)noProgressActions++;else noProgressActions=0;lastCombatStateSignature=signature;
+  diag('TURN COMPLETE',`${turnsTaken}/${TURN_LIMIT} noProgress=${noProgressActions}/6`);
+  if(noProgressActions>=6){diag('STALEMATE SAFETY','six consecutive actions caused no damage');return resolveTurnLimit()}
+  return turnsTaken>=TURN_LIMIT&&resolveTurnLimit()
+}
 function resetRoom(room){
   if(room.solarCasualtyFx){for(const o of room.solarCasualtyFx)o.parent?.remove(o);room.solarCasualtyFx=[]}
   if(room.smokeFx?.particles)for(const p of room.smokeFx.particles)scene.remove(p.mesh);
@@ -4318,7 +4325,7 @@ function buildPrivateXray(){
   if(xrayGroup){localCommandVessel().remove(xrayGroup);disposeXrayObject(xrayGroup)}
   const roomRoot=localXrayRooms(),rooms=roomRoot.userData.rooms,faction=factionForWorldSide(localXraySide()),localCrew=localXrayWarriors().filter(w=>!w.passive).slice(0,3);xrayRoomVisuals=[];
   const g=new THREE.Group();g.name='PRIVATE_HULL_CAVITY_LOCAL_ONLY';g.userData.xrayVisual=true;g.userData.physicalHullCavity=true;g.position.copy(roomRoot.position);g.rotation.copy(roomRoot.rotation);g.scale.copy(roomRoot.scale);
-  const width=15.6,height=11.6,depth=3.6,hullColor=faction==='aurelian'?0x8d551f:0x3f505a,edgeColor=faction==='aurelian'?0xffce63:0xa8e8ff,inside=xrayBasic(0x071018,.98,false),hull=xrayBasic(hullColor,.96,false),edge=xrayBasic(edgeColor,.82,true);
+  const width=15.6,height=11.6,depth=3.6,hullColor=faction==='aurelian'?0x8d551f:0x3f505a,edgeColor=faction==='aurelian'?0xffce63:0xa8e8ff,inside=xrayBasic(faction==='aurelian'?0x17110d:0x13222b,.98,false),hull=xrayBasic(hullColor,.96,false),edge=xrayBasic(edgeColor,.82,true);
   const back=markXray(new THREE.Mesh(new THREE.BoxGeometry(width,height,.34),inside),68);back.position.z=-1.12;g.add(back);
   const rim=markXray(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(width,height,depth)),new THREE.LineBasicMaterial({color:edgeColor,transparent:true,opacity:.72,depthTest:false,depthWrite:false})),72);rim.position.z=-.10;g.add(rim);
   const standardRows=[...new Set(rooms.map(r=>(r.baseLocal||r.local).y))].sort((a,b)=>b-a),centerBaseY=(standardRows[0]+standardRows[standardRows.length-1])/2,baseXs=rooms.map(r=>(r.baseLocal||r.local).x),centerBaseX=(Math.min(...baseXs)+Math.max(...baseXs))/2;
@@ -4405,7 +4412,7 @@ function primeSoloBattleSelection(){
 function resetBattleWorld(nextPhase=null){
   if(aiming)clearAim();closePrivateXray('battle reset');xrayTurnKey='';xrayInitialSelectionShown=false;solarActionLock=false;barrageActionLock=false;clearBuildShowcase?.('battle reset');clearAllEffects();if(multiplayer)mpBattleStartKey='';diag('RESET OK','effects cleared');
   for(const side of ['aurelian','earth']){const call=supportCalls[side];if(call?.marker)call.marker.parent?.remove(call.marker);supportCalls[side]=null;supportCooldown[side]=0}
-  clearSoloAiTimer();soloTurn='aurelian';soloRound=1;turnsTaken=0;aure.position.set(-31,selectedFaction==='earth'?EARTH_GROUND_Y:18,-2);earth.position.set(28,EARTH_GROUND_Y,2);for(const side of ['aurelian','earth']){const motion=vesselVisualMotion[side];motion.offset.set(0,0,0);motion.vel.set(0,0,0);motion.tilt=0;motion.tiltVel=0;const skin=visualSkinForSide(side);if(skin){skin.position.set(0,0,0);skin.rotation.z=0}}moveRemaining=5;movePending=false;movePad.classList.remove('show');
+  clearSoloAiTimer();soloTurn='aurelian';soloRound=1;turnsTaken=0;noProgressActions=0;lastCombatStateSignature='';aure.position.set(-31,selectedFaction==='earth'?EARTH_GROUND_Y:18,-2);earth.position.set(28,EARTH_GROUND_Y,2);for(const side of ['aurelian','earth']){const motion=vesselVisualMotion[side];motion.offset.set(0,0,0);motion.vel.set(0,0,0);motion.tilt=0;motion.tiltVel=0;const skin=visualSkinForSide(side);if(skin){skin.position.set(0,0,0);skin.rotation.z=0}}moveRemaining=5;movePending=false;movePad.classList.remove('show');
   const resolvedPhase=nextPhase||(gameFlowPhase==='battle'?'deployment':gameFlowPhase);
   gameFlowPhase=resolvedPhase;
   diag('FLOW RESET',`phase=${resolvedPhase}`);
@@ -4600,16 +4607,20 @@ function clearRoomHazards(room){
   room.smokeFx=null;room.fireFx=null;room.acidFx=null
 }
 function relocateCrewFromErasedCompartment(attacker,index){
-  const rooms=opposingRooms(attacker).userData.rooms,crew=opposing(attacker).filter(w=>w.active&&w.roomIndex===index);let destination=index+3;
+  const rooms=opposingRooms(attacker).userData.rooms,crew=opposing(attacker).filter(w=>w.active&&w.roomIndex===index),living=crew.filter(w=>w.hp>0);let destination=index+3;
   while(destination<rooms.length&&rooms[destination]?.erased)destination+=3;
-  if(destination>=rooms.length){for(const w of crew)setWarriorRoom(w,index);diag('CREW FALL BLOCKED',`room=${index+1} crew=${crew.length} reason=NO_LOWER_COMPARTMENT`);return 0}
-  let fallDamage=0;for(const w of crew){setWarriorRoom(w,destination);w.fellFromRoom=index;w.fallRecoveryPending=w.hp>0;if(w.hp>0)fallDamage+=applyWarriorDamage(w,Math.max(1,Math.round(w.maxHp*.08)),'COMPARTMENT DROP',attacker)}
-  diag('CREW FALL RELOCATE',`room=${index+1}->${destination+1} crew=${crew.length} living=${crew.filter(w=>w.hp>0).length} unit=${fallDamage}`);return crew.length
+  if(destination>=rooms.length){const survivors=rooms.map((room,i)=>({room,i,d:Math.abs(Math.floor(i/3)-Math.floor(index/3))*3+Math.abs(i%3-index%3)})).filter(x=>x.i!==index&&!x.room.erased).sort((a,b)=>a.d-b.d||a.i-b.i);destination=survivors[0]?.i??-1}
+  if(destination<0){let collapseDamage=0;living.sort((a,b)=>Number(b.passive)-Number(a.passive));for(const w of living){w.fellFromRoom=index;w.fallRecoveryPending=false;collapseDamage+=applyWarriorDamage(w,Math.max(1,w.hp+w.aa),'TOTAL COMPARTMENT COLLAPSE',attacker)}diag('CREW TOTAL COLLAPSE',`room=${index+1} living=${living.length} unit=${collapseDamage} reason=NO_PHYSICAL_COMPARTMENT`);return crew.length}
+  let fallDamage=0;const emergency=destination!==index+3;for(const w of crew){setWarriorRoom(w,destination);w.fellFromRoom=index;w.fallRecoveryPending=w.hp>0;if(w.hp>0)fallDamage+=applyWarriorDamage(w,Math.max(1,Math.round(w.maxHp*(emergency?.12:.08))),emergency?'EMERGENCY HULL TRANSFER':'COMPARTMENT DROP',attacker)}
+  diag(emergency?'CREW EMERGENCY REANCHOR':'CREW FALL RELOCATE',`room=${index+1}->${destination+1} crew=${crew.length} living=${crew.filter(w=>w.hp>0).length} unit=${fallDamage} erasedTarget=N`);return crew.length
+}
+function enforceLivingCrewRoomInvariant(attacker){
+  const rooms=opposingRooms(attacker).userData.rooms;let repaired=0;for(const w of opposing(attacker).filter(x=>x.active&&x.hp>0)){if(!rooms[w.roomIndex]?.erased)continue;relocateCrewFromErasedCompartment(attacker,w.roomIndex);repaired++}if(repaired)diag('CREW ROOM INVARIANT REPAIR',`side=${attacker.side==='aurelian'?'earth':'aurelian'} repaired=${repaired}`);return repaired
 }
 function eraseCompartment(attacker,room,index){
   if(!room||room.erased)return false;room.erased=true;room.armor=0;room.breach=100;room.structuralFireScheduled=false;
   clearRoomHazards(room);clearStructureLossVoid(room);if(room.erasureVoid){room.erasureVoid.parent?.remove(room.erasureVoid);room.erasureVoid=null}for(const o of [room.frame,room.cavity,room.edge,room.breachMask])if(o)o.visible=false;room.hitPlane.visible=false;syncRoomStructuralDamage(room);ensurePersistentRubble(room,room.hitPlane.getWorldPosition(new THREE.Vector3()),0x3f3a35);if(room.exteriorScar){room.exteriorScar.visible=true;room.exteriorScar.material.color.setHex(0x120706);room.exteriorScar.material.opacity=.88}
-  relocateCrewFromErasedCompartment(attacker,index);collapseUnsupportedCompartment(attacker,index);syncProgressiveVesselDestruction(room.visualSide);rebuildVesselHealthSilhouettes();diag('COMPARTMENT ERASED',`room=${index+1} geometry=REMOVED shotPath=OPEN progressiveHull=Y crewRelocated=Y`);return true
+  relocateCrewFromErasedCompartment(attacker,index);collapseUnsupportedCompartment(attacker,index);enforceLivingCrewRoomInvariant(attacker);syncProgressiveVesselDestruction(room.visualSide);rebuildVesselHealthSilhouettes();diag('COMPARTMENT ERASED',`room=${index+1} geometry=REMOVED shotPath=OPEN progressiveHull=Y livingCrewInErased=0`);return true
 }
 let destructionDemoFx=null,destructionDemoTimers=[];
 function clearDestructionDemo(reason='complete'){
