@@ -3112,8 +3112,10 @@ const aWarriors=makeWarriors('aurelian',aRooms,[4,5,3],lancerTex,'solar_lancer')
 for(const w of aWarriors){
   if(w.weaponKey==='solar_lancer'){
     const model=buildSolarLancer3DModel();
-    model.scale.setScalar(.62);
+    model.scale.setScalar(.52);
     model.position.copy(w.sprite.position);
+    model.position.z+=1.35; // pull the real 3D warrior forward into the visible compartment volume
+    model.traverse(o=>{if(o.isMesh){o.frustumCulled=false;o.renderOrder=24}});
     if(w.side==='aurelian')model.rotation.y=Math.PI;
     w.roomGroup.add(model);
     w.model3D=model;
@@ -3132,7 +3134,7 @@ function setWarriorRoom(w,roomIndex){
   w.marker.position.copy(room.local).add(new THREE.Vector3(0,-.05,-.95));
   w.marker.rotation.y=w.side==='aurelian'?Math.PI:0;
   w.sprite.position.copy(room.local).add(new THREE.Vector3(0,-.1,-.75));
-  if(w.model3D)w.model3D.position.copy(w.sprite.position);
+  if(w.model3D){w.model3D.position.copy(w.sprite.position);w.model3D.position.z+=1.35;}
   if(w.xrayGlow)w.xrayGlow.position.copy(room.local).add(new THREE.Vector3(0,-.14,.50));
   if(w.captainBeacon)w.captainBeacon.position.copy(room.local).add(new THREE.Vector3(0,-.10,.46));
   w.hpBack.position.copy(room.local).add(new THREE.Vector3(0,1.78,-.64));
@@ -3159,7 +3161,7 @@ function syncCrewIdentityColors(){
 function setWarriorObjectsVisible(w,visible){
   if(!w)return false;
   const on=!!visible;
-  for(const obj of [w.sprite,w.marker,w.hpBack,w.hpFill,w.model3D])if(obj)obj.visible=on;
+  for(const obj of [w.sprite,w.marker,w.hpBack,w.hpFill])if(obj)obj.visible=on;if(w.model3D){const own3D=!multiplayer?w.side==='aurelian':w.side===localSide;w.model3D.visible=!!(w.active&&w.hp>0&&(own3D||on));}
   if(!on){if(w.xrayGlow)w.xrayGlow.visible=false;if(w.captainBeacon)w.captainBeacon.visible=false;if(w.healthBase)w.healthBase.visible=false;if(w.healthFill)w.healthFill.visible=false}
   if(w.hpEl)w.hpEl.style.display='none';
   return true;
@@ -4452,7 +4454,7 @@ function updateUnitVisuals(){
     const active=!!w.active&&w.hp>0;
     if(!active){setWarriorObjectsVisible(w,false);continue}
     syncWarriorConcealment(w);
-    if(w.model3D)w.model3D.visible=w.sprite.visible;
+    if(w.model3D){const own3D=!multiplayer?w.side==='aurelian':w.side===localSide;w.model3D.visible=!!(w.active&&w.hp>0&&(own3D||w.sprite.visible));}
     if(w.hpEl){if(w.aaText)w.aaText.textContent=Math.round(w.aa);if(w.aaDomFill)w.aaDomFill.style.width=`${Math.max(0,w.aa/w.maxAa*100)}%`;const pr=STARTER_PROFILES[w.weaponKey];if(w.nameText)w.nameText.textContent=w.passive?w.displayName:(pr?.name||'CAPTAIN')}
     if(w.hpFill)w.hpFill.scale.x=Math.max(.001,w.aa/w.maxAa);
     if(w.healthFill){const room=w.roomGroup?.userData?.rooms?.[w.roomIndex],ratio=Math.max(.001,w.hp/w.maxHp),height=w.healthHeight*ratio;w.healthFill.scale.set(1.22,height,1);if(room)w.healthFill.position.set(room.local.x,room.local.y-.14-w.healthHeight*.5+height*.5,.58)}
