@@ -1,0 +1,66 @@
+name: Fix Solar Lancer screen-true hit detection
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/fix-solar-lancer-hit-detection.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Patch Solar Lancer collision envelope
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+
+          old="const rect=objectScreenRect(rooms[i].hitPlane,0),entry=lineRectEntry(startStage,farStage,rect);if(entry)hits.push({room:rooms[i],roomIndex:i,entry,source:'exact-ray'});"
+          new="const rect=objectScreenRect(rooms[i].hitPlane,18),entry=lineRectEntry(startStage,farStage,rect);if(entry)hits.push({room:rooms[i],roomIndex:i,entry,source:'screen-true-ray'});"
+
+          if old not in s:
+              raise SystemExit('Refusing to patch: exact Solar Lancer hit-test line not found')
+          if s.count(old) != 1:
+              raise SystemExit(f'Refusing to patch: expected one exact hit-test line, found {s.count(old)}')
+
+          s=s.replace(old,new,1)
+          s=s.replace(
+              "// Exact free aim: no pointer snap, nearest-room retry, hull fallback, or center correction.",
+              "// Screen-true free aim: no pointer snap or center correction. A small visual envelope aligns the compartment collision with the rendered fortress hull."
+          ,1)
+          s=s.replace(
+              "diag('SOLAR FREE AIM',`result=${path.length?`RAY ${path.map(h=>h.roomIndex+1).join('>')}`:'MISS'} assist=NONE release=${Math.round(pt.x)},${Math.round(pt.y)}`);",
+              "diag('SOLAR FREE AIM',`result=${path.length?`RAY ${path.map(h=>h.roomIndex+1).join('>')}`:'MISS'} assist=NONE collisionPad=18px release=${Math.round(pt.x)},${Math.round(pt.y)}`);"
+          ,1)
+
+          if "objectScreenRect(rooms[i].hitPlane,18)" not in s or "screen-true-ray" not in s:
+              raise SystemExit('Patch verification failed')
+
+          p.write_text(s,encoding='utf-8')
+          print('PASS: Solar Lancer hit planes now use an 18px screen-true collision envelope')
+          print('PASS: no pointer snapping, nearest-room targeting, or auto-aim added')
+          PY
+
+      - name: Commit gameplay fix and remove temporary files
+        shell: bash
+        run: |
+          rm -f .github/workflows/fix-solar-lancer-hit-detection.yml
+          rm -f solar-hit-diagnostic.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/fix-solar-lancer-hit-detection.yml solar-hit-diagnostic.txt
+          git commit -m "Fix Solar Lancer screen-true hit detection"
+          git push origin HEAD:main
