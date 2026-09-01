@@ -607,9 +607,9 @@ html.gameView #stageShell{
 #ownerDbgTopCopy{height:34px;min-width:58px;padding:0 9px;border:1px solid rgba(121,240,172,.42);border-radius:9px;background:#0a3328;color:#b9ffdb;font:900 8px/1 system-ui;letter-spacing:.05em}
 /* One scroll surface only: the old nested log scroller trapped mobile swipes above the copy controls. */
 #ownerDbgText{max-height:none!important;overflow:visible!important;overscroll-behavior:auto!important;touch-action:auto!important}
-#xrayCrewCard{display:none;position:absolute;z-index:58;left:50%;bottom:42px;transform:translateX(-50%);width:min(560px,58vw);min-height:54px;grid-template-columns:8px 1fr auto;gap:9px;align-items:center;padding:8px 9px;border:1px solid rgba(170,225,255,.38);border-radius:12px;background:linear-gradient(100deg,rgba(2,10,18,.96),rgba(5,22,34,.93));box-shadow:0 10px 34px rgba(0,0,0,.55);pointer-events:auto;backdrop-filter:blur(8px)}
-#xrayCrewCard.show{display:grid}#xrayCrewColor{align-self:stretch;border-radius:6px;background:#74d9ff;box-shadow:0 0 14px currentColor}#xrayCrewName{font:1000 clamp(10px,1.25vw,15px)/1 system-ui;letter-spacing:.06em;color:#fff}#xrayCrewMeta{margin-top:4px;font:800 clamp(6px,.68vw,8px)/1.25 system-ui;letter-spacing:.035em;color:#cfeeff}#xrayCrewAbility{margin-top:3px;font:800 clamp(6px,.64vw,7.5px)/1.2 system-ui;color:#8fffc3}#xrayExitBtn{height:38px;padding:0 11px;border:1px solid rgba(255,255,255,.24);border-radius:9px;background:#13283a;color:#fff;font:1000 8px/1 system-ui;letter-spacing:.05em;touch-action:manipulation!important}
-@media(max-height:430px){#xrayCrewCard{bottom:34px;min-height:46px;padding:6px 8px}#xrayExitBtn{height:34px}}
+position:absolute;z-index:58;left:50%;bottom:42px;transform:translateX(-50%);width:min(560px,58vw);min-height:54px;grid-template-columns:8px 1fr auto;gap:9px;align-items:center;padding:8px 9px;border:1px solid rgba(170,225,255,.38);border-radius:12px;background:linear-gradient(100deg,rgba(2,10,18,.96),rgba(5,22,34,.93));box-shadow:0 10px 34px rgba(0,0,0,.55);pointer-events:auto;backdrop-filter:blur(8px)}
+border-radius:6px;background:#74d9ff;letter-spacing:.06em;font:800 clamp(6px,.68vw,8px)/1.25 system-ui;letter-spacing:.035em;font:800 clamp(6px,.64vw,7.5px)/1.2 system-ui;padding:0 11px;border:1px solid rgba(255,255,255,.24);border-radius:9px;background:#13283a;color:#fff;font:1000 8px/1 system-ui;letter-spacing:.05em;touch-action:manipulation!important}
+min-height:46px;padding:6px 8px}#xrayExitBtn{height:34px}}
 #ndaName{user-select:text!important;-webkit-user-select:text!important;touch-action:manipulation!important;pointer-events:auto!important;-webkit-appearance:none!important;appearance:none!important;font-size:16px!important;line-height:1.2!important}.ndaNameRow{display:grid;grid-template-columns:1fr auto;gap:7px;align-items:center}.ndaTypeFallback{height:42px!important;min-width:92px!important;padding:0 10px!important;border-radius:11px!important;border:1px solid rgba(116,217,255,.3)!important;background:#0a1825!important;color:#dff7ff!important;font:900 9px system-ui!important;letter-spacing:.04em!important;touch-action:manipulation!important}.ndaTyping #ndaName{border-color:#74d9ff!important;box-shadow:0 0 0 2px rgba(116,217,255,.13)!important}@media(max-height:430px){.ndaTypeFallback{height:34px!important}}
 
 #mpOverlay.roomReady{background:#01060c!important}
@@ -779,8 +779,8 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 #deployOverlay #battleBtn{height:42px!important;margin-top:6px!important;font-size:11px!important}
 #deployOverlay .deployFoot{font-size:7px!important;margin-top:3px!important}
 #dragGhost{width:118px!important;height:142px!important;object-fit:contain!important;filter:drop-shadow(0 12px 16px rgba(0,0,0,.82)) drop-shadow(0 0 7px rgba(84,210,255,.42))!important}
-#xrayCrewCard{border-color:rgba(255,190,91,.48)!important;background:linear-gradient(100deg,rgba(16,13,10,.97),rgba(31,24,15,.95))!important;box-shadow:0 10px 38px rgba(0,0,0,.68),inset 0 1px rgba(255,211,133,.08)!important}
-#xrayCrewMeta{color:#ffe2ae!important}#xrayCrewAbility{color:#92dcff!important}#xrayExitBtn{border-color:rgba(255,194,92,.36)!important;background:#2a2117!important}
+background:linear-gradient(100deg,rgba(16,13,10,.97),rgba(31,24,15,.95))!important;box-shadow:0 10px 38px rgba(0,0,0,.68),inset 0 1px rgba(255,211,133,.08)!important}
+background:#2a2117!important}
 @media (orientation:landscape) and (max-height:600px){
   #deployOverlay .deployPanel{padding-bottom:48px!important}
   #deployOverlay .deployRoster{gap:3px!important;padding-bottom:2px!important}
@@ -799,13 +799,6 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 </style>
 <meta name="after-contact-build" content="OCEAN 0.0 • REPTILIAN WORLD + SKILL AIM"/>
 
-<style id="solar-lancer-inroom-hotfix">
-  #warriorCutaway,
-  #xrayBtn {
-    display: none !important;
-    pointer-events: none !important;
-  }
-</style>
 
 </head>
 <body role="application" aria-label="After Contact 3D match end and results lab">
@@ -863,7 +856,6 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
   <div id="powerTray">POWER-UP STORAGE • RESERVED</div>
   <div id="damageMonitor"><div class="dmgTitle">TARGET DAMAGE</div><div class="dmgRow"><span class="dmgLabel">TARGET</span><span class="dmgValue" id="targetRoom">—</span></div><div class="dmgRow"><span class="dmgLabel">ARMOR</span><span class="dmgValue" id="targetArmor">—</span></div><div class="dmgRow"><span class="dmgLabel">BREACH</span><span class="dmgValue" id="targetBreach">—</span></div><div class="dmgRow"><span class="dmgLabel">WARRIOR</span><span class="dmgValue" id="targetUnit">HIDDEN</span></div></div>
   <div id="damageFlash"></div>
-  <div id="xrayCrewCard" aria-hidden="true" aria-live="polite"><div id="xrayCrewColor"></div><div><div id="xrayCrewName">SELECT CREW</div><div id="xrayCrewMeta">TAP A VISIBLE WARRIOR</div><div id="xrayCrewAbility">PHYSICAL CUTAWAY CREW SELECTION</div></div><button id="xrayExitBtn" type="button">EXIT CUTAWAY</button></div>
   <button id="ownerDbgBtn" type="button">DEBUG</button>
   <div id="ownerDbgPanel" aria-hidden="true"><div class="dbgHead"><span>MATCH RECORDER • v0.31.21</span><div class="dbgHeadActions"><button id="ownerDbgTopCopy" type="button">COPY</button><button id="ownerDbgClose" type="button">✕</button></div></div><div class="dbgHint">Records automatically. COPY stays pinned above the log. If the browser blocks clipboard access, the selectable fallback opens automatically.</div><div id="ownerDbgText">DEBUG READY</div><textarea id="ownerDbgSelect" readonly aria-label="Selectable debug log"></textarea><div id="ownerDbgNotice" aria-live="polite"></div><div id="ownerNdaLedger" style="display:none;margin-top:8px;padding:8px;border:1px solid rgba(121,240,172,.28);border-radius:9px;background:rgba(4,18,18,.7)">
 <div style="font:900 8px system-ui;color:#9fffc8;margin-bottom:6px">OWNER • NDA LEDGER</div>
@@ -1217,7 +1209,7 @@ function diag(step,data=''){try{diagLines.push(`${new Date().toLocaleTimeString(
 const starterCard=document.getElementById('starterCard'), stockBadge=document.getElementById('stockBadge'), deployRosterEl=document.getElementById('deployRoster'),deployCards=[...document.querySelectorAll('.deployCard[data-warrior-index]')],deploySlots=[...document.querySelectorAll('.deploySlot')];
 const targetRoomEl=document.getElementById('targetRoom'), targetArmorEl=document.getElementById('targetArmor'), targetBreachEl=document.getElementById('targetBreach'), targetUnitEl=document.getElementById('targetUnit'), damageFlash=document.getElementById('damageFlash');
 const unitHpLayer=document.getElementById('unitHpLayer'), muzzleDot=document.getElementById('muzzleDot');
-const xrayCrewCard=document.getElementById('xrayCrewCard'),xrayCrewColor=document.getElementById('xrayCrewColor'),xrayCrewName=document.getElementById('xrayCrewName'),xrayCrewMeta=document.getElementById('xrayCrewMeta'),xrayCrewAbility=document.getElementById('xrayCrewAbility'),xrayExitBtn=document.getElementById('xrayExitBtn');
+
 let xrayOpen=false,xrayTurnKey='',xrayGroup=null,xrayScanBand=null,xrayShellState=[],xrayRoomVisuals=[],xraySelectedCrew=null,xrayInitialSelectionShown=false,xrayPulse=0,exteriorRoomsHidden=true,tacticalAimView=false,structureHudTimers={aurelian:null,earth:null};
 const resultOverlay=document.getElementById('resultOverlay'),resultTitle=document.getElementById('resultTitle'),resultReason=document.getElementById('resultReason'),resultStats=document.getElementById('resultStats'),rematchBtn=document.getElementById('rematchBtn'),redeployBtn=document.getElementById('redeployBtn'),quitBtn=document.getElementById('quitBtn');
 const characterOverlay=document.getElementById('characterOverlay'),solarLancerChoice=document.getElementById('solarLancerChoice'),characterContinue=document.getElementById('characterContinue');
@@ -1227,7 +1219,7 @@ const mpOverlay=document.getElementById('mpOverlay'),mpHostBtn=document.getEleme
 const isEditableTarget=t=>t instanceof HTMLInputElement||t instanceof HTMLTextAreaElement||t instanceof HTMLSelectElement||t?.isContentEditable;
 const stopNative=e=>{if(isEditableTarget(e.target))return;if(e.cancelable)e.preventDefault()};
 for(const type of ['contextmenu','selectstart','dragstart','gesturestart','gesturechange','gestureend'])document.addEventListener(type,stopNative,{passive:false});
-const isGameControlTarget=t=>!!t?.closest?.('#mpOverlay button,#mpOverlay a,#mpOverlay input,#characterOverlay button,#deployOverlay button,.deployCard,.deploySlot,#movePad button,#ndaOverlay button,#ndaOverlay input,#ownerDbgPanel,#ownerDbgBtn,#xrayCrewCard button');
+
 for(const type of ['touchstart','touchmove','touchend','touchcancel'])shell.addEventListener(type,e=>{
   if(isEditableTarget(e.target)||isGameControlTarget(e.target))return;
   stopNative(e)
@@ -3171,7 +3163,7 @@ syncCrewIdentityColors();
 // Roster architecture: the player owns one starter warrior today. Additional warrior objects are
 // retained as future-ready placeholders but are inactive until they are actually owned/unlocked.
 
-aWarriors.forEach((w,i)=>{w.active=i===0;if(!w.active)setWarriorObjectsVisible(w,false)});
+aWarriors.forEach(w=>{w.active=true;setWarriorObjectsVisible(w,true)});
 // Shared deployment interaction state. These MUST be declared in module scope; assigning undeclared
 // names inside <script type=module> throws ReferenceError and kills touch/drag handling on iPhone.
 let dragWarrior=null,dragSource='roster',dragSourceRoom=null;
@@ -4389,9 +4381,9 @@ function makeXrayCrewLabel(w){
 function xrayArtTextureForWarrior(w){return w?.sprite?.material?.map||crewTextureForSide(w?.side)}
 function disposeXrayObject(root){if(!root)return;root.traverse(o=>{if(o.geometry&&o.userData?.xrayVisual)o.geometry.dispose?.();const mats=Array.isArray(o.material)?o.material:[o.material];for(const m of mats)if(m&&o.userData?.xrayVisual){if(m.map?.userData?.xrayOwnedMap)m.map.dispose?.();m.dispose?.()}})}
 function refreshXrayCrewCard(){
-  if(!xrayCrewCard)return;xrayCrewCard.classList.toggle('show',xrayOpen);xrayCrewCard.setAttribute('aria-hidden',xrayOpen?'false':'true');if(!xrayOpen)return;
-  const w=xraySelectedCrew;if(!w){xrayCrewName.textContent='FORTRESS CUTAWAY';xrayCrewMeta.textContent='ALL THREE WARRIOR STATUS CARDS ARE SELECTABLE';xrayCrewAbility.textContent='GREEN = ALIVE • RED = DEAD';return}
-  const profile=STARTER_PROFILES[w.weaponKey],name=w.passive?'PASSIVE CREW':(profile?.name||'WARRIOR');xrayCrewName.textContent=`${name} • ROOM ${w.roomIndex+1} • ${w.hp<=0?'DEAD':'ALIVE'}`;xrayCrewMeta.textContent=`ATMOSPHERE ARMOR ${Math.round(w.aa)}/${w.maxAa}  •  HP ${Math.round(w.hp)}/${w.maxHp}`;xrayCrewAbility.textContent=w.hp<=0?'WARRIOR DEAD • REMAINS VISIBLE FOR STATUS':w.passive?'BACKGROUND PERSONNEL • NOT SELECTABLE':`${name} SELECTED • COMBAT READY`;const hex=`#${w.assignedColor.toString(16).padStart(6,'0')}`;xrayCrewColor.style.background=w.hp<=0?'#ff4b3e':w.passive?'#65727a':hex;xrayCrewColor.style.color=w.hp<=0?'#ff4b3e':w.passive?'#65727a':hex
+if(!xrayOpen)return;
+  const w=xraySelectedCrew;return}
+  const profile=STARTER_PROFILES[w.weaponKey],name=w.passive?'PASSIVE CREW':(profile?.name||'WARRIOR');const hex=`#${w.assignedColor.toString(16).padStart(6,'0')}`;xrayCrewColor.style.color=w.hp<=0?'#ff4b3e':w.passive?'#65727a':hex
 }
 function restoreXrayShell(){for(const item of xrayShellState){if(!item.mesh)continue;if(Object.hasOwn(item,'visible'))item.mesh.visible=item.visible;if(item.material){const originals=new Set(Array.isArray(item.material)?item.material:[item.material]),temporary=Array.isArray(item.mesh.material)?item.mesh.material:[item.mesh.material];for(const m of temporary)if(m&&!originals.has(m))m.dispose?.();item.mesh.material=item.material}}xrayShellState=[]}
 function applyXrayShell(){
@@ -4458,7 +4450,7 @@ function updatePrivateXrayAnimation(dt){
 }
 function openPrivateXray(reason='own vessel tap'){
   if(!battleStarted||matchEnded||xrayOpen)return;const mine=multiplayer?currentTurn===localSide:soloTurn==='aurelian';if(!mine)return;
-  xrayOpen=true;xraySelectedCrew=localXrayWarriors().find(w=>w===selected&&w.active)||localXrayWarriors().find(w=>w.active&&w.hp>0)||localXrayWarriors()[0]||null;tacticalAimView=false;clearAim?.();applyXrayShell();buildPrivateXray();for(const w of localXrayWarriors())syncWarriorConcealment(w);refreshXrayCrewCard();updateBattleCamera();statusEl.textContent='FORTRESS CUTAWAY • TAP A WARRIOR CARD';diag('CUTAWAY OPEN',`${reason} side=${localXraySide()} selected=${xraySelectedCrew?.weaponKey||'NONE'} room=${(xraySelectedCrew?.roomIndex??0)+1} singleRoom=Y surroundingHull=VISIBLE`)
+  xrayOpen=false;xraySelectedCrew=localXrayWarriors().find(w=>w===selected&&w.active)||localXrayWarriors().find(w=>w.active&&w.hp>0)||localXrayWarriors()[0]||null;tacticalAimView=false;clearAim?.();applyXrayShell();buildPrivateXray();for(const w of localXrayWarriors())syncWarriorConcealment(w);refreshXrayCrewCard();updateBattleCamera();statusEl.textContent='FORTRESS CUTAWAY • TAP A WARRIOR CARD';diag('CUTAWAY OPEN',`${reason} side=${localXraySide()} selected=${xraySelectedCrew?.weaponKey||'NONE'} room=${(xraySelectedCrew?.roomIndex??0)+1} singleRoom=Y surroundingHull=VISIBLE`)
 }
 function closePrivateXray(reason='manual'){
   if(!xrayOpen)return;xrayOpen=false;xraySelectedCrew=null;restoreXrayShell();if(xrayGroup){localCommandVessel().remove(xrayGroup);disposeXrayObject(xrayGroup)}xrayGroup=null;xrayScanBand=null;xrayRoomVisuals=[];refreshXrayCrewCard();for(const w of localXrayWarriors())syncWarriorConcealment(w);updateBattleCamera();diag('CUTAWAY CLOSE',`${reason} side=${localXraySide()}`);const mine=multiplayer?currentTurn===localSide:soloTurn==='aurelian';if(mine&&!matchEnded)statusEl.textContent='YOUR TURN • MOVE OR FIRE • TAP OWN VESSEL FOR CUTAWAY'
@@ -5303,7 +5295,7 @@ function selectXrayCrew(w){
   if(!xrayOpen||!w||!w.active)return;if(w.weaponKey==='combat_controller'&&(supportCooldown[w.side]||0)>0){statusEl.textContent=`COMBAT CONTROLLER • LOCKED FOR ${supportCooldown[w.side]} MORE FULL TURN${supportCooldown[w.side]===1?'':'S'}`;diag('CONTROLLER CUTAWAY LOCK',`${w.side} remaining=${supportCooldown[w.side]} selectable=N`);return}xraySelectedCrew=w;if(w.hp>0&&!w.passive)selectWarrior(w);refreshPrivateXrayVisuals();
   const profile=STARTER_PROFILES[w.weaponKey],name=w.passive?'PASSIVE CREW':(profile?.name||'WARRIOR'),state=w.hp<=0?'DEAD':'ALIVE';statusEl.textContent=`CUTAWAY • ${name} • ${state} • ROOM ${w.roomIndex+1} • AA ${Math.round(w.aa)}/${w.maxAa} • HP ${Math.round(w.hp)}/${w.maxHp}`;diag('CUTAWAY WARRIOR SELECT',`${name} state=${state} room=${w.roomIndex+1} aa=${Math.round(w.aa)} hp=${Math.round(w.hp)} passive=${w.passive?'Y':'N'}`)
 }
-bindMobileAction(xrayExitBtn,e=>{stopNative(e);closePrivateXray('exit button')});
+closePrivateXray('exit button')});
 canvas.addEventListener('pointerdown',e=>{
   stopNative(e);if(!battleStarted||matchEnded)return;if(solarActionLock||barrageActionLock||acidActionLock){const why=solarActionLock?'solar action in progress':barrageActionLock?'HE-9 barrage resolving':'acid hose resolving';diag('AIM BLOCK',why);statusEl.textContent=solarActionLock?'SOLAR LANCER • BURN IN PROGRESS':barrageActionLock?'HE-9 BARRAGE • IMPACTS RESOLVING':'CORROSIVE FLOOD • IMPACT RESOLVING';return;}
   if(multiplayer&&!multiplayerInputReady()){diag('AIM BLOCK',`input rearming ${Math.max(0,mpInputArmAt-Date.now())}ms`);statusEl.textContent='CONTROL SYNC • TOUCH AGAIN';return}
