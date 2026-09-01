@@ -4204,13 +4204,13 @@ function solarBeamPathFromStage(attacker,pt,maxCompartments=3){
   const rooms=opposingRooms(attacker).userData.rooms,warriors=opposing(attacker),start=aimOriginWorld?.clone?.()||muzzleWorld(attacker,pt),startStage=worldToStage(start);
   let vx=pt.x-startStage.x,vy=pt.y-startStage.y;const mag=Math.hypot(vx,vy)||1;vx/=mag;vy/=mag;
   const farStage={x:startStage.x+vx*1900,y:startStage.y+vy*1900},hits=[];
-  // Exact free aim: no pointer snap, nearest-room retry, hull fallback, or center correction.
+  // Screen-true free aim: no pointer snap or center correction. A small visual envelope aligns the compartment collision with the rendered fortress hull.
   for(let i=0;i<rooms.length;i++){
-    const rect=objectScreenRect(rooms[i].hitPlane,0),entry=lineRectEntry(startStage,farStage,rect);if(entry)hits.push({room:rooms[i],roomIndex:i,entry,source:'exact-ray'});
+    const rect=objectScreenRect(rooms[i].hitPlane,18),entry=lineRectEntry(startStage,farStage,rect);if(entry)hits.push({room:rooms[i],roomIndex:i,entry,source:'screen-true-ray'});
   }
   hits.sort((a,b)=>a.entry.t-b.entry.t);const path=hits.slice(0,maxCompartments).map(h=>{const warrior=warriors.find(w=>w.roomIndex===h.roomIndex&&w.hp>0)||null;return{room:h.room,roomIndex:h.roomIndex,end:stagePointToRoomWorld(h.entry,h.room),warrior,direct:!!warrior,source:'exact-ray'}});
   const missEnd=targetPlanePointForOpponent(attacker,farStage),end=path.length?path[path.length-1].end:missEnd;
-  diag('SOLAR FREE AIM',`result=${path.length?`RAY ${path.map(h=>h.roomIndex+1).join('>')}`:'MISS'} assist=NONE release=${Math.round(pt.x)},${Math.round(pt.y)}`);
+  diag('SOLAR FREE AIM',`result=${path.length?`RAY ${path.map(h=>h.roomIndex+1).join('>')}`:'MISS'} assist=NONE collisionPad=18px release=${Math.round(pt.x)},${Math.round(pt.y)}`);
   return{start,end,path,exactHit:path[0]||null};
 }
 function ensureSolarBurnHole(room,point,intensity=0){
