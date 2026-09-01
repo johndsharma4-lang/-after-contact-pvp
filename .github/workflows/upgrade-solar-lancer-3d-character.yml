@@ -1,0 +1,161 @@
+name: Upgrade Solar Lancer 3D character model
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/upgrade-solar-lancer-3d-character.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Replace Solar Lancer with articulated 3D character
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+
+          new_fn=r'''function buildSolarLancer3DModel(){
+  const root=new THREE.Group();
+  root.name='SOLAR_LANCER_3D_RIG';
+
+  const gold=new THREE.MeshStandardMaterial({color:0xb98528,metalness:.72,roughness:.30});
+  const goldBright=new THREE.MeshStandardMaterial({color:0xffd65a,metalness:.66,roughness:.20,emissive:0xffa91f,emissiveIntensity:.42});
+  const ivory=new THREE.MeshStandardMaterial({color:0xeee6d2,metalness:.10,roughness:.58});
+  const cloth=new THREE.MeshStandardMaterial({color:0xe9dfc7,metalness:.02,roughness:.82,side:THREE.DoubleSide});
+  const dark=new THREE.MeshStandardMaterial({color:0x211a12,metalness:.48,roughness:.45});
+  const visor=new THREE.MeshStandardMaterial({color:0xfff3bd,emissive:0xffc64b,emissiveIntensity:1.45,metalness:.24,roughness:.18});
+
+  const mesh=(geo,mat,name)=>{const o=new THREE.Mesh(geo,mat);o.name=name;o.castShadow=true;o.receiveShadow=true;return o};
+  const joint=name=>{const g=new THREE.Group();g.name=name;return g};
+
+  const pelvis=joint('pelvis');pelvis.position.y=.05;root.add(pelvis);
+  const hipArmor=mesh(new THREE.CylinderGeometry(.52,.62,.62,10),gold,'hipArmor');hipArmor.position.y=.18;pelvis.add(hipArmor);
+  const belt=mesh(new THREE.TorusGeometry(.54,.055,8,24),goldBright,'belt');belt.rotation.x=Math.PI/2;belt.position.y=.32;pelvis.add(belt);
+
+  const torso=joint('torso');torso.position.y=.62;pelvis.add(torso);
+  const abdomen=mesh(new THREE.CylinderGeometry(.43,.50,.82,10),dark,'abdomen');abdomen.position.y=.34;torso.add(abdomen);
+  const chest=mesh(new THREE.SphereGeometry(.70,18,14),gold,'chest');chest.scale.set(1.0,.85,.62);chest.position.y=1.05;torso.add(chest);
+  const chestCore=mesh(new THREE.SphereGeometry(.24,14,10),goldBright,'solarCore');chestCore.scale.set(1,.72,.45);chestCore.position.set(0,1.08,.54);torso.add(chestCore);
+
+  const neck=mesh(new THREE.CylinderGeometry(.15,.18,.28,8),ivory,'neck');neck.position.y=1.67;torso.add(neck);
+  const head=joint('head');head.position.y=1.92;torso.add(head);
+  const skull=mesh(new THREE.SphereGeometry(.43,20,16),ivory,'helmet');skull.scale.set(.88,1.05,.92);head.add(skull);
+  const brow=mesh(new THREE.BoxGeometry(.62,.12,.22),gold,'helmetBrow');brow.position.set(0,.06,.34);head.add(brow);
+  const faceVisor=mesh(new THREE.SphereGeometry(.22,14,10),visor,'visor');faceVisor.scale.set(1.18,.45,.45);faceVisor.position.set(0,-.02,.40);head.add(faceVisor);
+  const crest=mesh(new THREE.ConeGeometry(.095,.82,6),goldBright,'crest');crest.position.set(0,.62,-.05);head.add(crest);
+  const halo=mesh(new THREE.TorusGeometry(.56,.045,10,30),goldBright,'halo');halo.position.set(0,.08,-.43);head.add(halo);
+
+  const shoulders=joint('shoulders');shoulders.position.y=1.30;torso.add(shoulders);
+  for(const sx of [-1,1]){
+    const side=sx<0?'L':'R';
+    const shoulder=joint('shoulder'+side);shoulder.position.set(sx*.72,0,0);shoulders.add(shoulder);
+    const pauldron=mesh(new THREE.SphereGeometry(.38,14,10),gold,'pauldron'+side);pauldron.scale.set(1.18,.72,.95);pauldron.position.set(sx*.12,.02,0);shoulder.add(pauldron);
+    const spike=mesh(new THREE.ConeGeometry(.12,.52,8),goldBright,'shoulderSpike'+side);spike.position.set(sx*.24,.34,-.03);spike.rotation.z=sx*.42;shoulder.add(spike);
+
+    const upper=joint('upperArm'+side);upper.position.set(sx*.28,-.25,0);upper.rotation.z=sx*.18;shoulder.add(upper);
+    const bicep=mesh(new THREE.CylinderGeometry(.16,.20,.78,8),gold,'bicep'+side);bicep.position.y=-.36;upper.add(bicep);
+
+    const elbow=joint('elbow'+side);elbow.position.y=-.76;upper.add(elbow);
+    const fore=mesh(new THREE.CylinderGeometry(.13,.16,.72,8),ivory,'forearm'+side);fore.position.y=-.32;elbow.add(fore);
+    const gauntlet=mesh(new THREE.SphereGeometry(.18,10,8),goldBright,'gauntlet'+side);gauntlet.position.y=-.70;elbow.add(gauntlet);
+  }
+
+  const legRoot=joint('legs');legRoot.position.y=-.18;pelvis.add(legRoot);
+  for(const sx of [-1,1]){
+    const side=sx<0?'L':'R';
+    const hip=joint('hip'+side);hip.position.set(sx*.27,0,0);hip.rotation.z=sx*.035;legRoot.add(hip);
+    const thigh=mesh(new THREE.CylinderGeometry(.20,.25,.92,8),gold,'thigh'+side);thigh.position.y=-.43;hip.add(thigh);
+    const knee=joint('knee'+side);knee.position.y=-.90;hip.add(knee);
+    const kneeGuard=mesh(new THREE.SphereGeometry(.18,10,8),goldBright,'kneeGuard'+side);kneeGuard.scale.set(1,.82,.92);knee.add(kneeGuard);
+    const shin=mesh(new THREE.CylinderGeometry(.15,.19,.90,8),ivory,'shin'+side);shin.position.y=-.43;knee.add(shin);
+    const boot=mesh(new THREE.BoxGeometry(.34,.28,.58),dark,'boot'+side);boot.position.set(0,-.92,.15);knee.add(boot);
+  }
+
+  const cape=mesh(new THREE.PlaneGeometry(1.25,2.30,4,6),cloth,'cape');cape.position.set(0,.48,-.58);cape.rotation.x=.12;torso.add(cape);
+
+  const weapon=joint('weapon');weapon.position.set(.55,.72,.34);torso.add(weapon);
+  weapon.rotation.z=-1.04;weapon.rotation.x=.05;
+  const lanceShaft=mesh(new THREE.CylinderGeometry(.045,.060,3.25,8),dark,'lanceShaft');lanceShaft.position.y=-.02;weapon.add(lanceShaft);
+  const grip=mesh(new THREE.CylinderGeometry(.075,.075,.54,8),gold,'lanceGrip');grip.position.y=-.44;weapon.add(grip);
+  const lanceTip=mesh(new THREE.ConeGeometry(.15,.68,10),goldBright,'lanceTip');lanceTip.position.y=1.90;weapon.add(lanceTip);
+  const lanceGlow=glowSphere(.19,0xffe58a,6);lanceGlow.name='lanceGlow';lanceGlow.position.y=2.22;weapon.add(lanceGlow);
+
+  // Hero stance: asymmetry makes the figure read as a character rather than a paper cutout.
+  torso.rotation.z=-.035;
+  root.getObjectByName('upperArmL').rotation.z=.34;
+  root.getObjectByName('upperArmR').rotation.z=-.46;
+  root.getObjectByName('elbowL').rotation.z=-.20;
+  root.getObjectByName('elbowR').rotation.z=.32;
+  root.getObjectByName('hipL').rotation.z=.08;
+  root.getObjectByName('hipR').rotation.z=-.05;
+  root.getObjectByName('kneeL').rotation.z=-.035;
+  root.getObjectByName('kneeR').rotation.z=.055;
+
+  root.userData.rig={
+    pelvis,torso,head,shoulders,
+    armL:root.getObjectByName('upperArmL'),armR:root.getObjectByName('upperArmR'),
+    elbowL:root.getObjectByName('elbowL'),elbowR:root.getObjectByName('elbowR'),
+    hipL:root.getObjectByName('hipL'),hipR:root.getObjectByName('hipR'),
+    kneeL:root.getObjectByName('kneeL'),kneeR:root.getObjectByName('kneeR'),
+    weapon,cape,lanceTip,lanceGlow
+  };
+  root.userData.animationState='idle';
+  return root;
+}
+'''
+
+          pattern=r"function buildSolarLancer3DModel\(\)\{.*?\n\}\n(?=function renderStarter3DPortrait\(type\)\{)"
+          m=re.search(pattern,s,re.S)
+          if not m:
+              raise SystemExit('Refusing to patch: Solar Lancer model function boundary not found')
+          s=s[:m.start()]+new_fn+s[m.end():]
+
+          marker='function renderStarter3DPortrait(type){'
+          helpers=r'''function poseSolarLancerHit(w,intensity=1){
+  const model=w?.model3D,rig=model?.userData?.rig;if(!model||!rig)return;
+  model.userData.animationState='hit';
+  const start=performance.now(),duration=260,baseZ=rig.torso.rotation.z;
+  const tick=now=>{if(!model.parent||model.userData.animationState!=='hit')return;const t=Math.min(1,(now-start)/duration),kick=Math.sin(t*Math.PI)*.20*intensity;rig.torso.rotation.z=baseZ-kick;rig.head.rotation.z=kick*.55;if(t<1)requestAnimationFrame(tick);else{rig.torso.rotation.z=baseZ;rig.head.rotation.z=0;model.userData.animationState='idle'}};requestAnimationFrame(tick);
+}
+function poseSolarLancerDeath(w){
+  const model=w?.model3D,rig=model?.userData?.rig;if(!model||!rig||model.userData.animationState==='dead')return;
+  model.userData.animationState='dead';
+  const start=performance.now(),duration=820,base=model.rotation.z;
+  const tick=now=>{if(!model.parent)return;const t=Math.min(1,(now-start)/duration),e=1-Math.pow(1-t,3);model.rotation.z=base-.92*e;model.position.y-=.012+e*.018;rig.weapon.rotation.z=-1.04-.65*e;rig.head.rotation.z=.22*e;rig.kneeL.rotation.z=-.55*e;rig.kneeR.rotation.z=.38*e;if(t<1)requestAnimationFrame(tick)};requestAnimationFrame(tick);
+}
+
+'''
+          if marker not in s:
+              raise SystemExit('renderStarter3DPortrait marker missing')
+          s=s.replace(marker,helpers+marker,1)
+
+          p.write_text(s,encoding='utf-8')
+          print('PASS: Solar Lancer rebuilt as articulated 3D character rig')
+          print('PASS: named joints added for future hit/death animation')
+          print('PASS: lightweight hit and death pose helpers added but not wired to damage yet')
+          PY
+
+      - name: Commit character upgrade and remove temporary workflow
+        shell: bash
+        run: |
+          rm -f .github/workflows/upgrade-solar-lancer-3d-character.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/upgrade-solar-lancer-3d-character.yml
+          git commit -m "Upgrade Solar Lancer articulated 3D character"
+          git push origin HEAD:main
