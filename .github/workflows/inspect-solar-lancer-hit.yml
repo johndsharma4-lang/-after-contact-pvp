@@ -1,0 +1,43 @@
+name: Inspect Solar Lancer hit detection
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/inspect-solar-lancer-hit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Print firing trajectory and collision code
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text().splitlines()
+          terms=['solar_lancer','Solar Lancer','laser','lance','fire','shoot','projectile','beam','trajectory','aim','hit','collision','intersect','fortress','shield','damage','ray','weaponKey']
+          hits=[]
+          for i,line in enumerate(s):
+            low=line.lower()
+            if any(t.lower() in low for t in terms): hits.append(i)
+          ranges=[]
+          for i in hits:
+            a=max(0,i-18); b=min(len(s),i+24)
+            merged=False
+            for k,(x,y) in enumerate(ranges):
+              if a<=y+3 and b>=x-3:
+                ranges[k]=(min(a,x),max(b,y)); merged=True; break
+            if not merged: ranges.append((a,b))
+          ranges=sorted(ranges)
+          for a,b in ranges:
+            print(f'--- LINES {a+1}-{b} ---')
+            for j in range(a,b): print(f'{j+1}: {s[j]}')
+          PY
