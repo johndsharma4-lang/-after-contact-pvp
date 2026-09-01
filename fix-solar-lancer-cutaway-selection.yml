@@ -1,0 +1,122 @@
+name: Fix Solar Lancer in-room 3D and selection
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/fix-solar-lancer-cutaway-selection.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Patch Solar Lancer presentation and warrior selection
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path("index.html")
+          s = p.read_text(encoding="utf-8")
+
+          required = [
+              "function buildSolarLancer3DModel()",
+              "w.model3D=model",
+              "function refreshXrayForWarrior(w)",
+              "function setSelectedWarrior(w,tapped=false)",
+          ]
+          missing = [x for x in required if x not in s]
+          if missing:
+              raise SystemExit("Refusing to patch: expected current-game code is missing: " + ", ".join(missing))
+
+          if 'id="solar-lancer-inroom-hotfix"' not in s:
+              hotfix_css = """
+          <style id="solar-lancer-inroom-hotfix">
+            #warriorCutaway {
+              display: none !important;
+              pointer-events: none !important;
+            }
+            #xrayBtn {
+              display: none !important;
+              pointer-events: none !important;
+            }
+          </style>
+          """
+              if "</head>" not in s:
+                  raise SystemExit("Refusing to patch: </head> not found")
+              s = s.replace("</head>", hotfix_css + "\n</head>", 1)
+
+          s, n = re.subn(
+              r"xrayOpen\s*=\s*!!selectedWarrior\s*;",
+              "xrayOpen=false;",
+              s,
+              count=1
+          )
+          if n != 1:
+              raise SystemExit(f"Refusing to patch: expected 1 automatic xrayOpen assignment, found {n}")
+
+          pattern = (
+              r"(const atmosphere=Math\.round\(room\?\.atmosphere\?\?100\);\s*)"
+              r"selectHud\.classList\.remove\('visible'\);"
+          )
+          s, n = re.subn(
+              pattern,
+              r"\1selectHud.classList.add('visible');",
+              s,
+              count=1
+          )
+          if n != 1:
+              raise SystemExit(f"Refusing to patch: expected 1 selected-warrior HUD branch, found {n}")
+
+          old_off = "if(w.sprite?.material){w.sprite.material.opacity=1;w.sprite.material.needsUpdate=true;}"
+          new_off = "if(w.sprite?.material){w.sprite.material.opacity=w.model3D?0:1;w.sprite.material.needsUpdate=true;}"
+          if old_off not in s:
+              raise SystemExit("Refusing to patch: expected XRAY-off sprite opacity line not found")
+          s = s.replace(old_off, new_off, 1)
+
+          old_on = "if(w.sprite?.material){w.sprite.material.opacity=.12;w.sprite.material.needsUpdate=true;}"
+          new_on = "if(w.sprite?.material){w.sprite.material.opacity=w.model3D?0:.12;w.sprite.material.needsUpdate=true;}"
+          if old_on not in s:
+              raise SystemExit("Refusing to patch: expected XRAY-on sprite opacity line not found")
+          s = s.replace(old_on, new_on, 1)
+
+          checks = [
+              'id="solar-lancer-inroom-hotfix"',
+              "xrayOpen=false;",
+              "selectHud.classList.add('visible');",
+              "w.sprite.material.opacity=w.model3D?0:1;",
+              "w.sprite.material.opacity=w.model3D?0:.12;",
+              "function buildSolarLancer3DModel()",
+          ]
+          failed = [x for x in checks if x not in s]
+          if failed:
+              raise SystemExit("Patch verification failed: " + ", ".join(failed))
+
+          p.write_text(s, encoding="utf-8")
+          print("PASS: Solar Lancer in-room/selection regression patch applied.")
+          print("PASS: warrior room movement code was not modified.")
+          PY
+
+      - name: Commit fixed index and remove one-time workflow
+        shell: bash
+        run: |
+          rm -f .github/workflows/fix-solar-lancer-cutaway-selection.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/fix-solar-lancer-cutaway-selection.yml
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "Fix Solar Lancer in-room 3D and warrior selection"
+          git push origin HEAD:main
