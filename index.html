@@ -4490,6 +4490,7 @@ function buildPrivateXray(){
     for(const sx of[-1,1]){const wall=markXray(new THREE.Mesh(new THREE.BoxGeometry(.20,roomH,roomD),wallMat.clone()),72);wall.position.x=sx*roomW*.5;cell.add(wall)}
     for(const sx of[-1,1]){const rail=markXray(new THREE.Mesh(new THREE.BoxGeometry(.10,roomH*.88,.10),trimMat.clone()),78);rail.position.set(sx*(roomW*.5-.22),0,roomD*.48);cell.add(rail)}
     const floorStrip=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.82,.06,.12),trimMat.clone()),79);floorStrip.position.set(0,floorY+.20,roomD*.49);cell.add(floorStrip);
+    const frontShutter=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.94,roomH*.92,.16),wallMat.clone()),96);frontShutter.name=`CUTAWAY_FRONT_SHUTTER_${i+1}`;frontShutter.position.set(0,0,roomD*.51);frontShutter.visible=false;cell.add(frontShutter);cell.userData.frontShutter=frontShutter;
     const rim=markXray(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(roomW,roomH,roomD)),new THREE.LineBasicMaterial({color:trimColor,transparent:true,opacity:.26,depthTest:false,depthWrite:false})),84);cell.add(rim);
 
     const w=crew.find(x=>x.roomIndex===i);if(!w)continue;
@@ -4502,7 +4503,7 @@ function buildPrivateXray(){
     const aura=markXray(new THREE.Mesh(new THREE.RingGeometry(.62,.70,22),xrayBasic(w.assignedColor,w===xraySelectedCrew?.62:.14,true)),88);aura.rotation.x=-Math.PI/2;aura.position.set(0,-.80,.15);stand.add(aura);
     const label=makeXrayCrewLabel(w);label.scale.set(1.72,.43,1);label.position.set(0,floorY+.34,roomD*.50+.06);cell.add(label);
     const light=new THREE.PointLight(faction==='aurelian'?0xffc86a:0x89dcff,w===xraySelectedCrew?2.1:1.25,7.5,1.7);light.position.set(-1.0,1.25,1.25);cell.add(light);
-    xrayRoomVisuals.push({warriorMarker:stand,statusGroup:null,warrior:w,rig3D,aura,label,hit,railHit:null,index:i,lastHp:w.hp,hitUntil:0,baseRigY:rig3D.position.y,baseRigScale:rig3D.scale.clone(),rim,roomLight:light,aaBack:null,aaFill:null,aaWidth:0,nativeRoom:cell,standAnchor:stand})
+    xrayRoomVisuals.push({warriorMarker:stand,statusGroup:null,warrior:w,rig3D,aura,label,hit,railHit:null,index:i,lastHp:w.hp,hitUntil:0,baseRigY:rig3D.position.y,baseRigScale:rig3D.scale.clone(),rim,roomLight:light,aaBack:null,aaFill:null,aaWidth:0,nativeRoom:cell,standAnchor:stand,frontShutter})
   }
   xrayScanBand=null;xrayGroup=g;g.updateWorldMatrix(true,true);refreshPrivateXrayVisuals();
   for(const v of xrayRoomVisuals){const box=new THREE.Box3().setFromObject(v.rig3D),size=box.getSize(new THREE.Vector3()),wp=v.rig3D.getWorldPosition(new THREE.Vector3()),sp=v.standAnchor.getWorldPosition(new THREE.Vector3()),ndc=wp.clone().project(camera);diag('NATIVE 3D WARRIOR',`${v.warrior.weaponKey} room=${v.index+1} size=${size.x.toFixed(2)},${size.y.toFixed(2)},${size.z.toFixed(2)} stand=${sp.x.toFixed(1)},${sp.y.toFixed(1)},${sp.z.toFixed(1)} ndc=${ndc.x.toFixed(2)},${ndc.y.toFixed(2)},${ndc.z.toFixed(2)}`)}
@@ -5379,8 +5380,18 @@ function xrayWarriorAtStagePoint(pt){
   for(const hit of raycaster.intersectObject(xrayGroup,true)){for(let o=hit.object;o&&o!==xrayGroup.parent;o=o.parent)if(o.userData?.xrayWarrior)return o.userData.xrayWarrior}
   return null
 }
+function setCutawayFiringStage(w){
+  if(!xrayOpen||!w)return;
+  for(const cell of xrayGroup?.children||[]){const shutter=cell?.userData?.frontShutter;if(shutter)shutter.visible=true}
+  const chosen=xrayRoomVisuals.find(v=>v.warrior===w);if(chosen?.frontShutter)chosen.frontShutter.visible=false;
+  if(chosen?.nativeRoom){chosen.nativeRoom.visible=true;chosen.nativeRoom.userData.firingStage=true}
+  diag('WARRIOR FIRING STAGE',`${w.weaponKey} room=${w.roomIndex+1} selectedRoomOpen=Y otherFrontsClosed=Y roomMoved=N`)
+}
+function restoreFullCutawayStage(){
+  for(const cell of xrayGroup?.children||[]){const shutter=cell?.userData?.frontShutter;if(shutter)shutter.visible=false;if(cell?.userData)cell.userData.firingStage=false}
+}
 function selectXrayCrew(w){
-  if(!xrayOpen||!w||!w.active)return;xraySelectedCrew=w;if(w.hp>0&&!w.passive)selectWarrior(w);refreshPrivateXrayVisuals();const p=STARTER_PROFILES[w.weaponKey],name=p?.name||'WARRIOR';statusEl.textContent=`CUTAWAY • ${name} • ROOM ${w.roomIndex+1} • HP ${Math.round(w.hp)}/${w.maxHp}`;diag('3D CUTAWAY SELECT',`${w.weaponKey} room=${w.roomIndex+1}`)
+  if(!xrayOpen||!w||!w.active)return;xraySelectedCrew=w;setCutawayFiringStage(w);if(w.hp>0&&!w.passive)selectWarrior(w);refreshPrivateXrayVisuals();const p=STARTER_PROFILES[w.weaponKey],name=p?.name||'WARRIOR';statusEl.textContent=`CUTAWAY • ${name} • ROOM ${w.roomIndex+1} • HP ${Math.round(w.hp)}/${w.maxHp}`;diag('3D CUTAWAY SELECT',`${w.weaponKey} room=${w.roomIndex+1}`)
 }
 bindMobileAction(xrayExitBtn,e=>{stopNative(e);closePrivateXray('exit button')});
 canvas.addEventListener('pointerdown',e=>{
