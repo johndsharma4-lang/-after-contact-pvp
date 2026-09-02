@@ -1,0 +1,25 @@
+name: Run selected warrior firing stage
+on:
+  push:
+    paths:
+      - '.github/scripts/selected_warrior_firing_stage.py'
+      - '.github/workflows/run-selected-warrior-firing-stage.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: python .github/scripts/selected_warrior_firing_stage.py
+      - run: |
+          grep -q "CUTAWAY_FRONT_SHUTTER_" index.html
+          grep -q "WARRIOR FIRING STAGE" index.html
+          grep -q "roomMoved=N" index.html
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Add selected warrior single-room firing stage"
+          git push
