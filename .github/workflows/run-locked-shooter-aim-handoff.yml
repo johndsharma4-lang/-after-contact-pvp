@@ -1,0 +1,25 @@
+name: Run locked shooter aim handoff fix
+on:
+  push:
+    paths:
+      - '.github/scripts/fix_locked_shooter_aim_handoff.py'
+      - '.github/workflows/run-locked-shooter-aim-handoff.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: python .github/scripts/fix_locked_shooter_aim_handoff.py
+      - run: |
+          grep -q "SHOOTER AIM SURFACE ARMED" index.html
+          grep -q "lockedShooter:true" index.html
+          grep -q "LOCKED OPEN COMPARTMENT" index.html
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Fix locked shooter aim handoff"
+          git push
