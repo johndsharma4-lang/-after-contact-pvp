@@ -4449,7 +4449,6 @@ function updatePrivateXrayAnimation(dt){
   if(!xrayOpen)return;xrayPulse=(xrayPulse+dt*.20)%1;refreshPrivateXrayVisuals()
 }
 function openPrivateXray(reason='own vessel tap'){
-  return; // legacy cutaway retired; normal warrior selection remains active
   if(!battleStarted||matchEnded||xrayOpen)return;const mine=multiplayer?currentTurn===localSide:soloTurn==='aurelian';if(!mine)return;
   xrayOpen=true;xraySelectedCrew=localXrayWarriors().find(w=>w===selected&&w.active)||localXrayWarriors().find(w=>w.active&&w.hp>0)||localXrayWarriors()[0]||null;tacticalAimView=false;clearAim?.();applyXrayShell();buildPrivateXray();for(const w of localXrayWarriors())syncWarriorConcealment(w);refreshXrayCrewCard();updateBattleCamera();statusEl.textContent='FORTRESS CUTAWAY • TAP A WARRIOR CARD';diag('CUTAWAY OPEN',`${reason} side=${localXraySide()} selected=${xraySelectedCrew?.weaponKey||'NONE'} room=${(xraySelectedCrew?.roomIndex??0)+1} singleRoom=Y surroundingHull=VISIBLE`)
 }
