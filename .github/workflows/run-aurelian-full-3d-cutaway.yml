@@ -1,0 +1,30 @@
+name: Run full Aurelian roster and 3D cutaway restoration
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/run-aurelian-full-3d-cutaway.yml']
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Restore roster and cutaway
+        run: python3 .github/scripts/restore_aurelian_full_3d_cutaway.py
+      - name: Verify and commit gameplay
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --check
+          git grep -q "SUN DISK GUNNER" -- index.html
+          git grep -q "SUNADIER" -- index.html
+          git grep -q "FULL_3X3_CREW_CUTAWAY" -- index.html
+          git grep -q "buildSunDiskGunner3DModel" -- index.html
+          git grep -q "buildSunadier3DModel" -- index.html
+          git commit -m "Restore three Aurelian warriors in full 3D cutaway"
+          git push origin HEAD:main
