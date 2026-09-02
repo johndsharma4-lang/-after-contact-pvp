@@ -1,0 +1,25 @@
+name: Run confirmed shooter lock patch
+on:
+  push:
+    paths:
+      - '.github/scripts/add_confirmed_shooter_lock.py'
+      - '.github/workflows/run-confirmed-shooter-lock.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: python .github/scripts/add_confirmed_shooter_lock.py
+      - run: |
+          grep -q "SHOOTER LOCK" index.html
+          grep -q "SHOOTER GESTURE ARMED" index.html
+          grep -q "cutawayMuzzle.getWorldPosition" index.html
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Add confirmed cutaway shooter lock"
+          git push
