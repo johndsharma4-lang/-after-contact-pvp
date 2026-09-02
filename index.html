@@ -5374,7 +5374,7 @@ function beginAimFromVesselGesture(e,pt){
   if(!ensureAimShooterReady())return false;
   if(xrayOpen&&!xrayConfirmedShooter){diag('AIM BLOCK','cutaway shooter not confirmed');statusEl.textContent='SELECT A WARRIOR • TAP AGAIN TO CONFIRM';return false}
   // Confirmed firing stage remains open while aiming so the shot visibly belongs to the warrior.
-  diag('AIM START',`${selected.weaponKey||'warrior'} from ${xrayOpen?'open compartment':'own vessel'} x=${Math.round(pt.x)} y=${Math.round(pt.y)}`);
+  diag('AIM START',`${selected.weaponKey||'warrior'} from ${xrayOpen?'LOCKED OPEN COMPARTMENT':'own vessel'} x=${Math.round(pt.x)} y=${Math.round(pt.y)}`);
   tacticalAimView=true;updateBattleCamera();showCombatRange(4000);aiming=true;aimHud.classList.add('live');pointerId=e.pointerId;
   const cutawayVisual=xrayOpen?xrayRoomVisuals.find(v=>v.warrior===selected):null;
   const cutawayMuzzle=cutawayVisual?.rig3D?.userData?.muzzle;
@@ -5426,11 +5426,20 @@ canvas.addEventListener('pointerdown',e=>{
   if(!multiplayer&&soloTurn!=='aurelian'){statusEl.textContent='EARTH AI TURN';return}
   if(aiming)return;const pt=eventStagePoint(e);
   if(xrayOpen){
-    const crew=xrayWarriorAtStagePoint(pt);if(crew){selectXrayCrew(crew);return}
+    // Once a shooter is confirmed, selection is finished. The open compartment becomes an aiming surface.
+    // This MUST run before the oversized warrior hit-zone or every drag is swallowed as another selection tap.
     if(xrayConfirmedShooter){
       const chosen=xrayRoomVisuals.find(v=>v.warrior===xrayConfirmedShooter),cp=chosen?worldToStage(chosen.standAnchor.getWorldPosition(new THREE.Vector3())):null;
-      if(cp&&Math.hypot(pt.x-cp.x,pt.y-cp.y)<=105){vesselGesture={pointerId:e.pointerId,start:pt,current:pt};try{canvas.setPointerCapture(e.pointerId)}catch{};diag('SHOOTER GESTURE ARMED',`${xrayConfirmedShooter.weaponKey} room=${xrayConfirmedShooter.roomIndex+1}`);return}
+      if(cp&&Math.hypot(pt.x-cp.x,pt.y-cp.y)<=150){
+        vesselGesture={pointerId:e.pointerId,start:pt,current:pt,lockedShooter:true};
+        try{canvas.setPointerCapture(e.pointerId)}catch{}
+        diag('SHOOTER AIM SURFACE ARMED',`${xrayConfirmedShooter.weaponKey} room=${xrayConfirmedShooter.roomIndex+1} radius=150px`);return
+      }
+      // Do not allow hidden/closed warriors to steal selection after shooter confirmation.
+      statusEl.textContent=`SHOOTER LOCKED • ${STARTER_PROFILES[xrayConfirmedShooter.weaponKey]?.name||'WARRIOR'} • DRAG FROM OPEN COMPARTMENT`;
+      diag('SHOOTER AIM BLOCK',`outside open room x=${Math.round(pt.x)} y=${Math.round(pt.y)}`);return
     }
+    const crew=xrayWarriorAtStagePoint(pt);if(crew){selectXrayCrew(crew);return}
     if(!pointHitsLocalVessel(pt)){closePrivateXray('outside tap');return}
   }
   if(pointHitsLocalVessel(pt)){
@@ -5469,7 +5478,9 @@ function finishPointer(e,cancel=false){
 canvas.addEventListener('pointerup',e=>{
   if(vesselGesture&&e.pointerId===vesselGesture.pointerId&&!aiming){
     stopNative(e);try{if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId)}catch{}
-    const wasCancelled=false;vesselGesture=null;if(!wasCancelled){tacticalAimView=false;togglePrivateXray('own vessel tap')}return
+    const locked=!!vesselGesture.lockedShooter;vesselGesture=null;
+    if(locked){statusEl.textContent=`SHOOTER LOCKED • ${STARTER_PROFILES[xrayConfirmedShooter?.weaponKey]?.name||'WARRIOR'} • DRAG TO AIM`;diag('SHOOTER AIM TAP','lock retained; no cutaway toggle');return}
+    tacticalAimView=false;togglePrivateXray('own vessel tap');return
   }
   finishPointer(e,false)
 },{passive:false});
