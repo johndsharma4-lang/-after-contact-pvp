@@ -28,3 +28,4 @@ jobs:
           git grep -q "buildSunadier3DModel" -- index.html
           git commit -m "Restore three Aurelian warriors in full 3D cutaway"
           git push origin HEAD:main
+# rerun after restoring missing script
