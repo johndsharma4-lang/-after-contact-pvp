@@ -1,0 +1,25 @@
+name: Run thorough 3D cutaway and team selection fix
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/run-cutaway-3d-team-fix.yml']
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Patch gameplay
+        run: python3 .github/scripts/fix_cutaway_3d_and_team.py
+      - name: Commit verified gameplay patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --check
+          git commit -m "Fix 3D compartment warriors and team selection thoroughly"
+          git push origin HEAD:main
