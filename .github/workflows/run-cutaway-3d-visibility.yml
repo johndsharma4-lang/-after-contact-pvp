@@ -1,0 +1,28 @@
+name: Run cutaway 3D visibility correction
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/scripts/force_cutaway_3d_visibility.py'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Force visible 3D warriors
+        run: python .github/scripts/force_cutaway_3d_visibility.py
+      - name: Verify
+        run: |
+          grep -q "rig3D.scale.setScalar(.88)" index.html
+          grep -q "toneMapped:false" index.html
+          grep -q "rig3D.position.set(0,-.10,1.34)" index.html
+      - name: Commit gameplay fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Force Aurelian 3D warriors visible in cutaway"
+          git push
