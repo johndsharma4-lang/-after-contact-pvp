@@ -1,0 +1,20 @@
+name: Revert malformed cutaway patch
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/revert-bad-cutaway-patch.yml']
+permissions:
+  contents: write
+jobs:
+  revert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git revert f92a84ac98bbd79f62e61d4fe26cee1cff1a0396 --no-edit
+          git push origin HEAD:main
