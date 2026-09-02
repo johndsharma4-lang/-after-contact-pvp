@@ -1,0 +1,25 @@
+name: Run Aurelian selection and firing fix
+on:
+  push:
+    paths:
+      - '.github/scripts/fix_aurelian_selection_and_fire_route.py'
+      - '.github/workflows/run-aurelian-selection-fire-fix.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: python .github/scripts/fix_aurelian_selection_and_fire_route.py
+      - run: |
+          grep -q "ATTACK ROUTE LOCK" index.html
+          grep -q "CUTAWAY SELECT FALLBACK" index.html
+          grep -q "PlaneGeometry(4.65,4.05)" index.html
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Fix Aurelian warrior selection and firing routes"
+          git push
