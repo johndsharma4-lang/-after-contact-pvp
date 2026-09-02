@@ -4475,10 +4475,10 @@ function buildPrivateXray(){
   // Native 3D cutaway layer: these rooms are no longer positioned from the legacy sprite-grid local coordinates.
   // Each new room is placed from the real compartment's world-space hit-plane position, converted into vessel-local space.
   const vessel=localCommandVessel(),g=new THREE.Group();g.name='NATIVE_3D_CUTAWAY_ROOMS';g.userData.xrayVisual=true;vessel.add(g);vessel.updateWorldMatrix(true,true);
-  const hullColor=faction==='aurelian'?0x6f431e:0x344d5b,trimColor=faction==='aurelian'?0xe9b94c:0x83ddff,insideColor=faction==='aurelian'?0x160f0a:0x0b1720;
+  const hullColor=faction==='aurelian'?0x3b2518:0x263a46,trimColor=faction==='aurelian'?0xb98538:0x5eb4d8,insideColor=faction==='aurelian'?0x0d0907:0x071119;
   const wallMat=new THREE.MeshStandardMaterial({color:hullColor,roughness:.72,metalness:.28,side:THREE.DoubleSide});
   const insideMat=new THREE.MeshStandardMaterial({color:insideColor,roughness:.88,metalness:.08,side:THREE.DoubleSide});
-  const trimMat=new THREE.MeshBasicMaterial({color:trimColor,transparent:true,opacity:.62,depthWrite:false,side:THREE.DoubleSide});
+  const trimMat=new THREE.MeshBasicMaterial({color:trimColor,transparent:true,opacity:.24,depthWrite:false,side:THREE.DoubleSide});
   const roomW=5.15,roomH=4.35,roomD=4.25,floorY=-roomH*.5;
 
   for(let i=0;i<rooms.length;i++){
@@ -4497,13 +4497,13 @@ function buildPrivateXray(){
     const w=crew.find(x=>x.roomIndex===i);if(!w)continue;
     // Dedicated standing anchor: feet sit on the new 3D floor. This anchor can later drive idle/hit/fall/death animation.
     const stand=new THREE.Group();stand.name=`WARRIOR_STAND_ANCHOR_ROOM_${i+1}`;stand.userData.xrayVisual=true;stand.userData.xrayWarrior=w;stand.position.set(0,floorY+.90,.42);cell.add(stand);
-    const rig3D=buildCutawayOnlyWarrior3D(w.weaponKey);rig3D.name=`NATIVE_${w.weaponKey.toUpperCase()}_ROOM_${i+1}`;rig3D.position.set(0,0,0);rig3D.scale.setScalar(.72);rig3D.visible=true;rig3D.traverse(o=>{o.userData=o.userData||{};o.userData.xrayVisual=true;o.visible=true;if(o.isMesh){o.frustumCulled=false;o.renderOrder=110}});stand.add(rig3D);
+    const rig3D=buildCutawayOnlyWarrior3D(w.weaponKey);rig3D.name=`NATIVE_${w.weaponKey.toUpperCase()}_ROOM_${i+1}`;rig3D.position.set(0,0,0);rig3D.scale.setScalar(.92);rig3D.visible=true;rig3D.traverse(o=>{o.userData=o.userData||{};o.userData.xrayVisual=true;o.visible=true;if(o.isMesh){o.frustumCulled=false;o.renderOrder=110}});stand.add(rig3D);
 
     const shadow=markXray(new THREE.Mesh(new THREE.CircleGeometry(.72,24),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.30,depthWrite:false,side:THREE.DoubleSide})),86);shadow.rotation.x=-Math.PI/2;shadow.position.set(0,-.82,.12);stand.add(shadow);
     const hit=markXray(new THREE.Mesh(new THREE.PlaneGeometry(4.65,4.05),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthTest:false,depthWrite:false,side:THREE.DoubleSide})),115);hit.position.set(0,.55,.70);hit.userData.xrayWarrior=w;stand.add(hit);
-    const aura=markXray(new THREE.Mesh(new THREE.RingGeometry(.62,.70,22),xrayBasic(w.assignedColor,w===xraySelectedCrew?.62:.14,true)),88);aura.rotation.x=-Math.PI/2;aura.position.set(0,-.80,.15);stand.add(aura);
+    const aura=markXray(new THREE.Mesh(new THREE.RingGeometry(.62,.70,22),xrayBasic(w.assignedColor,.10,true)),88);aura.rotation.x=-Math.PI/2;aura.position.set(0,-.80,.15);stand.add(aura);
     const label=makeXrayCrewLabel(w);label.scale.set(1.72,.43,1);label.position.set(0,floorY+.34,roomD*.50+.06);cell.add(label);
-    const light=new THREE.PointLight(faction==='aurelian'?0xffc86a:0x89dcff,w===xraySelectedCrew?2.1:1.25,7.5,1.7);light.position.set(-1.0,1.25,1.25);cell.add(light);
+    const light=new THREE.PointLight(faction==='aurelian'?0xfff0cf:0xd9f4ff,.42,6.2,2.0);light.position.set(-.75,1.55,1.70);cell.add(light);
     xrayRoomVisuals.push({warriorMarker:stand,statusGroup:null,warrior:w,rig3D,aura,label,hit,railHit:null,index:i,lastHp:w.hp,hitUntil:0,baseRigY:rig3D.position.y,baseRigScale:rig3D.scale.clone(),rim,roomLight:light,aaBack:null,aaFill:null,aaWidth:0,nativeRoom:cell,standAnchor:stand,frontShutter})
   }
   xrayScanBand=null;xrayGroup=g;g.updateWorldMatrix(true,true);refreshPrivateXrayVisuals();
@@ -4516,7 +4516,7 @@ function refreshPrivateXrayVisuals(){
     if(v.warriorMarker){
       const w=v.warrior,chosen=w===xraySelectedCrew,dead=w.hp<=0;if(w.hp<v.lastHp)v.hitUntil=now+360;v.lastHp=w.hp;v.warriorMarker.visible=true;
       if(v.rig3D){const hit=now<v.hitUntil,breath=Math.sin(now*.0026+w.roomIndex*.53),base=v.baseRigScale;v.rig3D.position.y=v.baseRigY+(dead?-.24:breath*.012);v.rig3D.rotation.z=dead?.86:(hit?Math.sin(now*.05)*.10:breath*.003);const m=dead?.94:1+(chosen?.016:.004)*breath;v.rig3D.scale.set(base.x*m,base.y*m,base.z*m)}
-      v.aura.material.opacity=dead?(chosen?.82:.40):(chosen?.86:.20);v.aura.material.color.setHex(dead?0xff4b3e:w.assignedColor);v.aura.scale.setScalar(chosen?1.16:1);if(v.rim?.material)v.rim.material.opacity=chosen?.90:.34;if(v.roomLight)v.roomLight.intensity=chosen?1.45:.82;v.label.material.opacity=chosen?1:.70;continue
+      v.aura.material.opacity=dead?(chosen?.82:.40):(chosen?.86:.20);v.aura.material.color.setHex(dead?0xff4b3e:w.assignedColor);v.aura.scale.setScalar(chosen?1.16:1);if(v.rim?.material)v.rim.material.opacity=chosen?.46:.16;if(v.roomLight)v.roomLight.intensity=chosen?.72:.28;v.label.material.opacity=chosen?1:.70;continue
     }
     const b=Math.max(0,Math.min(100,v.room.breach||0))/100,pulse=.54+.10*Math.abs(Math.sin(now*.003+v.index*.45));v.lamp.material.opacity=Math.max(.18,.92-b*.66)+pulse*.08;v.damage.material.opacity=b>0?.08+b*.52:0;
     v.damage.material.color.setHex(b>=.55?0xff4938:b>=.25?0xff8a45:0xffc04d)
@@ -4528,7 +4528,7 @@ function updatePrivateXrayAnimation(dt){
 }
 function openPrivateXray(reason='own vessel tap'){
   if(!battleStarted||matchEnded||xrayOpen)return;const mine=multiplayer?currentTurn===localSide:soloTurn==='aurelian';if(!mine)return;
-  xrayOpen=true;xrayConfirmedShooter=null;xraySelectedCrew=localXrayWarriors().find(w=>w===selected&&w.active)||localXrayWarriors().find(w=>w.active&&w.hp>0)||localXrayWarriors()[0]||null;tacticalAimView=false;clearAim?.();applyXrayShell();buildPrivateXray();for(const w of localXrayWarriors())syncWarriorConcealment(w);refreshXrayCrewCard();updateBattleCamera();statusEl.textContent='FORTRESS CUTAWAY • TAP A WARRIOR CARD';diag('CUTAWAY OPEN',`${reason} side=${localXraySide()} selected=${xraySelectedCrew?.weaponKey||'NONE'} room=${(xraySelectedCrew?.roomIndex??0)+1} singleRoom=Y surroundingHull=VISIBLE`)
+  xrayOpen=true;xrayConfirmedShooter=null;xraySelectedCrew=null;tacticalAimView=false;clearAim?.();applyXrayShell();buildPrivateXray();for(const w of localXrayWarriors())syncWarriorConcealment(w);refreshXrayCrewCard();updateBattleCamera();statusEl.textContent='CUTAWAY • TAP A WARRIOR ONCE TO HIGHLIGHT • TAP AGAIN TO LOCK SHOOTER';diag('CUTAWAY OPEN',`${reason} side=${localXraySide()} selected=${xraySelectedCrew?.weaponKey||'NONE'} room=${(xraySelectedCrew?.roomIndex??0)+1} singleRoom=Y surroundingHull=VISIBLE`)
 }
 function closePrivateXray(reason='manual'){
   if(!xrayOpen)return;xrayOpen=false;xraySelectedCrew=null;xrayConfirmedShooter=null;restoreXrayShell();if(xrayGroup){localCommandVessel().remove(xrayGroup);disposeXrayObject(xrayGroup)}xrayGroup=null;xrayScanBand=null;xrayRoomVisuals=[];refreshXrayCrewCard();for(const w of localXrayWarriors())syncWarriorConcealment(w);updateBattleCamera();diag('CUTAWAY CLOSE',`${reason} side=${localXraySide()}`);const mine=multiplayer?currentTurn===localSide:soloTurn==='aurelian';if(mine&&!matchEnded)statusEl.textContent='YOUR TURN • MOVE OR FIRE • TAP OWN VESSEL FOR CUTAWAY'
