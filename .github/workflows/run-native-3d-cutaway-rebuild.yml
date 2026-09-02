@@ -1,0 +1,25 @@
+name: Run native 3D cutaway room rebuild
+on:
+  push:
+    paths:
+      - '.github/scripts/rebuild_cutaway_native_3d_rooms.py'
+      - '.github/workflows/run-native-3d-cutaway-rebuild.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: python .github/scripts/rebuild_cutaway_native_3d_rooms.py
+      - run: |
+          grep -q "NATIVE_3D_CUTAWAY_ROOMS" index.html
+          grep -q "WARRIOR_STAND_ANCHOR_ROOM_" index.html
+          grep -q "legacySpriteGridPositioning=N" index.html
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Rebuild cutaway as native 3D warrior rooms"
+          git push
