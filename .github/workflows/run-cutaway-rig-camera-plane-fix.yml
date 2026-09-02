@@ -1,0 +1,24 @@
+name: Run cutaway rig camera-plane fix
+on:
+  push:
+    paths:
+      - '.github/scripts/fix_cutaway_rig_camera_plane.py'
+      - '.github/workflows/run-cutaway-rig-camera-plane-fix.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: python .github/scripts/fix_cutaway_rig_camera_plane.py
+      - run: |
+          grep -q "rig3D.position.set(0,-.02,.10)" index.html
+          grep -q "auraNdc=" index.html
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Align cutaway 3D warriors with visible camera plane"
+          git push
