@@ -1,41 +1,50 @@
 from pathlib import Path
-import re
 
 p=Path('index.html')
 s=p.read_text(encoding='utf-8')
 
-# 1. Retire the old DOM cutaway/XRAY presentation completely.
-# Keep no visible or interactive legacy cutaway elements in the battle UI.
-s=s.replace('''  <div id="xrayCrewCard" aria-hidden="true" aria-live="polite"><div id="xrayCrewColor"></div><div><div id="xrayCrewName">SELECT CREW</div><div id="xrayCrewMeta">TAP A VISIBLE WARRIOR</div><div id="xrayCrewAbility">PHYSICAL CUTAWAY CREW SELECTION</div></div><button id="xrayExitBtn" type="button">EXIT CUTAWAY</button></div>\n''','')
+# Exact legacy cutaway DOM block.
+old_card='''  <div id="xrayCrewCard" aria-hidden="true" aria-live="polite"><div id="xrayCrewColor"></div><div><div id="xrayCrewName">SELECT CREW</div><div id="xrayCrewMeta">TAP A VISIBLE WARRIOR</div><div id="xrayCrewAbility">PHYSICAL CUTAWAY CREW SELECTION</div></div><button id="xrayExitBtn" type="button">EXIT CUTAWAY</button></div>\n'''
+if old_card not in s:
+    raise SystemExit('legacy cutaway card markup not found')
+s=s.replace(old_card,'',1)
 
-# Remove the old CSS hotfix block too; the legacy DOM itself is now retired.
-s=re.sub(r'\n<style id="solar-lancer-inroom-hotfix">.*?</style>\n','\n',s,flags=re.S)
+# Exact temporary hotfix style block left from earlier experiments.
+old_hotfix='''<style id="solar-lancer-inroom-hotfix">\n  #warriorCutaway,\n  #xrayBtn {\n    display: none !important;\n    pointer-events: none !important;\n  }\n</style>\n'''
+if old_hotfix in s:
+    s=s.replace(old_hotfix,'',1)
 
-# 2. The current code intentionally activates only the first Aurelian warrior.
-# Restore all three pre-created Aurelian warrior objects as active/selectable.
-old="aWarriors.forEach((w,i)=>{w.active=i===0;if(!w.active)setWarriorObjectsVisible(w,false)});"
-new="aWarriors.forEach(w=>{w.active=true;setWarriorObjectsVisible(w,true)});"
-if old not in s:
+# Keep DOM references safe even though the card is gone.
+old_refs="const xrayCrewCard=document.getElementById('xrayCrewCard'),xrayCrewColor=document.getElementById('xrayCrewColor'),xrayCrewName=document.getElementById('xrayCrewName'),xrayCrewMeta=document.getElementById('xrayCrewMeta'),xrayCrewAbility=document.getElementById('xrayCrewAbility'),xrayExitBtn=document.getElementById('xrayExitBtn');"
+new_refs="const xrayCrewCard=null,xrayCrewColor=null,xrayCrewName=null,xrayCrewMeta=null,xrayCrewAbility=null,xrayExitBtn=null;"
+if old_refs not in s:
+    raise SystemExit('legacy cutaway DOM reference line not found')
+s=s.replace(old_refs,new_refs,1)
+
+# Do not let the old cutaway become a touch-control owner.
+old_control="const isGameControlTarget=t=>!!t?.closest?.('#mpOverlay button,#mpOverlay a,#mpOverlay input,#characterOverlay button,#deployOverlay button,.deployCard,.deploySlot,#movePad button,#ndaOverlay button,#ndaOverlay input,#ownerDbgPanel,#ownerDbgBtn,#xrayCrewCard button');"
+new_control="const isGameControlTarget=t=>!!t?.closest?.('#mpOverlay button,#mpOverlay a,#mpOverlay input,#characterOverlay button,#deployOverlay button,.deployCard,.deploySlot,#movePad button,#ndaOverlay button,#ndaOverlay input,#ownerDbgPanel,#ownerDbgBtn');"
+if old_control in s:
+    s=s.replace(old_control,new_control,1)
+
+# Enable all three pre-created Aurelian warriors. Their room indices are not changed.
+old_active="aWarriors.forEach((w,i)=>{w.active=i===0;if(!w.active)setWarriorObjectsVisible(w,false)});"
+new_active="aWarriors.forEach(w=>{w.active=true;setWarriorObjectsVisible(w,true)});"
+if old_active not in s:
     raise SystemExit('single-warrior activation restriction not found')
-s=s.replace(old,new,1)
+s=s.replace(old_active,new_active,1)
 
-# 3. Prevent legacy cutaway/XRAY state from owning warrior selection.
-s=re.sub(r'xrayOpen\s*=\s*!!\s*selectedWarrior\s*;','xrayOpen=false;',s)
-s=re.sub(r'xrayOpen\s*=\s*true\s*;','xrayOpen=false;',s)
-
-# 4. Remove legacy cutaway card display/update statements without touching selectedWarrior itself.
-# These are guarded because the old DOM nodes are gone.
-for name in ['xrayCrewCard','xrayCrewColor','xrayCrewName','xrayCrewMeta','xrayCrewAbility','xrayExitBtn','warriorCutaway']:
-    s=re.sub(rf'[^\n;]*\b{name}\b[^\n;]*;','',s)
-
-# 5. If legacy EXIT CUTAWAY text remains in generated UI strings, rename to neutral selection wording.
-s=s.replace('EXIT CUTAWAY','CLOSE CREW')
-s=s.replace('PHYSICAL CUTAWAY CREW SELECTION','CREW SELECTION')
+# Disable the legacy private-XRAY entry point without deleting the surrounding code.
+old_open="function openPrivateXray(reason='own vessel tap'){\n  if(!battleStarted||matchEnded||xrayOpen)return;"
+new_open="function openPrivateXray(reason='own vessel tap'){\n  return; // legacy cutaway retired; normal warrior selection remains active\n  if(!battleStarted||matchEnded||xrayOpen)return;"
+if old_open not in s:
+    raise SystemExit('openPrivateXray entry point not found')
+s=s.replace(old_open,new_open,1)
 
 checks={
-    'all_aurelian_active':"aWarriors.forEach(w=>{w.active=true;setWarriorObjectsVisible(w,true)});" in s,
+    'all_aurelian_active':new_active in s,
     'legacy_card_removed':'id="xrayCrewCard"' not in s,
-    'legacy_exit_removed':'EXIT CUTAWAY' not in s,
+    'xray_entry_disabled':'legacy cutaway retired' in s,
     '3d_rig_preserved':'SOLAR_LANCER_3D_RIG' in s,
     'room_function_preserved':'function setWarriorRoom(w,roomIndex)' in s,
 }
@@ -44,7 +53,8 @@ if failed:
     raise SystemExit('verification failed: '+', '.join(failed))
 
 p.write_text(s,encoding='utf-8')
-print('PASS old cutaway presentation retired')
-print('PASS all three Aurelian warrior objects active/selectable')
-print('PASS 3D Solar Lancer rig preserved')
-print('PASS setWarriorRoom preserved unchanged')
+print('PASS legacy cutaway DOM removed exactly')
+print('PASS legacy cutaway entry disabled')
+print('PASS all three Aurelian warriors active/selectable')
+print('PASS 3D rig preserved')
+print('PASS warrior room assignment code untouched')
