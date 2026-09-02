@@ -799,13 +799,6 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
 </style>
 <meta name="after-contact-build" content="OCEAN 0.0 • REPTILIAN WORLD + SKILL AIM"/>
 
-<style id="solar-lancer-inroom-hotfix">
-  #warriorCutaway,
-  #xrayBtn {
-    display: none !important;
-    pointer-events: none !important;
-  }
-</style>
 
 </head>
 <body role="application" aria-label="After Contact 3D match end and results lab">
@@ -863,7 +856,6 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
   <div id="powerTray">POWER-UP STORAGE • RESERVED</div>
   <div id="damageMonitor"><div class="dmgTitle">TARGET DAMAGE</div><div class="dmgRow"><span class="dmgLabel">TARGET</span><span class="dmgValue" id="targetRoom">—</span></div><div class="dmgRow"><span class="dmgLabel">ARMOR</span><span class="dmgValue" id="targetArmor">—</span></div><div class="dmgRow"><span class="dmgLabel">BREACH</span><span class="dmgValue" id="targetBreach">—</span></div><div class="dmgRow"><span class="dmgLabel">WARRIOR</span><span class="dmgValue" id="targetUnit">HIDDEN</span></div></div>
   <div id="damageFlash"></div>
-  <div id="xrayCrewCard" aria-hidden="true" aria-live="polite"><div id="xrayCrewColor"></div><div><div id="xrayCrewName">SELECT CREW</div><div id="xrayCrewMeta">TAP A VISIBLE WARRIOR</div><div id="xrayCrewAbility">PHYSICAL CUTAWAY CREW SELECTION</div></div><button id="xrayExitBtn" type="button">EXIT CUTAWAY</button></div>
   <button id="ownerDbgBtn" type="button">DEBUG</button>
   <div id="ownerDbgPanel" aria-hidden="true"><div class="dbgHead"><span>MATCH RECORDER • v0.31.21</span><div class="dbgHeadActions"><button id="ownerDbgTopCopy" type="button">COPY</button><button id="ownerDbgClose" type="button">✕</button></div></div><div class="dbgHint">Records automatically. COPY stays pinned above the log. If the browser blocks clipboard access, the selectable fallback opens automatically.</div><div id="ownerDbgText">DEBUG READY</div><textarea id="ownerDbgSelect" readonly aria-label="Selectable debug log"></textarea><div id="ownerDbgNotice" aria-live="polite"></div><div id="ownerNdaLedger" style="display:none;margin-top:8px;padding:8px;border:1px solid rgba(121,240,172,.28);border-radius:9px;background:rgba(4,18,18,.7)">
 <div style="font:900 8px system-ui;color:#9fffc8;margin-bottom:6px">OWNER • NDA LEDGER</div>
@@ -1217,7 +1209,7 @@ function diag(step,data=''){try{diagLines.push(`${new Date().toLocaleTimeString(
 const starterCard=document.getElementById('starterCard'), stockBadge=document.getElementById('stockBadge'), deployRosterEl=document.getElementById('deployRoster'),deployCards=[...document.querySelectorAll('.deployCard[data-warrior-index]')],deploySlots=[...document.querySelectorAll('.deploySlot')];
 const targetRoomEl=document.getElementById('targetRoom'), targetArmorEl=document.getElementById('targetArmor'), targetBreachEl=document.getElementById('targetBreach'), targetUnitEl=document.getElementById('targetUnit'), damageFlash=document.getElementById('damageFlash');
 const unitHpLayer=document.getElementById('unitHpLayer'), muzzleDot=document.getElementById('muzzleDot');
-const xrayCrewCard=document.getElementById('xrayCrewCard'),xrayCrewColor=document.getElementById('xrayCrewColor'),xrayCrewName=document.getElementById('xrayCrewName'),xrayCrewMeta=document.getElementById('xrayCrewMeta'),xrayCrewAbility=document.getElementById('xrayCrewAbility'),xrayExitBtn=document.getElementById('xrayExitBtn');
+const xrayCrewCard=null,xrayCrewColor=null,xrayCrewName=null,xrayCrewMeta=null,xrayCrewAbility=null,xrayExitBtn=null;
 let xrayOpen=false,xrayTurnKey='',xrayGroup=null,xrayScanBand=null,xrayShellState=[],xrayRoomVisuals=[],xraySelectedCrew=null,xrayInitialSelectionShown=false,xrayPulse=0,exteriorRoomsHidden=true,tacticalAimView=false,structureHudTimers={aurelian:null,earth:null};
 const resultOverlay=document.getElementById('resultOverlay'),resultTitle=document.getElementById('resultTitle'),resultReason=document.getElementById('resultReason'),resultStats=document.getElementById('resultStats'),rematchBtn=document.getElementById('rematchBtn'),redeployBtn=document.getElementById('redeployBtn'),quitBtn=document.getElementById('quitBtn');
 const characterOverlay=document.getElementById('characterOverlay'),solarLancerChoice=document.getElementById('solarLancerChoice'),characterContinue=document.getElementById('characterContinue');
@@ -1227,7 +1219,7 @@ const mpOverlay=document.getElementById('mpOverlay'),mpHostBtn=document.getEleme
 const isEditableTarget=t=>t instanceof HTMLInputElement||t instanceof HTMLTextAreaElement||t instanceof HTMLSelectElement||t?.isContentEditable;
 const stopNative=e=>{if(isEditableTarget(e.target))return;if(e.cancelable)e.preventDefault()};
 for(const type of ['contextmenu','selectstart','dragstart','gesturestart','gesturechange','gestureend'])document.addEventListener(type,stopNative,{passive:false});
-const isGameControlTarget=t=>!!t?.closest?.('#mpOverlay button,#mpOverlay a,#mpOverlay input,#characterOverlay button,#deployOverlay button,.deployCard,.deploySlot,#movePad button,#ndaOverlay button,#ndaOverlay input,#ownerDbgPanel,#ownerDbgBtn,#xrayCrewCard button');
+const isGameControlTarget=t=>!!t?.closest?.('#mpOverlay button,#mpOverlay a,#mpOverlay input,#characterOverlay button,#deployOverlay button,.deployCard,.deploySlot,#movePad button,#ndaOverlay button,#ndaOverlay input,#ownerDbgPanel,#ownerDbgBtn');
 for(const type of ['touchstart','touchmove','touchend','touchcancel'])shell.addEventListener(type,e=>{
   if(isEditableTarget(e.target)||isGameControlTarget(e.target))return;
   stopNative(e)
@@ -3171,7 +3163,7 @@ syncCrewIdentityColors();
 // Roster architecture: the player owns one starter warrior today. Additional warrior objects are
 // retained as future-ready placeholders but are inactive until they are actually owned/unlocked.
 
-aWarriors.forEach((w,i)=>{w.active=i===0;if(!w.active)setWarriorObjectsVisible(w,false)});
+aWarriors.forEach(w=>{w.active=true;setWarriorObjectsVisible(w,true)});
 // Shared deployment interaction state. These MUST be declared in module scope; assigning undeclared
 // names inside <script type=module> throws ReferenceError and kills touch/drag handling on iPhone.
 let dragWarrior=null,dragSource='roster',dragSourceRoom=null;
@@ -4457,6 +4449,7 @@ function updatePrivateXrayAnimation(dt){
   if(!xrayOpen)return;xrayPulse=(xrayPulse+dt*.20)%1;refreshPrivateXrayVisuals()
 }
 function openPrivateXray(reason='own vessel tap'){
+  return; // legacy cutaway retired; normal warrior selection remains active
   if(!battleStarted||matchEnded||xrayOpen)return;const mine=multiplayer?currentTurn===localSide:soloTurn==='aurelian';if(!mine)return;
   xrayOpen=true;xraySelectedCrew=localXrayWarriors().find(w=>w===selected&&w.active)||localXrayWarriors().find(w=>w.active&&w.hp>0)||localXrayWarriors()[0]||null;tacticalAimView=false;clearAim?.();applyXrayShell();buildPrivateXray();for(const w of localXrayWarriors())syncWarriorConcealment(w);refreshXrayCrewCard();updateBattleCamera();statusEl.textContent='FORTRESS CUTAWAY • TAP A WARRIOR CARD';diag('CUTAWAY OPEN',`${reason} side=${localXraySide()} selected=${xraySelectedCrew?.weaponKey||'NONE'} room=${(xraySelectedCrew?.roomIndex??0)+1} singleRoom=Y surroundingHull=VISIBLE`)
 }
