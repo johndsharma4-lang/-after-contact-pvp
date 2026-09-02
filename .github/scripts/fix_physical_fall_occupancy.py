@@ -29,27 +29,15 @@ new=r'''function relocateCrewFromErasedCompartment(attacker,index){
     const occupant=sideCrew.find(x=>x!==w&&x.active&&x.hp>0&&x.roomIndex===destination);
     if(occupant){
       const key=`${index}>${destination}`;
-      if(w.blockedFallKey!==key){
-        w.blockedFallKey=key;w.fellFromRoom=index;w.fallRecoveryPending=false;
-        const penalty=Math.max(1,Math.round(w.maxHp*.03));fallDamage+=applyWarriorDamage(w,penalty,'BLOCKED FALL IMPACT +3%',attacker);
-      }
+      if(w.blockedFallKey!==key){w.blockedFallKey=key;w.fellFromRoom=index;w.fallRecoveryPending=false;const penalty=Math.max(1,Math.round(w.maxHp*.03));fallDamage+=applyWarriorDamage(w,penalty,'BLOCKED FALL IMPACT +3%',attacker)}
       blocked++;diag('CREW FALL BLOCKED',`warrior=${w.weaponKey||w.index} from=${index+1} landing=${destination+1} occupiedBy=${occupant.weaponKey||occupant.index} penalty=3% moved=N`);continue
     }
-    const old=index;setWarriorRoom(w,destination);w.blockedFallKey=null;w.fellFromRoom=old;w.fallRecoveryPending=true;
-    const pct=.08*Math.max(1,levels),damage=Math.max(1,Math.round(w.maxHp*pct));fallDamage+=applyWarriorDamage(w,damage,levels>1?`COMPARTMENT FALL ${levels} LEVELS`:'COMPARTMENT FALL 1 LEVEL',attacker);moved++;
-    diag('CREW PHYSICAL FALL',`warrior=${w.weaponKey||w.index} from=${old+1} to=${destination+1} levels=${levels} damage=${damage}`)
+    const old=index;setWarriorRoom(w,destination);w.blockedFallKey=null;w.fellFromRoom=old;w.fallRecoveryPending=true;const pct=.08*Math.max(1,levels),damage=Math.max(1,Math.round(w.maxHp*pct));fallDamage+=applyWarriorDamage(w,damage,levels>1?`COMPARTMENT FALL ${levels} LEVELS`:'COMPARTMENT FALL 1 LEVEL',attacker);moved++;diag('CREW PHYSICAL FALL',`warrior=${w.weaponKey||w.index} from=${old+1} to=${destination+1} levels=${levels} damage=${damage}`)
   }
   diag('CREW FALL RESOLVE',`room=${index+1} landing=${destination+1} levels=${levels} moved=${moved} blocked=${blocked} unit=${fallDamage}`);return crew.length
 }
 function enforceLivingCrewRoomInvariant(attacker){
-  const rooms=opposingRooms(attacker).userData.rooms;let repaired=0;
-  for(const w of opposing(attacker).filter(x=>x.active&&x.hp>0)){
-    if(!rooms[w.roomIndex]?.erased)continue;
-    const below=w.roomIndex+3,occupant=below<rooms.length?opposing(attacker).find(x=>x!==w&&x.active&&x.hp>0&&x.roomIndex===below):null;
-    if(occupant&&w.blockedFallKey===`${w.roomIndex}>${below}`)continue;
-    relocateCrewFromErasedCompartment(attacker,w.roomIndex);repaired++
-  }
-  if(repaired)diag('CREW ROOM INVARIANT REPAIR',`side=${attacker.side==='aurelian'?'earth':'aurelian'} repaired=${repaired}`);return repaired
+  const rooms=opposingRooms(attacker).userData.rooms;let repaired=0;for(const w of opposing(attacker).filter(x=>x.active&&x.hp>0)){if(!rooms[w.roomIndex]?.erased)continue;const below=w.roomIndex+3,occupant=below<rooms.length?opposing(attacker).find(x=>x!==w&&x.active&&x.hp>0&&x.roomIndex===below):null;if(occupant&&w.blockedFallKey===`${w.roomIndex}>${below}`)continue;relocateCrewFromErasedCompartment(attacker,w.roomIndex);repaired++}if(repaired)diag('CREW ROOM INVARIANT REPAIR',`side=${attacker.side==='aurelian'?'earth':'aurelian'} repaired=${repaired}`);return repaired
 }'''
 if old not in s: raise SystemExit('collapse relocation block not found')
 s=s.replace(old,new,1)
