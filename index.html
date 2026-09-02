@@ -4437,14 +4437,14 @@ function buildPrivateXray(){
     const floor=markXray(new THREE.Mesh(new THREE.BoxGeometry(width,.16,depth),hull.clone()),72);floor.position.y=-height*.5;cell.add(floor);
     const ceiling=markXray(new THREE.Mesh(new THREE.BoxGeometry(width,.14,depth),hull.clone()),72);ceiling.position.y=height*.5;cell.add(ceiling);
     for(const sx of[-1,1]){const wall=markXray(new THREE.Mesh(new THREE.BoxGeometry(.14,height,depth),hull.clone()),72);wall.position.x=sx*width*.5;cell.add(wall)}
-    const rim=markXray(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(width+.04,height+.04,depth+.04)),new THREE.LineBasicMaterial({color:edgeColor,transparent:true,opacity:.34,depthTest:false,depthWrite:false})),84);cell.add(rim);
+    const rim=markXray(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(width+.04,height+.04,depth+.04)),new THREE.LineBasicMaterial({color:edgeColor,transparent:true,opacity:.24,depthTest:false,depthWrite:false})),84);cell.add(rim);
     const w=crew.find(x=>x.roomIndex===i);if(!w)continue;
     const marker=new THREE.Group();marker.userData.xrayVisual=true;marker.userData.xrayWarrior=w;marker.position.set(0,-.12,.72);cell.add(marker);
     const hit=markXray(new THREE.Mesh(new THREE.PlaneGeometry(3.8,3.7),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthTest:false,depthWrite:false,side:THREE.DoubleSide})),105);hit.userData.xrayWarrior=w;marker.add(hit);
-    const rig3D=buildAurelianWarrior3DModel(w.weaponKey);rig3D.name=`CUTAWAY_${w.weaponKey.toUpperCase()}_ROOM_${i+1}`;rig3D.position.set(0,-.40,.54);rig3D.scale.setScalar(.42);rig3D.rotation.y=w.side==='aurelian'?Math.PI:0;rig3D.traverse(o=>{o.userData=o.userData||{};o.userData.xrayVisual=true;if(o.isMesh){o.frustumCulled=false;o.renderOrder=94;if(o.material){o.material=o.material.clone();o.material.depthTest=false;o.material.depthWrite=false}}});marker.add(rig3D);
+    const rig3D=buildAurelianWarrior3DModel(w.weaponKey);rig3D.name=`CUTAWAY_${w.weaponKey.toUpperCase()}_ROOM_${i+1}`;rig3D.position.set(0,-.10,1.34);rig3D.scale.setScalar(.88);rig3D.rotation.y=w.side==='aurelian'?Math.PI:0;rig3D.traverse(o=>{o.userData=o.userData||{};o.userData.xrayVisual=true;if(o.isMesh){o.frustumCulled=false;o.renderOrder=94;if(o.material){const src=o.material;const c=src.color?.clone?.()||new THREE.Color(0xffd86b);o.material=new THREE.MeshBasicMaterial({color:c,transparent:false,opacity:1,side:THREE.DoubleSide,depthTest:false,depthWrite:false,toneMapped:false});}}});marker.add(rig3D);
     const aura=markXray(new THREE.Mesh(new THREE.RingGeometry(.74,.82,18),xrayBasic(w.assignedColor,w===xraySelectedCrew?.72:.20,true)),88);aura.position.set(0,-.18,.06);marker.add(aura);
     const label=makeXrayCrewLabel(w);label.scale.set(2.25,.56,1);label.position.set(0,-1.55,.95);cell.add(label);
-    const light=new THREE.PointLight(0xffc86a,w===xraySelectedCrew?1.45:.82,5.5,2);light.position.set(-.8,1.05,1.0);cell.add(light);
+    const light=new THREE.PointLight(0xffd98a,w===xraySelectedCrew?2.4:1.55,7.5,1.6);light.position.set(-.8,1.05,1.0);cell.add(light);
     xrayRoomVisuals.push({warriorMarker:marker,statusGroup:null,warrior:w,rig3D,aura,label,hit,railHit:null,index:i,lastHp:w.hp,hitUntil:0,baseRigY:rig3D.position.y,baseRigScale:rig3D.scale.clone(),rim,roomLight:light,aaBack:null,aaFill:null,aaWidth:0})
   }
   xrayScanBand=null;xrayGroup=g;localCommandVessel().add(g);refreshPrivateXrayVisuals();diag('FULL 3X3 CREW CUTAWAY',`warriors=${crew.map(w=>w.weaponKey+'@R'+(w.roomIndex+1)).join(',')}`)
