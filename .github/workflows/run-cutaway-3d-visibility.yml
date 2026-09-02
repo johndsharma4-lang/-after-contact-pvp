@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - '.github/scripts/force_cutaway_3d_visibility.py'
+      - '.github/workflows/run-cutaway-3d-visibility.yml'
 jobs:
   patch:
     runs-on: ubuntu-latest
