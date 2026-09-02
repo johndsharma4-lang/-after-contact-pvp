@@ -3239,14 +3239,15 @@ function authoritativeWarriorTypeForSide(side,eventWarrior=null,eventFaction=nul
 }
 function enforceAttackRoute(side,w,eventWarrior=null,eventFaction=null,source='runtime'){
   if(!w)return null;
-  // Earth team identities are authoritative once deployed. Specialist weapons remain concept-only,
-  // but the old single-starter guard must never rewrite their name, portrait, HP, or room as Bombardier.
-  if(factionForSide(side)==='earth'&&!w.passive&&(w.weaponKey==='sniper'||w.weaponKey==='combat_controller'))return w.weaponKey;
-  const expected=authoritativeWarriorTypeForSide(side,eventWarrior,eventFaction);
-  if(w.weaponKey!==expected){
-    diag('ATTACK ROUTE FIX',`${source} ${side} ${w.weaponKey||'-'} -> ${expected}`);
-    applyProfileToWarrior(w,expected);
+  const faction=factionForSide(side),deployedIds=(FACTION_META[faction]?.roster||[]).map(x=>x.id);
+  // Once a living deployed warrior is explicitly selected, its identity/weapon is authoritative.
+  // Do not rewrite Sun Disk Gunner or Sunadier back to the original single-starter route.
+  if(!w.passive&&w.active&&w.hp>0&&deployedIds.includes(w.weaponKey)){
+    diag('ATTACK ROUTE LOCK',`${source} ${side} ${w.weaponKey} trustedSelected=Y`);return w.weaponKey
   }
+  if(faction==='earth'&&!w.passive&&(w.weaponKey==='sniper'||w.weaponKey==='combat_controller'))return w.weaponKey;
+  const expected=authoritativeWarriorTypeForSide(side,eventWarrior,eventFaction);
+  if(w.weaponKey!==expected){diag('ATTACK ROUTE FIX',`${source} ${side} ${w.weaponKey||'-'} -> ${expected}`);applyProfileToWarrior(w,expected)}
   return expected;
 }
 function updateFactionBattleHud(){
@@ -4499,7 +4500,7 @@ function buildPrivateXray(){
     const rig3D=buildCutawayOnlyWarrior3D(w.weaponKey);rig3D.name=`NATIVE_${w.weaponKey.toUpperCase()}_ROOM_${i+1}`;rig3D.position.set(0,0,0);rig3D.scale.setScalar(.72);rig3D.visible=true;rig3D.traverse(o=>{o.userData=o.userData||{};o.userData.xrayVisual=true;o.visible=true;if(o.isMesh){o.frustumCulled=false;o.renderOrder=110}});stand.add(rig3D);
 
     const shadow=markXray(new THREE.Mesh(new THREE.CircleGeometry(.72,24),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.30,depthWrite:false,side:THREE.DoubleSide})),86);shadow.rotation.x=-Math.PI/2;shadow.position.set(0,-.82,.12);stand.add(shadow);
-    const hit=markXray(new THREE.Mesh(new THREE.PlaneGeometry(2.5,3.7),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthTest:false,depthWrite:false,side:THREE.DoubleSide})),115);hit.position.set(0,.55,.70);hit.userData.xrayWarrior=w;stand.add(hit);
+    const hit=markXray(new THREE.Mesh(new THREE.PlaneGeometry(4.65,4.05),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthTest:false,depthWrite:false,side:THREE.DoubleSide})),115);hit.position.set(0,.55,.70);hit.userData.xrayWarrior=w;stand.add(hit);
     const aura=markXray(new THREE.Mesh(new THREE.RingGeometry(.62,.70,22),xrayBasic(w.assignedColor,w===xraySelectedCrew?.62:.14,true)),88);aura.rotation.x=-Math.PI/2;aura.position.set(0,-.80,.15);stand.add(aura);
     const label=makeXrayCrewLabel(w);label.scale.set(1.72,.43,1);label.position.set(0,floorY+.34,roomD*.50+.06);cell.add(label);
     const light=new THREE.PointLight(faction==='aurelian'?0xffc86a:0x89dcff,w===xraySelectedCrew?2.1:1.25,7.5,1.7);light.position.set(-1.0,1.25,1.25);cell.add(light);
@@ -5378,6 +5379,9 @@ function beginAimFromVesselGesture(e,pt){
 function xrayWarriorAtStagePoint(pt){
   if(!xrayOpen||!xrayGroup)return null;const ndc=new THREE.Vector2(pt.x/640-1,1-pt.y/360);raycaster.setFromCamera(ndc,camera);
   for(const hit of raycaster.intersectObject(xrayGroup,true)){for(let o=hit.object;o&&o!==xrayGroup.parent;o=o.parent)if(o.userData?.xrayWarrior)return o.userData.xrayWarrior}
+  // Mobile fallback: choose the nearest visible living warrior if the tap lands anywhere near the room.
+  let best=null,bestD=Infinity;for(const v of xrayRoomVisuals){const w=v.warrior;if(!w?.active||w.hp<=0||w.passive)continue;const p=worldToStage(v.standAnchor.getWorldPosition(new THREE.Vector3())),d=Math.hypot(pt.x-p.x,pt.y-p.y);if(d<bestD){best=w;bestD=d}}
+  if(best&&bestD<=78){diag('CUTAWAY SELECT FALLBACK',`${best.weaponKey} distance=${Math.round(bestD)}px`);return best}
   return null
 }
 function setCutawayFiringStage(w){
