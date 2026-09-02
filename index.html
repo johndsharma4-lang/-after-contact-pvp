@@ -4426,34 +4426,45 @@ function applyXrayShell(){
 }
 function buildCutawayOnlyWarrior3D(type){
   const g=new THREE.Group();g.name=`CUTAWAY_ONLY_${String(type).toUpperCase()}`;g.visible=true;
-  const mat=(color)=>new THREE.MeshBasicMaterial({color,side:THREE.DoubleSide,depthTest:false,depthWrite:false,toneMapped:false});
-  const gold=mat(0xf2bd46),ivory=mat(0xfff3cf),dark=mat(0x4b2d14),hot=mat(0xffff88),amber=mat(0xff8a2b);
-  const add=(geo,m,x,y,z=0)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.visible=true;o.frustumCulled=false;o.renderOrder=110;g.add(o);return o};
-  add(new THREE.CylinderGeometry(.52,.67,1.50,12),gold,0,.45,.12);
-  const chest=add(new THREE.SphereGeometry(.60,18,14),ivory,0,1.22,.16);chest.scale.set(1,.72,.66);
-  add(new THREE.SphereGeometry(.38,18,14),ivory,0,2.00,.18);
-  add(new THREE.BoxGeometry(.48,.13,.18),hot,0,2.02,.52);
-  for(const sx of[-1,1]){
-    add(new THREE.SphereGeometry(.30,12,10),gold,sx*.68,1.28,.12);
-    const arm=add(new THREE.CylinderGeometry(.14,.17,.78,9),ivory,sx*.79,.70,.14);arm.rotation.z=sx*.10;
-    add(new THREE.BoxGeometry(.30,.34,.34),gold,sx*.82,.20,.20);
-    add(new THREE.CylinderGeometry(.18,.22,1.05,9),gold,sx*.24,-.55,.10);
-    add(new THREE.BoxGeometry(.31,.24,.50),dark,sx*.24,-1.14,.22);
-  }
+  const P=(color,metal=.25,rough=.42,emissive=0x000000,ei=0)=>new THREE.MeshStandardMaterial({color,metalness:metal,roughness:rough,emissive,emissiveIntensity:ei,side:THREE.DoubleSide});
+  const gold=P(0xd6a83b,.72,.24),ivory=P(0xf1e8d5,.18,.38),dark=P(0x251b17,.55,.32),sun=P(0xffd75a,.38,.18,0xff8a18,1.7),bronze=P(0x9b5a27,.68,.30),black=P(0x16120f,.58,.28);
+  const add=(parent,geo,mat,name,x=0,y=0,z=0)=>{const o=new THREE.Mesh(geo,mat);o.name=name;o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false;o.renderOrder=110;parent.add(o);return o};
+  const pelvis=new THREE.Group();pelvis.name='PELVIS';pelvis.position.y=.02;g.add(pelvis);
+  add(pelvis,new THREE.BoxGeometry(.70,.38,.46),gold,'WAIST',0,.05,.02);
+  const torso=new THREE.Group();torso.name='TORSO';torso.position.y=.42;pelvis.add(torso);
+  const core=add(torso,new THREE.CylinderGeometry(.43,.55,1.02,12),dark,'CORE',0,.48,0);core.scale.z=.72;
+  const chest=add(torso,new THREE.BoxGeometry(1.02,.62,.50),ivory,'CHEST',0,.82,.05);chest.scale.set(1,.95,.9);
+  add(torso,new THREE.BoxGeometry(.72,.14,.57),gold,'CHEST_GOLD',0,.94,.07);
+  const neck=add(torso,new THREE.CylinderGeometry(.12,.15,.22,10),dark,'NECK',0,1.20,0);
+  const headRoot=new THREE.Group();headRoot.name='HEAD_JOINT';headRoot.position.set(0,1.47,.02);torso.add(headRoot);
+  add(headRoot,new THREE.SphereGeometry(.31,18,14),ivory,'HELMET');
+  const face=add(headRoot,new THREE.BoxGeometry(.42,.15,.13),sun,'VISOR',0,.02,.29);face.rotation.x=-.08;
+  add(headRoot,new THREE.BoxGeometry(.12,.38,.34),gold,'HELMET_CREST',0,.32,-.02);
+  const armRoots=[];
+  for(const sx of[-1,1]){const shoulder=new THREE.Group();shoulder.name=sx<0?'LEFT_SHOULDER':'RIGHT_SHOULDER';shoulder.position.set(sx*.61,1.00,.02);torso.add(shoulder);armRoots.push(shoulder);add(shoulder,new THREE.SphereGeometry(.25,12,9),gold,'PAULDRON');const upper=add(shoulder,new THREE.CylinderGeometry(.12,.15,.54,9),ivory,'UPPER_ARM',sx*.08,-.33,.02);upper.rotation.z=sx*.10;const elbow=new THREE.Group();elbow.name='ELBOW';elbow.position.set(sx*.12,-.62,.02);shoulder.add(elbow);add(elbow,new THREE.SphereGeometry(.14,10,8),gold,'ELBOW_ARMOR');const fore=add(elbow,new THREE.CylinderGeometry(.12,.15,.50,9),ivory,'FOREARM',sx*.03,-.29,.06);fore.rotation.z=-sx*.08;add(elbow,new THREE.BoxGeometry(.28,.30,.32),gold,'GAUNTLET',sx*.04,-.60,.12)}
+  const legRoots=[];
+  for(const sx of[-1,1]){const hip=new THREE.Group();hip.name=sx<0?'LEFT_HIP':'RIGHT_HIP';hip.position.set(sx*.23,-.16,.02);pelvis.add(hip);legRoots.push(hip);add(hip,new THREE.SphereGeometry(.16,10,8),gold,'HIP_ARMOR');add(hip,new THREE.CylinderGeometry(.15,.19,.58,9),ivory,'THIGH',0,-.34,0);const knee=new THREE.Group();knee.name='KNEE';knee.position.y=-.67;hip.add(knee);add(knee,new THREE.BoxGeometry(.27,.22,.25),gold,'KNEE_PLATE',0,0,.10);add(knee,new THREE.CylinderGeometry(.13,.17,.55,9),gold,'SHIN',0,-.34,0);const boot=add(knee,new THREE.BoxGeometry(.30,.24,.50),dark,'BOOT',0,-.69,.12);boot.position.z=.14}
   if(type==='solar_lancer'){
-    const staff=add(new THREE.CylinderGeometry(.055,.075,3.35,10),hot,.92,.48,.28);staff.rotation.z=-.18;
-    const tip=add(new THREE.ConeGeometry(.18,.72,10),ivory,1.20,2.05,.28);tip.rotation.z=-.18;
-    const cape=add(new THREE.BoxGeometry(.92,1.55,.07),mat(0xc88727),-.10,.48,-.28);cape.rotation.z=.06;
+    const cape=add(torso,new THREE.BoxGeometry(.84,1.38,.06),P(0x8b4c23,.18,.58),'CAPE',0,.35,-.34);cape.rotation.x=-.08;
+    const weapon=new THREE.Group();weapon.name='WEAPON_MUZZLE_RIG';weapon.position.set(.72,.46,.26);torso.add(weapon);weapon.rotation.z=-.34;
+    add(weapon,new THREE.CylinderGeometry(.045,.065,2.35,10),gold,'LANCE_SHAFT',0,.45,0);
+    const barrel=add(weapon,new THREE.CylinderGeometry(.11,.16,.70,12),sun,'LANCE_EMITTER',0,1.72,0);add(weapon,new THREE.ConeGeometry(.15,.42,12),ivory,'LANCE_TIP',0,2.25,0);
+    const muzzle=new THREE.Object3D();muzzle.name='MUZZLE';muzzle.position.set(0,2.48,0);weapon.add(muzzle);g.userData.muzzle=muzzle;
+    const halo=add(headRoot,new THREE.TorusGeometry(.43,.035,8,28),sun,'SOLAR_HALO',0,.02,-.26);halo.rotation.x=.12;
   }else if(type==='sun_disk_gunner'){
-    for(const sx of[-1,1]){const d=add(new THREE.TorusGeometry(.39,.075,10,32),hot,sx*.90,.23,.52);d.rotation.x=Math.PI/2}
-    const halo=add(new THREE.TorusGeometry(.48,.055,10,32),hot,0,2.00,-.18);halo.rotation.x=.12;
+    chest.scale.x=1.12;
+    for(const shoulder of armRoots){const sx=shoulder.position.x<0?-1:1;const emitter=new THREE.Group();emitter.name=sx<0?'LEFT_DISK_GAUNTLET':'RIGHT_DISK_GAUNTLET';emitter.position.set(sx*.05,-.70,.28);shoulder.add(emitter);add(emitter,new THREE.BoxGeometry(.38,.42,.46),gold,'HEAVY_GAUNTLET');const disk=add(emitter,new THREE.TorusGeometry(.34,.065,10,32),sun,'SOLAR_DISK',0,0,.28);disk.rotation.x=Math.PI/2;if(sx>0){const muzzle=new THREE.Object3D();muzzle.name='MUZZLE';muzzle.position.set(0,0,.48);emitter.add(muzzle);g.userData.muzzle=muzzle}}
+    const halo=add(headRoot,new THREE.TorusGeometry(.47,.05,9,32),sun,'DISK_HALO',0,.02,-.25);halo.rotation.x=.12;
   }else if(type==='sunadier'){
-    const chain=new THREE.Group();chain.position.set(.72,.42,.38);chain.visible=true;g.add(chain);
-    for(let i=0;i<8;i++){const l=new THREE.Mesh(new THREE.TorusGeometry(.08,.025,6,12),gold);l.position.set(.13*i,.08*i,0);l.visible=true;l.frustumCulled=false;l.renderOrder=111;chain.add(l)}
-    const grenade=new THREE.Mesh(new THREE.SphereGeometry(.30,14,12),amber);grenade.position.set(1.15,.62,.04);grenade.visible=true;grenade.frustumCulled=false;grenade.renderOrder=112;chain.add(grenade);
+    const pack=add(torso,new THREE.BoxGeometry(.76,.92,.34),bronze,'ARTILLERY_PACK',0,.52,-.34);
+    const hand=armRoots[1];const chain=new THREE.Group();chain.name='WEAPON_MUZZLE_RIG';chain.position.set(.08,-.78,.28);hand.add(chain);
+    for(let i=0;i<10;i++){const link=add(chain,new THREE.TorusGeometry(.065,.018,6,10),bronze,'CHAIN_LINK',.12*i,-.055*i,.02*i);link.rotation.y=i*.38}
+    const grenade=add(chain,new THREE.SphereGeometry(.27,14,11),sun,'SOLAR_GRENADE',1.30,-.52,.20);add(chain,new THREE.TorusGeometry(.29,.035,7,18),gold,'GRENADE_CAGE',1.30,-.52,.20);
+    const muzzle=new THREE.Object3D();muzzle.name='MUZZLE';muzzle.position.copy(grenade.position);chain.add(muzzle);g.userData.muzzle=muzzle;
+    add(headRoot,new THREE.ConeGeometry(.08,.44,6),sun,'SUNADIER_CREST',0,.53,0);
   }
-  g.traverse(o=>{o.visible=true;if(o.isMesh){o.frustumCulled=false;o.renderOrder=Math.max(o.renderOrder||0,110)}});
-  return g
+  g.userData.rig={pelvis,torso,headRoot,armRoots,legRoots};g.userData.animationReady=true;
+  g.traverse(o=>{o.visible=true;if(o.isMesh){o.frustumCulled=false;o.renderOrder=Math.max(o.renderOrder||0,110)}});return g
 }
 function buildPrivateXray(){
   if(xrayGroup){localCommandVessel().remove(xrayGroup);disposeXrayObject(xrayGroup)}
