@@ -1,5 +1,6 @@
 name: Fix warrior 3D identity sync
 
+# Triggered after 2D battle renderer cleanup.
 'on':
   workflow_dispatch:
   push:
