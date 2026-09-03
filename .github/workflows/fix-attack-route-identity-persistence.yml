@@ -1,0 +1,35 @@
+name: Fix attack route identity persistence
+
+'on':
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/scripts/fix_attack_route_identity_persistence.py'
+      - '.github/workflows/fix-attack-route-identity-persistence.yml'
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Patch identity persistence
+        run: python .github/scripts/fix_attack_route_identity_persistence.py
+      - name: Verify persistence guard
+        run: |
+          grep -Fq 'ATTACK_ROUTE_IDENTITY_PERSISTENCE_2026_09_03' index.html
+          grep -Fq '(factionModule(faction)?.roster||[]).map(x=>x.id)' index.html
+          ! grep -Fq 'FACTION_META[faction]?.roster' index.html
+          grep -Fq 'if(w.modelIdentity!==w.weaponKey)syncWarrior3DIdentity(w,true);' index.html
+          grep -Fq "aurelian:['solar_lancer','sun_disk_gunner','sunadier']" index.html
+      - name: Commit gameplay patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Preserve deployed warrior identity across turns"
+          git push
