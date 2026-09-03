@@ -32,3 +32,4 @@ assert 'CUTAWAY_STATUS_LABEL_DISABLED_2D_REMOVED' in s
 
 p.write_text(s)
 print(f'PASS: removed {removed} stale v.label material accesses; cutaway label remains non-rendering')
+# trigger 2026-09-03 recorder fix
