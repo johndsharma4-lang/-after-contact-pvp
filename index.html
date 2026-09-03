@@ -4386,7 +4386,7 @@ function localXrayPaletteSet(){
 }
 function xrayBasic(color,opacity=.2,additive=true){return new THREE.MeshBasicMaterial({color,transparent:true,opacity,depthTest:false,depthWrite:false,side:THREE.DoubleSide,blending:additive?THREE.AdditiveBlending:THREE.NormalBlending})}
 function markXray(o,order=72){o.userData.xrayVisual=true;o.renderOrder=order;return o}
-function makeXrayCrewLabel(w){const label=new THREE.Group();label.name='CUTAWAY_STATUS_LABEL_DISABLED_2D_REMOVED';label.userData.xrayVisual=true;return label}
+function makeXrayCrewLabel(w){const label=new THREE.Group();label.name='CUTAWAY_STATUS_LABEL_DISABLED_2D_REMOVED';label.userData.xrayVisual=true;label.visible=false;return label} // XRAY_LABEL_MATERIAL_STALE_LOGIC_REMOVED_2026_09_03
 function combatRigForWarrior(w){
   const cutaway=xrayRoomVisuals?.find?.(v=>v.warrior===w)?.rig3D;
   return cutaway||w?.model3D||null
@@ -4535,7 +4535,7 @@ function refreshPrivateXrayVisuals(){
     if(v.warriorMarker){
       const w=v.warrior,chosen=w===xraySelectedCrew,dead=w.hp<=0;if(w.hp<v.lastHp)v.hitUntil=now+360;v.lastHp=w.hp;v.warriorMarker.visible=true;
       if(v.rig3D){const hit=now<v.hitUntil,breath=Math.sin(now*.0026+w.roomIndex*.53),base=v.baseRigScale;v.rig3D.position.y=v.baseRigY+(dead?-.24:breath*.012);v.rig3D.rotation.z=dead?.86:(hit?Math.sin(now*.05)*.10:breath*.003);const m=dead?.94:1+(chosen?.016:.004)*breath;v.rig3D.scale.set(base.x*m,base.y*m,base.z*m)}
-      v.aura.material.opacity=dead?(chosen?.82:.40):(chosen?.86:.20);v.aura.material.color.setHex(dead?0xff4b3e:w.assignedColor);v.aura.scale.setScalar(chosen?1.16:1);if(v.rim?.material)v.rim.material.opacity=chosen?.46:.16;if(v.roomLight)v.roomLight.intensity=chosen?.72:.28;v.label.material.opacity=chosen?1:.70;continue
+      v.aura.material.opacity=dead?(chosen?.82:.40):(chosen?.86:.20);v.aura.material.color.setHex(dead?0xff4b3e:w.assignedColor);v.aura.scale.setScalar(chosen?1.16:1);if(v.rim?.material)v.rim.material.opacity=chosen?.46:.16;if(v.roomLight)v.roomLight.intensity=chosen?.72:.28;continue
     }
     const b=Math.max(0,Math.min(100,v.room.breach||0))/100,pulse=.54+.10*Math.abs(Math.sin(now*.003+v.index*.45));v.lamp.material.opacity=Math.max(.18,.92-b*.66)+pulse*.08;v.damage.material.opacity=b>0?.08+b*.52:0;
     v.damage.material.color.setHex(b>=.55?0xff4938:b>=.25?0xff8a45:0xffc04d)
