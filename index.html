@@ -3224,11 +3224,12 @@ function authoritativeWarriorTypeForSide(side,eventWarrior=null,eventFaction=nul
 }
 function enforceAttackRoute(side,w,eventWarrior=null,eventFaction=null,source='runtime'){
   if(!w)return null;
-  const faction=factionForSide(side),deployedIds=(FACTION_META[faction]?.roster||[]).map(x=>x.id);
+  const faction=factionForSide(side),deployedIds=(factionModule(faction)?.roster||[]).map(x=>x.id); // ATTACK_ROUTE_IDENTITY_PERSISTENCE_2026_09_03
   // Once a living deployed warrior is explicitly selected, its identity/weapon is authoritative.
   // Do not rewrite Sun Disk Gunner or Sunadier back to the original single-starter route.
   if(!w.passive&&w.active&&w.hp>0&&deployedIds.includes(w.weaponKey)){
-    diag('ATTACK ROUTE LOCK',`${source} ${side} ${w.weaponKey} trustedSelected=Y`);return w.weaponKey
+    if(w.modelIdentity!==w.weaponKey)syncWarrior3DIdentity(w,true);
+    diag('ATTACK ROUTE LOCK',`${source} ${side} ${w.weaponKey} trustedSelected=Y rig=${w.modelIdentity||'-'}`);return w.weaponKey
   }
   if(faction==='earth'&&!w.passive&&(w.weaponKey==='sniper'||w.weaponKey==='combat_controller'))return w.weaponKey;
   const expected=authoritativeWarriorTypeForSide(side,eventWarrior,eventFaction);
