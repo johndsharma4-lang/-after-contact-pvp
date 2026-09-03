@@ -1,9 +1,12 @@
 name: Run Aurelian weapon route fix
-on:
+
+'on':
   workflow_dispatch:
   push:
     paths:
       - '.github/scripts/add_aurelian_weapon_routes.py'
+      - '.github/workflows/run-aurelian-weapon-routes.yml'
+
 jobs:
   patch:
     runs-on: ubuntu-latest
