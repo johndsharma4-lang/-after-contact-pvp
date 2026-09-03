@@ -1,0 +1,32 @@
+name: Run Aurelian projectile lifecycle fix
+
+'on':
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/scripts/fix_aurelian_projectile_lifecycle.py'
+      - '.github/workflows/run-aurelian-projectile-lifecycle.yml'
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python .github/scripts/fix_aurelian_projectile_lifecycle.py
+      - run: |
+          grep -q 'SUN DISK RESOLVED' index.html
+          grep -q 'SUNADIER RESOLVED' index.html
+          grep -q 'lifecycle=RAF_OWNS_PROJECTILE' index.html
+          grep -q "firedKind!='sun_disk'" index.html
+          grep -q "firedKind!='sun_grenade'" index.html
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Fix Aurelian projectile resolution timing"
+          git push
