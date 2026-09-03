@@ -1,0 +1,38 @@
+name: Fix warrior 3D identity sync
+
+'on':
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/scripts/fix_warrior_3d_identity_sync.py'
+      - '.github/workflows/fix-warrior-3d-identity-sync.yml'
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Patch warrior identity and 3D rigs
+        run: python .github/scripts/fix_warrior_3d_identity_sync.py
+      - name: Verify identity sync paths
+        run: |
+          grep -Fq 'WARRIOR_3D_IDENTITY_SYNC_2026_09_02' index.html
+          grep -Fq 'function syncWarrior3DIdentity' index.html
+          grep -Fq "aurelian:['solar_lancer','sun_disk_gunner','sunadier']" index.html
+          grep -Fq "if(type==='bombardier')return buildEarthBombardierBattle3D()" index.html
+          grep -Fq "if(type==='sniper')return buildEarthSniperBattle3D()" index.html
+          grep -Fq "if(type==='combat_controller')return buildEarthControllerBattle3D()" index.html
+          grep -Fq 'syncWarrior3DIdentity(w,previous!==type||w.modelIdentity!==type)' index.html
+          ! grep -Fq "if(w.weaponKey==='solar_lancer'){" index.html
+      - name: Commit gameplay patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Fix warrior 3D identity synchronization"
+          git push
