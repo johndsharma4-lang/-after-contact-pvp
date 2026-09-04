@@ -5,6 +5,7 @@ import { patchSolarLancerRuntime } from './solar-lancer-runtime.js';
 import { patchAurelianDeploymentRuntime } from './aurelian-deployment-runtime.js';
 import { patchAurelianTeamRuntime } from './aurelian-team-runtime.js';
 import { patchAurelianCombatRuntime } from './aurelian-combat-runtime.js';
+import { patchAurelianRouteCompatRuntime } from './aurelian-route-compat-runtime.js';
 import { patchCombatPresentationLockRuntime } from './combat-presentation-lock-runtime.js';
 import { patchSoloEarthRoundRobinRuntime } from './solo-earth-round-robin-runtime.js';
 import { patchDestructionCinematicRuntime } from './destruction-cinematic-runtime.js';
@@ -63,6 +64,7 @@ async function serveLegacyShell(request, env) {
   html = patchAurelianDeploymentRuntime(html);
   html = patchAurelianTeamRuntime(html);
   html = patchAurelianCombatRuntime(html);
+  html = patchAurelianRouteCompatRuntime(html);
   html = patchCombatPresentationLockRuntime(html);
   html = patchSoloEarthRoundRobinRuntime(html);
   html = patchDestructionCinematicRuntime(html);
