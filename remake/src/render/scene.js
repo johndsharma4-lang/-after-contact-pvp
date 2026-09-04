@@ -22,16 +22,21 @@ export function createBattleScene(container,state){
       if(entry?.root)entry.root.parent?.remove(entry.root);
       const root=buildWarrior3D(w.profileId);root.scale.setScalar(.72);shipForSide(sideId).add(root);entry={root,profileId:w.profileId};visuals.set(w.id,entry);
     }
-    const p=roomPosition(w.roomIndex);entry.root.position.set(p.x,p.y-.35,2.45);entry.root.visible=w.alive;entry.root.userData.warriorId=w.id;return entry;
+    const p=roomPosition(w.roomIndex);
+    // Keep the warrior physically inside the compartment. Closed hull fronts at z=2.02 occlude this rig.
+    entry.root.position.set(p.x,p.y-.35,1.35);
+    entry.root.visible=w.alive;entry.root.userData.warriorId=w.id;return entry;
   }
 
   function syncShip(sideId){
-    const side=state.sides[sideId],ship=shipForSide(sideId);
+    const side=state.sides[sideId],ship=shipForSide(sideId),fullCutaway=sideId===state.turn&&!state.selectedWarriorId;
     for(let i=0;i<side.rooms.length;i++){
       const roomState=side.rooms[i],room=ship.userData.rooms[i],targeted=state.target?.sideId===sideId&&state.target?.roomIndex===i;
-      const open=targeted||side.warriors.some(w=>w.alive&&w.roomIndex===i&&(state.selectedWarriorId===w.id));
+      const selectedRoom=side.warriors.some(w=>w.alive&&w.roomIndex===i&&state.selectedWarriorId===w.id);
+      // Active side begins as a full 3x3 cutaway. After warrior selection, only that room remains open.
+      const open=fullCutaway||targeted||selectedRoom;
       room.userData.front.visible=!open;
-      room.userData.frame.material.emissiveIntensity=targeted?1.8:.55;
+      room.userData.frame.material.emissiveIntensity=targeted?1.8:selectedRoom?1.15:.55;
       room.userData.frame.material.color.setHex(targeted?0xfff0a8:(sideId==='aurelian'?0xe0ad3a:0x6eb7d8));
       room.userData.cavity.material.color.setHex(roomState.erased?0x010102:roomState.breach>=75?0x120505:roomState.breach>=35?0x21120d:(sideId==='aurelian'?0x231910:0x161d22));
       const k=Math.max(.18,roomState.armor/100);room.userData.front.scale.set(1,k,k);
@@ -49,19 +54,28 @@ export function createBattleScene(container,state){
 
   function roomWorld(sideId,roomIndex,z=2.5){const ship=shipForSide(sideId),p=roomPosition(roomIndex).clone();p.z=z;return ship.localToWorld(p)}
   function muzzleWorld(attackerId){const entry=visuals.get(attackerId);if(!entry)return null;const muzzle=entry.root.userData.muzzle||entry.root;return muzzle.getWorldPosition(new THREE.Vector3())}
+  function addImpactFlash(point,color,delay=0){const flash=new THREE.Mesh(new THREE.SphereGeometry(.46,12,8),new THREE.MeshBasicMaterial({color,transparent:true,opacity:delay?0:.9,blending:THREE.AdditiveBlending,depthTest:false}));flash.position.copy(point);scene.add(flash);fx.push({objects:[flash],life:.28,max:.28,delay,impact:true})}
 
   function playWeapon(result){
     if(!result?.ok)return;const start=muzzleWorld(result.attackerId),end=roomWorld(result.targetSide,result.roomIndex,2.7);if(!start||!end)return;
     const color=result.weapon.kind==='beam'?0xffdd69:result.weapon.kind==='disk'?0xffbd4a:result.weapon.kind==='arc'?0xff8d32:0x74d9ff;
     if(result.weapon.kind==='beam'||result.weapon.kind==='precision'){
-      const geo=new THREE.BufferGeometry().setFromPoints([start,end]),line=new THREE.Line(geo,new THREE.LineBasicMaterial({color,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthTest:false}));scene.add(line);fx.push({objects:[line],life:.18,max:.18});
+      const geo=new THREE.BufferGeometry().setFromPoints([start,end]),line=new THREE.Line(geo,new THREE.LineBasicMaterial({color,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthTest:false}));scene.add(line);fx.push({objects:[line],life:.18,max:.18});addImpactFlash(end,color,0);
     }else{
-      const orb=new THREE.Mesh(result.weapon.kind==='disk'?new THREE.CylinderGeometry(.34,.34,.08,20):new THREE.SphereGeometry(.22,12,10),new THREE.MeshBasicMaterial({color,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthTest:false}));if(result.weapon.kind==='disk')orb.rotation.x=Math.PI/2;orb.position.copy(start);scene.add(orb);fx.push({objects:[orb],life:.52,max:.52,start:start.clone(),end:end.clone(),projectile:true,arc:result.weapon.kind==='arc'});
+      const duration=.52,orb=new THREE.Mesh(result.weapon.kind==='disk'?new THREE.CylinderGeometry(.34,.34,.08,20):new THREE.SphereGeometry(.22,12,10),new THREE.MeshBasicMaterial({color,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthTest:false}));if(result.weapon.kind==='disk')orb.rotation.x=Math.PI/2;orb.position.copy(start);scene.add(orb);fx.push({objects:[orb],life:duration,max:duration,start:start.clone(),end:end.clone(),projectile:true,arc:result.weapon.kind==='arc'});addImpactFlash(end,color,duration);
     }
-    const flash=new THREE.Mesh(new THREE.SphereGeometry(.46,12,8),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthTest:false}));flash.position.copy(end);scene.add(flash);fx.push({objects:[flash],life:.28,max:.28});
   }
 
-  function updateFx(dt){for(let i=fx.length-1;i>=0;i--){const f=fx[i];f.life-=dt;const t=1-Math.max(0,f.life)/f.max;if(f.projectile){const p=f.start.clone().lerp(f.end,t);if(f.arc)p.y+=Math.sin(Math.PI*t)*4;f.objects[0].position.copy(p)}for(const o of f.objects)if(o.material)o.material.opacity=Math.max(0,f.life/f.max);if(f.life<=0){for(const o of f.objects)o.parent?.remove(o);fx.splice(i,1)}}}
+  function updateFx(dt){
+    for(let i=fx.length-1;i>=0;i--){
+      const f=fx[i];
+      if(f.delay>0){f.delay-=dt;if(f.delay>0)continue;f.delay=0;for(const o of f.objects)if(o.material)o.material.opacity=.9}
+      f.life-=dt;const t=1-Math.max(0,f.life)/f.max;
+      if(f.projectile){const p=f.start.clone().lerp(f.end,t);if(f.arc)p.y+=Math.sin(Math.PI*t)*4;f.objects[0].position.copy(p)}
+      for(const o of f.objects)if(o.material)o.material.opacity=Math.max(0,f.life/f.max);
+      if(f.life<=0){for(const o of f.objects)o.parent?.remove(o);fx.splice(i,1)}
+    }
+  }
 
   const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
   function setPointer(clientX,clientY){const rect=renderer.domElement.getBoundingClientRect();pointer.x=((clientX-rect.left)/rect.width)*2-1;pointer.y=-((clientY-rect.top)/rect.height)*2+1;raycaster.setFromCamera(pointer,camera)}
