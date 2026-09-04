@@ -11,9 +11,14 @@ import { patchDestructionCinematicRuntime } from './destruction-cinematic-runtim
 import { patchEarthCombatClarityRuntime } from './earth-combat-clarity-runtime.js';
 export { MyDurableObject } from './after-contact-worker.js';
 
-function isDocumentRequest(request, url) {
+function isRemakeDocumentRequest(request, url) {
   if (request.method !== 'GET' && request.method !== 'HEAD') return false;
-  return url.pathname === '/' || url.pathname === '/index.html';
+  return url.pathname === '/' || url.pathname === '/index.html' || url.pathname === '/remake' || url.pathname === '/remake/' || url.pathname === '/remake/index.html';
+}
+
+function isLegacyDocumentRequest(request, url) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return false;
+  return url.pathname === '/legacy' || url.pathname === '/legacy/' || url.pathname === '/legacy/index.html';
 }
 
 function isStaticAssetRequest(request, url) {
@@ -36,16 +41,30 @@ function installSharedDeploymentController(html) {
   return html.replace('</body>', '<script src="/deployment-controller-v03313.js"></script>\n</body>');
 }
 
+async function serveAssetDocument(request, env, pathname) {
+  const url = new URL(request.url);
+  const assetUrl = new URL(pathname, url);
+  const assetRequest = new Request(assetUrl.toString(), {method: request.method, headers: request.headers});
+  const assetResponse = await env.ASSETS.fetch(assetRequest);
+  const headers = documentHeaders(assetResponse);
+  if (request.method === 'HEAD') return {assetResponse, headers, html: null};
+  return {assetResponse, headers, html: await assetResponse.text()};
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    if (isDocumentRequest(request, url)) {
-      const indexUrl = new URL('/index.html', url);
-      const assetRequest = new Request(indexUrl.toString(), {method: request.method, headers: request.headers});
-      const assetResponse = await env.ASSETS.fetch(assetRequest);
-      const headers = documentHeaders(assetResponse);
+
+    if (isRemakeDocumentRequest(request, url)) {
+      const {assetResponse, headers, html} = await serveAssetDocument(request, env, '/remake/index.html');
       if (request.method === 'HEAD') return new Response(null, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
-      let html = patchIndexHtml(await assetResponse.text());
+      return new Response(html, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
+    }
+
+    if (isLegacyDocumentRequest(request, url)) {
+      const {assetResponse, headers, html: rawHtml} = await serveAssetDocument(request, env, '/index.html');
+      if (request.method === 'HEAD') return new Response(null, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
+      let html = patchIndexHtml(rawHtml);
       html = patchEarthSpecialistsRuntime(html);
       html = patchSolarLancerRuntime(html);
       html = patchAurelianDeploymentRuntime(html);
@@ -58,6 +77,7 @@ export default {
       html = installSharedDeploymentController(html);
       return new Response(html, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
     }
+
     if (isStaticAssetRequest(request, url)) return env.ASSETS.fetch(request);
     return baseWorker.fetch(request, env, ctx);
   },
