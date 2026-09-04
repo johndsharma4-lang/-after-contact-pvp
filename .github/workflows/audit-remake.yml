@@ -5,6 +5,7 @@ name: Audit remake
   push:
     paths:
       - 'remake/**'
+      - 'router-worker.js'
       - '.github/workflows/audit-remake.yml'
 
 jobs:
@@ -15,7 +16,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Syntax check remake modules
+      - name: Syntax check remake and router
         run: |
           node --check remake/src/core/state.js
           node --check remake/src/core/combat.js
@@ -23,6 +24,7 @@ jobs:
           node --check remake/src/render/builders.js
           node --check remake/src/render/scene.js
           node --check remake/src/main.js
+          node --check router-worker.js
       - name: Core state and combat invariants
         run: |
           node --input-type=module <<'EOF'
@@ -60,4 +62,9 @@ jobs:
           grep -Fq "entry.root.position.set(p.x,p.y-.35,1.35)" remake/src/render/scene.js
           grep -Fq "fullCutaway=sideId===state.turn&&!state.selectedWarriorId" remake/src/render/scene.js
           grep -Fq "addImpactFlash(end,color,duration)" remake/src/render/scene.js
-          grep -Fq "Selection is allowed" remake/README.md || true
+      - name: Production routing guards
+        run: |
+          grep -Fq "url.pathname === '/'" router-worker.js
+          grep -Fq "'/remake/index.html'" router-worker.js
+          grep -Fq "url.pathname === '/legacy'" router-worker.js
+          grep -Fq 'src="/remake/src/main.js"' remake/index.html
