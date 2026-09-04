@@ -42,7 +42,7 @@ export function createBattleScene(container,state){
     syncShip('aurelian');syncShip('earth');
     for(const [sideId,side] of Object.entries(state.sides))for(const w of side.warriors){
       const e=ensureWarriorVisual(sideId,w),selected=state.selectedWarriorId===w.id;
-      e.root.scale.setScalar(selected?.84:.72);
+      e.root.scale.setScalar(selected ? .84 : .72);
       e.root.traverse(o=>{if(o.isMesh&&o.material?.emissive){o.material.emissiveIntensity=selected?Math.max(.8,o.material.emissiveIntensity||0):Math.min(.75,o.material.emissiveIntensity||0)}})
     }
   }
