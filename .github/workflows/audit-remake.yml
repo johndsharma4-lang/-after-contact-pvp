@@ -1,0 +1,63 @@
+name: Audit remake
+
+'on':
+  workflow_dispatch:
+  push:
+    paths:
+      - 'remake/**'
+      - '.github/workflows/audit-remake.yml'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax check remake modules
+        run: |
+          node --check remake/src/core/state.js
+          node --check remake/src/core/combat.js
+          node --check remake/src/data/factions.js
+          node --check remake/src/render/builders.js
+          node --check remake/src/render/scene.js
+          node --check remake/src/main.js
+      - name: Core state and combat invariants
+        run: |
+          node --input-type=module <<'EOF'
+          import {createMatchState,selectWarrior,warriorById,setWarriorRoom} from './remake/src/core/state.js';
+          import {selectTargetRoom,fireSelectedWeapon,selectedAttacker} from './remake/src/core/combat.js';
+          import {warriorProfile} from './remake/src/data/factions.js';
+
+          const state=createMatchState();
+          if(state.sides.aurelian.rooms.length!==9||state.sides.earth.rooms.length!==9)throw new Error('room count invariant failed');
+          if(state.sides.aurelian.warriors.length!==3||state.sides.earth.warriors.length!==3)throw new Error('warrior count invariant failed');
+          const ids=state.sides.aurelian.warriors.map(w=>w.profileId).join(',');
+          if(ids!=='solar_lancer,sun_disk_gunner,sunadier')throw new Error('aurelian identity invariant failed: '+ids);
+          const beforeRooms=state.sides.aurelian.warriors.map(w=>w.roomIndex).join(',');
+          if(!selectWarrior(state,'aurelian:1'))throw new Error('selection failed');
+          if(selectedAttacker(state)?.warrior?.profileId!=='sun_disk_gunner')throw new Error('selected attacker identity failed');
+          const afterRooms=state.sides.aurelian.warriors.map(w=>w.roomIndex).join(',');
+          if(beforeRooms!==afterRooms)throw new Error('selection illegally moved warrior');
+          if(setWarriorRoom(state,'aurelian:1',2)!==false)throw new Error('occupied room move guard failed');
+          if(!selectTargetRoom(state,'earth',5))throw new Error('target room failed');
+          const result=fireSelectedWeapon(state);
+          if(!result.ok)throw new Error('fire failed');
+          if(result.attackerId!=='aurelian:1'||result.weapon.kind!=='disk')throw new Error('weapon route mismatch');
+          if(state.sides.earth.shield!==342)throw new Error('shield damage mismatch: '+state.sides.earth.shield);
+          if(state.turn!=='earth')throw new Error('turn advance failed');
+          if(state.selectedWarriorId!==null||state.target!==null)throw new Error('post-fire selection clear failed');
+          if(warriorById(state,'aurelian:1')?.roomIndex!==0)throw new Error('warrior room changed during combat');
+          if(warriorProfile('aurelian','sunadier')?.weapon?.kind!=='arc')throw new Error('sunadier route missing');
+          console.log('PASS: remake core invariants');
+          EOF
+      - name: Rendering architecture guards
+        run: |
+          ! grep -R "THREE.Sprite" remake/src
+          ! grep -R "CanvasTexture" remake/src
+          ! grep -R "sprite" remake/src/render/scene.js
+          grep -Fq "entry.root.position.set(p.x,p.y-.35,1.35)" remake/src/render/scene.js
+          grep -Fq "fullCutaway=sideId===state.turn&&!state.selectedWarriorId" remake/src/render/scene.js
+          grep -Fq "addImpactFlash(end,color,duration)" remake/src/render/scene.js
+          grep -Fq "Selection is allowed" remake/README.md || true
