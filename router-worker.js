@@ -11,6 +11,8 @@ import { patchDestructionCinematicRuntime } from './destruction-cinematic-runtim
 import { patchEarthCombatClarityRuntime } from './earth-combat-clarity-runtime.js';
 export { MyDurableObject } from './after-contact-worker.js';
 
+const REMAKE_BUILD = '2026-09-04_REMAKE_ROOT_1';
+
 function isRemakeDocumentRequest(request, url) {
   if (request.method !== 'GET' && request.method !== 'HEAD') return false;
   return url.pathname === '/' || url.pathname === '/index.html' || url.pathname === '/remake' || url.pathname === '/remake/' || url.pathname === '/remake/index.html';
@@ -57,12 +59,15 @@ export default {
 
     if (isRemakeDocumentRequest(request, url)) {
       const {assetResponse, headers, html} = await serveAssetDocument(request, env, '/remake/index.html');
+      headers.set('x-after-contact-build', REMAKE_BUILD);
+      headers.set('x-after-contact-route', 'remake');
       if (request.method === 'HEAD') return new Response(null, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
       return new Response(html, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
     }
 
     if (isLegacyDocumentRequest(request, url)) {
       const {assetResponse, headers, html: rawHtml} = await serveAssetDocument(request, env, '/index.html');
+      headers.set('x-after-contact-route', 'legacy');
       if (request.method === 'HEAD') return new Response(null, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
       let html = patchIndexHtml(rawHtml);
       html = patchEarthSpecialistsRuntime(html);
