@@ -44,24 +44,22 @@ function acHoldShooterCutaway(stagePoint){
     patched = next;
   } else status.helper = true;
 
-  const oldSelect = `function selectXrayCrew(w){
+  const singlePressFn = `function selectXrayCrew(w){
   if(!xrayOpen||!w||!w.active||w.hp<=0||w.passive)return;
-  const same=xraySelectedCrew===w;
-  if(!same){
-    xraySelectedCrew=w;xrayConfirmedShooter=null;restoreFullCutawayStage();selectWarrior(w);refreshPrivateXrayVisuals();
-    const p=STARTER_PROFILES[w.weaponKey],name=p?.name||'WARRIOR';statusEl.textContent=\`${'${'}name} HIGHLIGHTED • TAP AGAIN TO CONFIRM\`;diag('3D CUTAWAY HIGHLIGHT',\`${'${'}w.weaponKey} room=${'${'}w.roomIndex+1} confirmed=N\`);return
-  }
-  xrayConfirmedShooter=w;selectWarrior(w);setCutawayFiringStage(w);refreshPrivateXrayVisuals();
-  const p=STARTER_PROFILES[w.weaponKey],name=p?.name||'WARRIOR';statusEl.textContent=\`SHOOTER LOCKED • ${'${'}name} • ROOM ${'${'}w.roomIndex+1} • DRAG FROM OPEN COMPARTMENT TO AIM\`;
-  diag('SHOOTER LOCK',\`${'${'}w.weaponKey} room=${'${'}w.roomIndex+1} confirmed=Y otherRoomsClosed=Y\`)
-}`;
-  const newSelect = `function selectXrayCrew(w){
-  if(!xrayOpen||!w||!w.active||w.hp<=0||w.passive)return;
-  xraySelectedCrew=w;xrayConfirmedShooter=w;restoreFullCutawayStage();selectWarrior(w);setCutawayFiringStage(w);refreshPrivateXrayVisuals();
-  const p=STARTER_PROFILES[w.weaponKey],name=p?.name||'WARRIOR';statusEl.textContent=\`${'${'}name} • HOLD + DRAG TO AIM • RELEASE TO FIRE\`;
+  xraySelectedCrew=w;
+  xrayConfirmedShooter=w;
+  restoreFullCutawayStage();
+  selectWarrior(w);
+  setCutawayFiringStage(w);
+  refreshPrivateXrayVisuals();
+  const p=STARTER_PROFILES[w.weaponKey],name=p?.name||'WARRIOR';
+  statusEl.textContent=\`${'${'}name} • HOLD + DRAG TO AIM • RELEASE TO FIRE\`;
   diag('SHOOTER LOCK',\`${'${'}w.weaponKey} room=${'${'}w.roomIndex+1} confirmed=Y singlePress=Y otherRoomsClosed=Y\`)
 }`;
-  patched = replaceOnce(patched, oldSelect, newSelect, status, 'singlePress');
+  const selectRegex=/function selectXrayCrew\(w\)\{[\s\S]*?\n\}\nbindMobileAction/;
+  const selectNext=patched.replace(selectRegex,singlePressFn+'\nbindMobileAction');
+  status.singlePress=selectNext!==patched;
+  patched=selectNext;
 
   const oldCrewPress = "const crew=xrayWarriorAtStagePoint(pt);if(crew){selectXrayCrew(crew);return}";
   const newCrewPress = "const crew=xrayWarriorAtStagePoint(pt);if(crew){selectXrayCrew(crew);vesselGesture={pointerId:e.pointerId,start:pt,current:pt,lockedShooter:true};try{canvas.setPointerCapture(e.pointerId)}catch{}diag('SHOOTER PRESS ARMED',`${crew.weaponKey} room=${crew.roomIndex+1} holdDrag=Y`);return}";
@@ -80,18 +78,19 @@ function acHoldShooterCutaway(stagePoint){
     const next=patched.replace(needle,replacement);status.shooterHold=next!==patched;patched=next;
   } else status.shooterHold=true;
 
-  if (!patched.includes("acForceExteriorBattleView('solo turn handoff')")) {
-    const next = patched.replace(/function endSoloPlayerTurnAfterShot\(([^)]*)\)\{/, "function endSoloPlayerTurnAfterShot($1){acForceExteriorBattleView('solo turn handoff');");
-    status.soloTurn = next !== patched;patched = next;
-  } else status.soloTurn = true;
+  // Do not close the shooter cutaway at fire-time. endSoloPlayerTurnAfterShot is entered while
+  // long-running weapons are still resolving. The 650ms shooter hold above owns this close.
+  patched=patched.replace(/function endSoloPlayerTurnAfterShot\(([^)]*)\)\{acForceExteriorBattleView\('solo turn handoff'\);/,"function endSoloPlayerTurnAfterShot($1){");
+  status.soloTurn=!patched.includes("acForceExteriorBattleView('solo turn handoff')");
 
+  // Multiplayer setMpTurn is an actual authoritative handoff, so exterior restoration remains safe there.
   if (!patched.includes("acForceExteriorBattleView('multiplayer turn handoff')")) {
     const next = patched.replace(/function setMpTurn\(([^)]*)\)\{/, "function setMpTurn($1){acForceExteriorBattleView('multiplayer turn handoff');");
     status.mpTurn = next !== patched;patched = next;
   } else status.mpTurn = true;
 
-  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.70');
-  patched = patched.replace(/build=2026-09-(01|04)_[A-Z0-9_]+/g, 'build=2026-09-04_STABLE_PRESS_DRAG_NO_CAMERA_OVERRIDE');
+  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.71');
+  patched = patched.replace(/build=2026-09-(01|04)_[A-Z0-9_]+/g, 'build=2026-09-04_SINGLE_PRESS_SHOOTER_HOLD_FIXED');
   patched = patched.replaceAll('CUTAWAY • TAP A WARRIOR ONCE TO HIGHLIGHT • TAP AGAIN TO LOCK SHOOTER','CUTAWAY • PRESS A WARRIOR • HOLD + DRAG TO AIM • RELEASE TO FIRE');
   patched = patched.replaceAll('SELECT A WARRIOR • TAP AGAIN TO CONFIRM','PRESS A WARRIOR • HOLD + DRAG TO AIM');
 
