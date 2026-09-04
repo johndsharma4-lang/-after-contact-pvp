@@ -6,7 +6,7 @@ function replaceOnce(source, needle, replacement, status, key) {
 
 export function patchCutawayLifecycleRuntime(html) {
   let patched = html;
-  const status = { helper:false, singlePress:false, pressDrag:false, muzzleAim:false, shotFollow:false, preImpact:false, soloTurn:false, mpTurn:false };
+  const status = { helper:false, singlePress:false, pressDrag:false, muzzleAim:false, aimFrame:false, shotFollow:false, preImpact:false, soloTurn:false, mpTurn:false };
 
   const helper = `let acShotFollow=null;
 function acForceExteriorBattleView(reason='combat lifecycle'){
@@ -32,6 +32,14 @@ function acPoseCutawayWeapon(stagePoint,fire=false){
   if(arm){if(arm.userData.acAimBaseZ==null)arm.userData.acAimBaseZ=arm.rotation.z;const armBase=arm.userData.acAimBaseZ,armTarget=Math.max(armBase-.72,Math.min(armBase+.72,armBase+(desired-base)*.62));arm.rotation.z=THREE.MathUtils.lerp(arm.rotation.z,armTarget,fire?.70:.32)}
   if(head){if(head.userData.acAimBaseZ==null)head.userData.acAimBaseZ=head.rotation.z;head.rotation.z=THREE.MathUtils.lerp(head.rotation.z,head.userData.acAimBaseZ+(desired-base)*.12,.18)}
   if(fire){const kickBase=parent.position.clone();parent.position.x+=selected.side==='aurelian'?.26:-.26;setTimeout(()=>{if(parent?.parent)parent.position.copy(kickBase)},150)}
+}
+function acAimBattlefieldFrame(snap=false){
+  if(!xrayOpen||!aiming||!selected)return false;
+  const visual=xrayRoomVisuals.find(v=>v.warrior===selected),muzzle=visual?.rig3D?.userData?.muzzle;
+  const shooter=muzzle?muzzle.getWorldPosition(new THREE.Vector3()):warriorWorld(selected),enemyVessel=selected.side==='aurelian'?earth:aure,enemyCenter=enemyVessel.getWorldPosition(new THREE.Vector3()),mid=shooter.clone().lerp(enemyCenter,.55);
+  const span=Math.max(48,Math.abs(enemyCenter.x-shooter.x)+36),vHalf=THREE.MathUtils.degToRad(camera.fov*.5),hHalf=Math.atan(Math.tan(vHalf)*camera.aspect),zNeed=(span*.5)/Math.max(.18,Math.tan(hHalf)),desired=new THREE.Vector3(mid.x,mid.y+7,Math.max(92,zNeed+18));
+  camera.position.lerp(desired,snap?1:.16);camera.lookAt(new THREE.Vector3(mid.x,mid.y+1,4));
+  return true
 }
 function acTargetRoomFromStage(attacker,stagePoint){
   if(!attacker||!stagePoint)return null;const rooms=opposingRooms(attacker)?.userData?.rooms||[];
@@ -104,7 +112,8 @@ function acBeginShotCameraFollow(stagePoint){
     const raw=(elapsed-acShotFollow.followDelay)/Math.max(1,acShotFollow.duration-acShotFollow.followDelay),t=Math.max(0,Math.min(1,raw)),e=t*t*(3-2*t),focus=acShotFollow.from.clone().lerp(acShotFollow.to,e),lead=acShotFollow.to.clone().sub(acShotFollow.from).normalize(),desired=focus.clone().add(new THREE.Vector3(0,6.5,64)).addScaledVector(lead,-5);
     if(t>=.72)acOpenPreImpactCutaway();camera.position.lerp(desired,snap?1:.12);camera.lookAt(focus.clone().addScaledVector(lead,2.4));return
   }else if(acShotFollow){acShotFollow=null}
-`);status.shotFollow=status.shotFollow&&(next!==patched);status.preImpact=next!==patched;patched=next;
+  if(acAimBattlefieldFrame(snap))return;
+`);status.shotFollow=status.shotFollow&&(next!==patched);status.preImpact=next!==patched;status.aimFrame=next!==patched;patched=next;
   }
 
   if (!patched.includes("acForceExteriorBattleView('solo turn handoff')")) {
@@ -115,8 +124,8 @@ function acBeginShotCameraFollow(stagePoint){
     const next = patched.replace(/function setMpTurn\(([^)]*)\)\{/, "function setMpTurn($1){acForceExteriorBattleView('multiplayer turn handoff');");status.mpTurn = next !== patched;patched = next;
   } else status.mpTurn = true;
 
-  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.68');
-  patched = patched.replace(/build=2026-09-(01|04)_[A-Z0-9_]+/g, 'build=2026-09-04_WARRIOR_MUZZLE_EXIT_PREIMPACT_CUTAWAY');
+  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.69');
+  patched = patched.replace(/build=2026-09-(01|04)_[A-Z0-9_]+/g, 'build=2026-09-04_CUTAWAY_AIM_BOTH_VESSELS_VISIBLE');
   patched = patched.replaceAll('CUTAWAY • TAP A WARRIOR ONCE TO HIGHLIGHT • TAP AGAIN TO LOCK SHOOTER','CUTAWAY • PRESS A WARRIOR • HOLD + DRAG TO AIM • RELEASE TO FIRE');
   patched = patched.replaceAll('SELECT A WARRIOR • TAP AGAIN TO CONFIRM','PRESS A WARRIOR • HOLD + DRAG TO AIM');
 
