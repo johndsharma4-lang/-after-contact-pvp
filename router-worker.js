@@ -11,16 +11,16 @@ import { patchDestructionCinematicRuntime } from './destruction-cinematic-runtim
 import { patchEarthCombatClarityRuntime } from './earth-combat-clarity-runtime.js';
 export { MyDurableObject } from './after-contact-worker.js';
 
-const REMAKE_BUILD = '2026-09-04_REMAKE_ROOT_1';
+const REMAKE_BUILD = '2026-09-04_REMAKE_PREVIEW_1';
+
+function isRootDocumentRequest(request, url) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return false;
+  return url.pathname === '/' || url.pathname === '/index.html' || url.pathname === '/legacy' || url.pathname === '/legacy/' || url.pathname === '/legacy/index.html';
+}
 
 function isRemakeDocumentRequest(request, url) {
   if (request.method !== 'GET' && request.method !== 'HEAD') return false;
-  return url.pathname === '/' || url.pathname === '/index.html' || url.pathname === '/remake' || url.pathname === '/remake/' || url.pathname === '/remake/index.html';
-}
-
-function isLegacyDocumentRequest(request, url) {
-  if (request.method !== 'GET' && request.method !== 'HEAD') return false;
-  return url.pathname === '/legacy' || url.pathname === '/legacy/' || url.pathname === '/legacy/index.html';
+  return url.pathname === '/remake' || url.pathname === '/remake/' || url.pathname === '/remake/index.html';
 }
 
 function isStaticAssetRequest(request, url) {
@@ -53,33 +53,35 @@ async function serveAssetDocument(request, env, pathname) {
   return {assetResponse, headers, html: await assetResponse.text()};
 }
 
+async function serveLegacyShell(request, env) {
+  const {assetResponse, headers, html: rawHtml} = await serveAssetDocument(request, env, '/index.html');
+  headers.set('x-after-contact-route', 'start-menu');
+  if (request.method === 'HEAD') return new Response(null, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
+  let html = patchIndexHtml(rawHtml);
+  html = patchEarthSpecialistsRuntime(html);
+  html = patchSolarLancerRuntime(html);
+  html = patchAurelianDeploymentRuntime(html);
+  html = patchAurelianTeamRuntime(html);
+  html = patchAurelianCombatRuntime(html);
+  html = patchCombatPresentationLockRuntime(html);
+  html = patchSoloEarthRoundRobinRuntime(html);
+  html = patchDestructionCinematicRuntime(html);
+  html = patchEarthCombatClarityRuntime(html);
+  html = installSharedDeploymentController(html);
+  return new Response(html, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
+    if (isRootDocumentRequest(request, url)) return serveLegacyShell(request, env);
+
     if (isRemakeDocumentRequest(request, url)) {
       const {assetResponse, headers, html} = await serveAssetDocument(request, env, '/remake/index.html');
       headers.set('x-after-contact-build', REMAKE_BUILD);
-      headers.set('x-after-contact-route', 'remake');
+      headers.set('x-after-contact-route', 'remake-preview');
       if (request.method === 'HEAD') return new Response(null, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
-      return new Response(html, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
-    }
-
-    if (isLegacyDocumentRequest(request, url)) {
-      const {assetResponse, headers, html: rawHtml} = await serveAssetDocument(request, env, '/index.html');
-      headers.set('x-after-contact-route', 'legacy');
-      if (request.method === 'HEAD') return new Response(null, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
-      let html = patchIndexHtml(rawHtml);
-      html = patchEarthSpecialistsRuntime(html);
-      html = patchSolarLancerRuntime(html);
-      html = patchAurelianDeploymentRuntime(html);
-      html = patchAurelianTeamRuntime(html);
-      html = patchAurelianCombatRuntime(html);
-      html = patchCombatPresentationLockRuntime(html);
-      html = patchSoloEarthRoundRobinRuntime(html);
-      html = patchDestructionCinematicRuntime(html);
-      html = patchEarthCombatClarityRuntime(html);
-      html = installSharedDeploymentController(html);
       return new Response(html, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
     }
 
