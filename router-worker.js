@@ -11,6 +11,7 @@ import { patchSoloEarthRoundRobinRuntime } from './solo-earth-round-robin-runtim
 import { patchDestructionCinematicRuntime } from './destruction-cinematic-runtime.js';
 import { patchEarthCombatClarityRuntime } from './earth-combat-clarity-runtime.js';
 import { patchCutawayLifecycleRuntime } from './cutaway-lifecycle-runtime.js';
+import { patchAimCameraHardFixRuntime } from './aim-camera-hard-fix-runtime.js';
 export { MyDurableObject } from './after-contact-worker.js';
 
 const REMAKE_BUILD = '2026-09-04_REMAKE_PREVIEW_1';
@@ -71,6 +72,7 @@ async function serveLegacyShell(request, env) {
   html = patchDestructionCinematicRuntime(html);
   html = patchEarthCombatClarityRuntime(html);
   html = patchCutawayLifecycleRuntime(html);
+  html = patchAimCameraHardFixRuntime(html);
   html = installSharedDeploymentController(html);
   return new Response(html, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
 }
