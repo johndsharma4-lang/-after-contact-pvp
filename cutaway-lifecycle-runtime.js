@@ -6,7 +6,7 @@ function replaceOnce(source, needle, replacement, status, key) {
 
 export function patchCutawayLifecycleRuntime(html) {
   let patched = html;
-  const status = { helper:false, singlePress:false, pressDrag:false, muzzleAim:false, shooterHold:false, soloTurn:false, mpTurn:false };
+  const status = { helper:false, singlePress:false, pressDrag:false, muzzleAim:false, shooterHold:false, sunadierArc:false, soloTurn:false, mpTurn:false };
 
   const helper = `function acForceExteriorBattleView(reason='combat lifecycle'){
   if(!battleStarted||matchEnded)return false;
@@ -78,19 +78,27 @@ function acHoldShooterCutaway(stagePoint){
     const next=patched.replace(needle,replacement);status.shooterHold=next!==patched;patched=next;
   } else status.shooterHold=true;
 
+  // Sunadier used to clamp upward slope so tightly that a full upward drag only raised the
+  // visible arc a few dozen pixels before gravity won. Give upward input extra authority while
+  // preserving the existing downward control and exact rendered-trajectory hit truth.
+  const oldArc="dragX=Math.max(72,Math.abs(pt.x-startStage.x)),dragY=pt.y-startStage.y,slope=Math.max(-.46,Math.min(.58,dragY/dragX)),edgeX=toward>0?1340:-60,totalX=edgeX-startStage.x,span=Math.abs(totalX),unitPower=Math.max(.18,Math.min(1,(power||50)/100)),gravityDrop=500+(1-unitPower)*115";
+  const newArc="dragX=Math.max(72,Math.abs(pt.x-startStage.x)),dragY=pt.y-startStage.y,rawSlope=dragY/dragX,slope=rawSlope<0?Math.max(-1.02,rawSlope*2):Math.min(.58,rawSlope),edgeX=toward>0?1340:-60,totalX=edgeX-startStage.x,span=Math.abs(totalX),unitPower=Math.max(.18,Math.min(1,(power||50)/100)),gravityDrop=430+(1-unitPower)*105";
+  const arcNext=patched.replace(oldArc,newArc);
+  status.sunadierArc=arcNext!==patched;
+  patched=arcNext;
+
   // Do not close the shooter cutaway at fire-time. endSoloPlayerTurnAfterShot is entered while
   // long-running weapons are still resolving. The 650ms shooter hold above owns this close.
   patched=patched.replace(/function endSoloPlayerTurnAfterShot\(([^)]*)\)\{acForceExteriorBattleView\('solo turn handoff'\);/,"function endSoloPlayerTurnAfterShot($1){");
   status.soloTurn=!patched.includes("acForceExteriorBattleView('solo turn handoff')");
 
-  // Multiplayer setMpTurn is an actual authoritative handoff, so exterior restoration remains safe there.
   if (!patched.includes("acForceExteriorBattleView('multiplayer turn handoff')")) {
     const next = patched.replace(/function setMpTurn\(([^)]*)\)\{/, "function setMpTurn($1){acForceExteriorBattleView('multiplayer turn handoff');");
     status.mpTurn = next !== patched;patched = next;
   } else status.mpTurn = true;
 
-  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.71');
-  patched = patched.replace(/build=2026-09-(01|04)_[A-Z0-9_]+/g, 'build=2026-09-04_SINGLE_PRESS_SHOOTER_HOLD_FIXED');
+  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.72');
+  patched = patched.replace(/build=2026-09-(01|04)_[A-Z0-9_]+/g, 'build=2026-09-04_SUNADIER_HIGH_LOB_AIM');
   patched = patched.replaceAll('CUTAWAY • TAP A WARRIOR ONCE TO HIGHLIGHT • TAP AGAIN TO LOCK SHOOTER','CUTAWAY • PRESS A WARRIOR • HOLD + DRAG TO AIM • RELEASE TO FIRE');
   patched = patched.replaceAll('SELECT A WARRIOR • TAP AGAIN TO CONFIRM','PRESS A WARRIOR • HOLD + DRAG TO AIM');
 
