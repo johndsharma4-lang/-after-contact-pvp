@@ -6,6 +6,8 @@ name: Audit remake
     paths:
       - 'remake/**'
       - 'router-worker.js'
+      - 'aurelian-combat-runtime.js'
+      - 'aurelian-route-compat-runtime.js'
       - '.github/workflows/audit-remake.yml'
 
 jobs:
@@ -16,7 +18,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Syntax check remake and router
+      - name: Syntax check remake and production shell
         run: |
           node --check remake/src/core/state.js
           node --check remake/src/core/combat.js
@@ -25,6 +27,8 @@ jobs:
           node --check remake/src/render/scene.js
           node --check remake/src/main.js
           node --check router-worker.js
+          node --check aurelian-combat-runtime.js
+          node --check aurelian-route-compat-runtime.js
       - name: Core state and combat invariants
         run: |
           node --input-type=module <<'EOF'
@@ -62,9 +66,18 @@ jobs:
           grep -Fq "entry.root.position.set(p.x,p.y-.35,1.35)" remake/src/render/scene.js
           grep -Fq "fullCutaway=sideId===state.turn&&!state.selectedWarriorId" remake/src/render/scene.js
           grep -Fq "addImpactFlash(end,color,duration)" remake/src/render/scene.js
-      - name: Production routing guards
+      - name: Whole-game production routing guards
         run: |
-          grep -Fq "url.pathname === '/'" router-worker.js
+          grep -Fq "if (isRootDocumentRequest(request, url)) return serveLegacyShell(request, env);" router-worker.js
+          grep -Fq "html = patchAurelianRouteCompatRuntime(html);" router-worker.js
+          grep -Fq "url.pathname === '/remake'" router-worker.js
           grep -Fq "'/remake/index.html'" router-worker.js
-          grep -Fq "url.pathname === '/legacy'" router-worker.js
           grep -Fq 'src="/remake/src/main.js"' remake/index.html
+      - name: Legacy Aurelian weapon route guards
+        run: |
+          grep -Fq "function spawnSunDisk(" aurelian-combat-runtime.js
+          grep -Fq "function spawnSunadier(" aurelian-combat-runtime.js
+          grep -Fq "weapon.kind==='solar_disk'" aurelian-route-compat-runtime.js
+          grep -Fq "weapon.kind==='sunadier'" aurelian-route-compat-runtime.js
+          grep -Fq "spawnSunDisk(w,start,pt,weapon)" aurelian-route-compat-runtime.js
+          grep -Fq "spawnSunadier(w,start,pt,power,weapon)" aurelian-route-compat-runtime.js
