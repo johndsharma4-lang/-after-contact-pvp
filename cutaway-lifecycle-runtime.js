@@ -6,7 +6,7 @@ function replaceOnce(source, needle, replacement, status, key) {
 
 export function patchCutawayLifecycleRuntime(html) {
   let patched = html;
-  const status = { helper:false, singlePress:false, pressDrag:false, muzzleAim:false, shotFollow:false, soloTurn:false, mpTurn:false };
+  const status = { helper:false, singlePress:false, pressDrag:false, muzzleAim:false, shotFollow:false, preImpact:false, soloTurn:false, mpTurn:false };
 
   const helper = `let acShotFollow=null;
 function acForceExteriorBattleView(reason='combat lifecycle'){
@@ -27,19 +27,31 @@ function acPoseCutawayWeapon(stagePoint,fire=false){
   if(Math.hypot(dx,dy)<4)return;
   if(parent.userData.acAimBaseZ==null)parent.userData.acAimBaseZ=parent.rotation.z;
   const base=parent.userData.acAimBaseZ,screenAngle=Math.atan2(dy,dx),raw=-screenAngle-Math.PI/2,desired=Math.max(base-1.15,Math.min(base+1.15,raw));
-  parent.rotation.z=THREE.MathUtils.lerp(parent.rotation.z,desired,fire?.72:.38);
+  parent.rotation.z=THREE.MathUtils.lerp(parent.rotation.z,desired,fire?.82:.38);
   const body=rig.userData?.rig,arm=body?.armRoots?.[1]||body?.armRoots?.[0],head=body?.headRoot;
-  if(arm){if(arm.userData.acAimBaseZ==null)arm.userData.acAimBaseZ=arm.rotation.z;const armBase=arm.userData.acAimBaseZ,armTarget=Math.max(armBase-.72,Math.min(armBase+.72,armBase+(desired-base)*.62));arm.rotation.z=THREE.MathUtils.lerp(arm.rotation.z,armTarget,fire?.58:.32)}
+  if(arm){if(arm.userData.acAimBaseZ==null)arm.userData.acAimBaseZ=arm.rotation.z;const armBase=arm.userData.acAimBaseZ,armTarget=Math.max(armBase-.72,Math.min(armBase+.72,armBase+(desired-base)*.62));arm.rotation.z=THREE.MathUtils.lerp(arm.rotation.z,armTarget,fire?.70:.32)}
   if(head){if(head.userData.acAimBaseZ==null)head.userData.acAimBaseZ=head.rotation.z;head.rotation.z=THREE.MathUtils.lerp(head.rotation.z,head.userData.acAimBaseZ+(desired-base)*.12,.18)}
-  if(fire){const kickBase=parent.position.clone();parent.position.x+=selected.side==='aurelian'?.20:-.20;setTimeout(()=>{if(parent?.parent)parent.position.copy(kickBase)},110)}
+  if(fire){const kickBase=parent.position.clone();parent.position.x+=selected.side==='aurelian'?.26:-.26;setTimeout(()=>{if(parent?.parent)parent.position.copy(kickBase)},150)}
+}
+function acTargetRoomFromStage(attacker,stagePoint){
+  if(!attacker||!stagePoint)return null;const rooms=opposingRooms(attacker)?.userData?.rooms||[];
+  for(let i=0;i<rooms.length;i++){const room=rooms[i];if(!room||room.erased)continue;const r=objectScreenRect(room.hitPlane,8);if(stagePoint.x>=r.x1&&stagePoint.x<=r.x2&&stagePoint.y>=r.y1&&stagePoint.y<=r.y2)return{room,roomIndex:i,end:stagePointToRoomWorld(stagePoint,room),warrior:opposing(attacker).find(w=>w.active&&w.hp>0&&w.roomIndex===i)||null,direct:true}}
+  return null
+}
+function acOpenPreImpactCutaway(){
+  const f=acShotFollow;if(!f||f.preImpactOpened||!f.attacker||!f.stagePoint)return false;
+  const wp=WEAPONS[f.attacker.weaponKey];if(!wp||wp.aim!=='straight')return false;
+  const hit=acTargetRoomFromStage(f.attacker,f.stagePoint);if(!hit)return false;f.preImpactOpened=true;
+  const opened=typeof spawnImpactCompartmentReveal==='function'?spawnImpactCompartmentReveal(f.attacker,hit,1350):false;
+  if(opened){const side=structureTargetSide(f.attacker);if(typeof beginImpactFocus==='function')beginImpactFocus(side,hit.roomIndex,'INCOMING',1100,true);diag('PRE-IMPACT CUTAWAY',`side=${side} room=${hit.roomIndex+1} beforeImpact=Y`)}return !!opened
 }
 function acBeginShotCameraFollow(stagePoint){
   if(!selected||!stagePoint)return;
   const visual=xrayOpen?xrayRoomVisuals.find(v=>v.warrior===selected):null,muzzle=visual?.rig3D?.userData?.muzzle;
   const from=(muzzle?muzzle.getWorldPosition(new THREE.Vector3()):(aimOriginWorld?.clone?.()||muzzleWorld(selected,stagePoint).clone()));
-  const to=targetWorldFromStage(stagePoint);acShotFollow={from,to,start:performance.now(),duration:1250};
-  setTimeout(()=>{if(xrayOpen)closePrivateXray('projectile cleared firing room')},320);
-  diag('SHOT CAMERA FOLLOW',(selected.weaponKey||'warrior')+' duration=1250ms cutawayHold=320ms')
+  const to=targetWorldFromStage(stagePoint);acShotFollow={from,to,start:performance.now(),duration:1500,followDelay:430,attacker:selected,stagePoint:{x:stagePoint.x,y:stagePoint.y},preImpactOpened:false};
+  setTimeout(()=>{if(xrayOpen)closePrivateXray('projectile visibly cleared firing compartment')},650);
+  diag('SHOT CAMERA FOLLOW',(selected.weaponKey||'warrior')+' duration=1500ms shooterHold=650ms followDelay=430ms')
 }
 `;
 
@@ -71,46 +83,40 @@ function acBeginShotCameraFollow(stagePoint){
   const oldCrewPress = "const crew=xrayWarriorAtStagePoint(pt);if(crew){selectXrayCrew(crew);return}";
   const newCrewPress = "const crew=xrayWarriorAtStagePoint(pt);if(crew){selectXrayCrew(crew);vesselGesture={pointerId:e.pointerId,start:pt,current:pt,lockedShooter:true};try{canvas.setPointerCapture(e.pointerId)}catch{}diag('SHOOTER PRESS ARMED',`${crew.weaponKey} room=${crew.roomIndex+1} holdDrag=Y`);return}";
   patched = replaceOnce(patched, oldCrewPress, newCrewPress, status, 'pressDrag');
-
-  // Make the same press become aiming with only a small drag instead of a second deliberate gesture.
   patched = patched.replace("if(Math.hypot(pt.x-vesselGesture.start.x,pt.y-vesselGesture.start.y)>=28){", "if(Math.hypot(pt.x-vesselGesture.start.x,pt.y-vesselGesture.start.y)>=10){");
 
   if(!patched.includes('acPoseCutawayWeapon(b);')){
-    const next=patched.replace("function setAimVisual(a,b){\n  if(!selected)return;", "function setAimVisual(a,b){\n  if(!selected)return;\n  acPoseCutawayWeapon(b);");
-    status.muzzleAim=next!==patched;patched=next;
-  }else status.muzzleAim=true;
+    const next=patched.replace("function setAimVisual(a,b){\n  if(!selected)return;", "function setAimVisual(a,b){\n  if(!selected)return;\n  acPoseCutawayWeapon(b);");status.muzzleAim=next!==patched;patched=next;
+  } else status.muzzleAim=true;
 
   if(!patched.includes('acBeginShotCameraFollow(pt);')){
     const needle="diag('AIM RELEASE',`distance=${Math.round(dist)} power=${Math.round(power)} control=${control}`);fireSelectedFromStage(pt,power)";
     const replacement="diag('AIM RELEASE',`distance=${Math.round(dist)} power=${Math.round(power)} control=${control}`);acPoseCutawayWeapon(pt,true);acBeginShotCameraFollow(pt);fireSelectedFromStage(pt,power)";
     const next=patched.replace(needle,replacement);status.shotFollow=next!==patched;patched=next;
-  }else status.shotFollow=true;
+  } else status.shotFollow=true;
 
   if(!patched.includes("acShotFollow&&performance.now()-acShotFollow.start")){
     const next=patched.replace("function updateBattleCamera(snap=false,frameDt=null){\n  if(!battleStarted||typeof camera==='undefined')return;", `function updateBattleCamera(snap=false,frameDt=null){
   if(!battleStarted||typeof camera==='undefined')return;
   if(acShotFollow&&performance.now()-acShotFollow.start<acShotFollow.duration){
-    const t=Math.max(0,Math.min(1,(performance.now()-acShotFollow.start)/acShotFollow.duration)),e=t*t*(3-2*t),focus=acShotFollow.from.clone().lerp(acShotFollow.to,e),lead=acShotFollow.to.clone().sub(acShotFollow.from).normalize(),desired=focus.clone().add(new THREE.Vector3(0,6.5,64)).addScaledVector(lead,-5);
-    camera.position.lerp(desired,snap?1:.12);camera.lookAt(focus.clone().addScaledVector(lead,2.4));return
+    const elapsed=performance.now()-acShotFollow.start;
+    if(elapsed<acShotFollow.followDelay){const shooterFocus=acShotFollow.from.clone();const holdPos=shooterFocus.clone().add(new THREE.Vector3(0,5.5,54));camera.position.lerp(holdPos,snap?1:.16);camera.lookAt(shooterFocus);return}
+    const raw=(elapsed-acShotFollow.followDelay)/Math.max(1,acShotFollow.duration-acShotFollow.followDelay),t=Math.max(0,Math.min(1,raw)),e=t*t*(3-2*t),focus=acShotFollow.from.clone().lerp(acShotFollow.to,e),lead=acShotFollow.to.clone().sub(acShotFollow.from).normalize(),desired=focus.clone().add(new THREE.Vector3(0,6.5,64)).addScaledVector(lead,-5);
+    if(t>=.72)acOpenPreImpactCutaway();camera.position.lerp(desired,snap?1:.12);camera.lookAt(focus.clone().addScaledVector(lead,2.4));return
   }else if(acShotFollow){acShotFollow=null}
-`);
-    status.shotFollow=status.shotFollow&&(next!==patched);patched=next;
+`);status.shotFollow=status.shotFollow&&(next!==patched);status.preImpact=next!==patched;patched=next;
   }
 
   if (!patched.includes("acForceExteriorBattleView('solo turn handoff')")) {
-    const next = patched.replace(/function endSoloPlayerTurnAfterShot\(([^)]*)\)\{/, "function endSoloPlayerTurnAfterShot($1){acForceExteriorBattleView('solo turn handoff');");
-    status.soloTurn = next !== patched;
-    patched = next;
+    const next = patched.replace(/function endSoloPlayerTurnAfterShot\(([^)]*)\)\{/, "function endSoloPlayerTurnAfterShot($1){acForceExteriorBattleView('solo turn handoff');");status.soloTurn = next !== patched;patched = next;
   } else status.soloTurn = true;
 
   if (!patched.includes("acForceExteriorBattleView('multiplayer turn handoff')")) {
-    const next = patched.replace(/function setMpTurn\(([^)]*)\)\{/, "function setMpTurn($1){acForceExteriorBattleView('multiplayer turn handoff');");
-    status.mpTurn = next !== patched;
-    patched = next;
+    const next = patched.replace(/function setMpTurn\(([^)]*)\)\{/, "function setMpTurn($1){acForceExteriorBattleView('multiplayer turn handoff');");status.mpTurn = next !== patched;patched = next;
   } else status.mpTurn = true;
 
-  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.67');
-  patched = patched.replace(/build=2026-09-(01|04)_[A-Z0-9_]+/g, 'build=2026-09-04_PRESS_DRAG_AIM_CAMERA_RECENTER');
+  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.68');
+  patched = patched.replace(/build=2026-09-(01|04)_[A-Z0-9_]+/g, 'build=2026-09-04_WARRIOR_MUZZLE_EXIT_PREIMPACT_CUTAWAY');
   patched = patched.replaceAll('CUTAWAY • TAP A WARRIOR ONCE TO HIGHLIGHT • TAP AGAIN TO LOCK SHOOTER','CUTAWAY • PRESS A WARRIOR • HOLD + DRAG TO AIM • RELEASE TO FIRE');
   patched = patched.replaceAll('SELECT A WARRIOR • TAP AGAIN TO CONFIRM','PRESS A WARRIOR • HOLD + DRAG TO AIM');
 
