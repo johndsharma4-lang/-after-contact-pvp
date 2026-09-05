@@ -16,19 +16,22 @@ checks = {
     'single director state': director.count('let acDirector={') == 1,
     'live aiming owns camera': 'xrayOpen&&aiming&&selected' in director,
     'single press shooter': 'xrayConfirmedShooter=w' in director and 'singlePress=Y' in director,
-    'solar 3d target windows': 'SOLAR 3D AIM WINDOWS' in director and '3D TARGET WINDOW' in director,
+    'solar 3d target windows': 'SOLAR 3D AIM WINDOWS' in director and '3D TARGET WINDOW' in director and 'sequential=Y' in director,
     'real 3d warrior window': 'buildCutawayOnlyWarrior3D' in director,
     'impact window is 3d': 'IMPACT 3D WINDOW' in director,
     'sunadier primary tracked': 'acDirectorTrackProjectile(attacker,grenade' in director,
     'sun disk tracked': 'acDirectorTrackProjectile(attacker,visual.group' in director,
     'solar beam tracked': 'acDirectorBeginBeam(attacker,start,beamPath)' in director,
     'scatter cannot steal camera': 'SUNADIER PLASMA SCATTER' in director and 'presentImpact=!secondaryScatter' in director,
+    'projectile camera biases enemy': 'enemyBias=.38+progress*.48' in director,
+    'turn waits for VFX': 'acDirectorWaitForPresentation' in director and 'TURN VFX HOLD' in director and 'TURN VFX RELEASE' in director,
+    'presentation settle phase': "acDirector.mode='settle'" in director,
     'solo canonical handoff': "setSoloTurn('earth')" in director,
     'multiplayer transition cleanup': "scheduleXrayForTurn('multiplayer transition')" in director,
-    'v034 build marker': 'MATCH RECORDER v0.34.0' in director,
+    'v0341 build marker': 'MATCH RECORDER v0.34.1' in director,
 }
 impact_start = director.find('function spawnImpactCompartmentReveal(attacker,hit,duration=1450)')
-impact_end = director.find('// Secondary Sunadier scatter', impact_start)
+impact_end = director.find('const impactRegex=', impact_start)
 impact_block = director[impact_start:impact_end] if impact_start >= 0 and impact_end > impact_start else ''
 checks['impact room window has no THREE.Sprite'] = bool(impact_block) and 'THREE.Sprite' not in impact_block and 'CanvasTexture' not in impact_block
 failed = [name for name, ok in checks.items() if not ok]
