@@ -12,6 +12,7 @@ import { patchDestructionCinematicRuntime } from './destruction-cinematic-runtim
 import { patchEarthCombatClarityRuntime } from './earth-combat-clarity-runtime.js';
 import { patchAurelianModelRefinementRuntime } from './aurelian-model-refinement-runtime.js';
 import { patchAurelianWarriorReadabilityRuntime } from './aurelian-warrior-readability-runtime.js';
+import { patchAurelianReferenceFidelityRuntime } from './aurelian-reference-fidelity-runtime.js';
 import { patchCombatPresentationDirectorRuntime } from './combat-presentation-director-runtime.js';
 import { patchWarriorWeaponOriginRuntime } from './warrior-weapon-origin-runtime.js';
 export { MyDurableObject } from './after-contact-worker.js';
@@ -69,6 +70,7 @@ async function serveLegacyShell(request, env) {
   html = patchEarthCombatClarityRuntime(html);
   html = patchAurelianModelRefinementRuntime(html);
   html = patchAurelianWarriorReadabilityRuntime(html);
+  html = patchAurelianReferenceFidelityRuntime(html);
   html = patchCombatPresentationDirectorRuntime(html);
   html = patchWarriorWeaponOriginRuntime(html);
   html = installSharedDeploymentController(html);
