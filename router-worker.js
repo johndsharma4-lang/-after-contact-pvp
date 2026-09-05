@@ -10,8 +10,7 @@ import { patchCombatPresentationLockRuntime } from './combat-presentation-lock-r
 import { patchSoloEarthRoundRobinRuntime } from './solo-earth-round-robin-runtime.js';
 import { patchDestructionCinematicRuntime } from './destruction-cinematic-runtime.js';
 import { patchEarthCombatClarityRuntime } from './earth-combat-clarity-runtime.js';
-import { patchCutawayLifecycleRuntime } from './cutaway-lifecycle-runtime.js';
-import { patchAimCameraHardFixRuntime } from './aim-camera-hard-fix-runtime.js';
+import { patchCombatPresentationDirectorRuntime } from './combat-presentation-director-runtime.js';
 export { MyDurableObject } from './after-contact-worker.js';
 
 const REMAKE_BUILD = '2026-09-04_REMAKE_PREVIEW_1';
@@ -20,17 +19,14 @@ function isRootDocumentRequest(request, url) {
   if (request.method !== 'GET' && request.method !== 'HEAD') return false;
   return url.pathname === '/' || url.pathname === '/index.html' || url.pathname === '/legacy' || url.pathname === '/legacy/' || url.pathname === '/legacy/index.html';
 }
-
 function isRemakeDocumentRequest(request, url) {
   if (request.method !== 'GET' && request.method !== 'HEAD') return false;
   return url.pathname === '/remake' || url.pathname === '/remake/' || url.pathname === '/remake/index.html';
 }
-
 function isStaticAssetRequest(request, url) {
   if (request.method !== 'GET' && request.method !== 'HEAD') return false;
   return /\.(?:webp|png|jpg|jpeg|svg|gif|mp3|wav|css|js)$/i.test(url.pathname);
 }
-
 function documentHeaders(response) {
   const headers = new Headers(response.headers);
   headers.set('content-type', 'text/html; charset=UTF-8');
@@ -40,12 +36,10 @@ function documentHeaders(response) {
   headers.delete('content-length');
   return headers;
 }
-
 function installSharedDeploymentController(html) {
   if (html.includes('deployment-controller-v03313.js')) return html;
   return html.replace('</body>', '<script src="/deployment-controller-v03313.js"></script>\n</body>');
 }
-
 async function serveAssetDocument(request, env, pathname) {
   const url = new URL(request.url);
   const assetUrl = new URL(pathname, url);
@@ -55,7 +49,6 @@ async function serveAssetDocument(request, env, pathname) {
   if (request.method === 'HEAD') return {assetResponse, headers, html: null};
   return {assetResponse, headers, html: await assetResponse.text()};
 }
-
 async function serveLegacyShell(request, env) {
   const {assetResponse, headers, html: rawHtml} = await serveAssetDocument(request, env, '/index.html');
   headers.set('x-after-contact-route', 'start-menu');
@@ -71,18 +64,14 @@ async function serveLegacyShell(request, env) {
   html = patchSoloEarthRoundRobinRuntime(html);
   html = patchDestructionCinematicRuntime(html);
   html = patchEarthCombatClarityRuntime(html);
-  html = patchCutawayLifecycleRuntime(html);
-  html = patchAimCameraHardFixRuntime(html);
+  html = patchCombatPresentationDirectorRuntime(html);
   html = installSharedDeploymentController(html);
   return new Response(html, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
 }
-
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-
     if (isRootDocumentRequest(request, url)) return serveLegacyShell(request, env);
-
     if (isRemakeDocumentRequest(request, url)) {
       const {assetResponse, headers, html} = await serveAssetDocument(request, env, '/remake/index.html');
       headers.set('x-after-contact-build', REMAKE_BUILD);
@@ -90,7 +79,6 @@ export default {
       if (request.method === 'HEAD') return new Response(null, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
       return new Response(html, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
     }
-
     if (isStaticAssetRequest(request, url)) return env.ASSETS.fetch(request);
     return baseWorker.fetch(request, env, ctx);
   },
