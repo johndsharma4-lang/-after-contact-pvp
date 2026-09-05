@@ -10,6 +10,7 @@ import { patchCombatPresentationLockRuntime } from './combat-presentation-lock-r
 import { patchSoloEarthRoundRobinRuntime } from './solo-earth-round-robin-runtime.js';
 import { patchDestructionCinematicRuntime } from './destruction-cinematic-runtime.js';
 import { patchEarthCombatClarityRuntime } from './earth-combat-clarity-runtime.js';
+import { patchAurelianModelRefinementRuntime } from './aurelian-model-refinement-runtime.js';
 import { patchCombatPresentationDirectorRuntime } from './combat-presentation-director-runtime.js';
 import { patchWarriorWeaponOriginRuntime } from './warrior-weapon-origin-runtime.js';
 export { MyDurableObject } from './after-contact-worker.js';
@@ -65,6 +66,7 @@ async function serveLegacyShell(request, env) {
   html = patchSoloEarthRoundRobinRuntime(html);
   html = patchDestructionCinematicRuntime(html);
   html = patchEarthCombatClarityRuntime(html);
+  html = patchAurelianModelRefinementRuntime(html);
   html = patchCombatPresentationDirectorRuntime(html);
   html = patchWarriorWeaponOriginRuntime(html);
   html = installSharedDeploymentController(html);
