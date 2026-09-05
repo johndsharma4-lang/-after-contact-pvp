@@ -1,0 +1,21 @@
+name: Audit Combat Presentation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  presentation-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: JavaScript syntax
+        run: |
+          node --check combat-presentation-director-runtime.js
+          node --check router-worker.js
+      - name: Presentation architecture invariants
+        run: python scripts/audit-presentation.py
