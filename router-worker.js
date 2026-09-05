@@ -16,6 +16,7 @@ import { patchAurelianCutawayModelRouteRuntime } from './aurelian-cutaway-model-
 import { patchAurelianCutawayCompositionRuntime } from './aurelian-cutaway-composition-runtime.js';
 import { patchCombatPresentationDirectorRuntime } from './combat-presentation-director-runtime.js';
 import { patchExpandedTacticalCutawayRuntime } from './expanded-tactical-cutaway-runtime.js';
+import { patchWarriorSelectionSigilRuntime } from './warrior-selection-sigil-runtime.js';
 import { patchWarriorWeaponOriginRuntime } from './warrior-weapon-origin-runtime.js';
 export { MyDurableObject } from './after-contact-worker.js';
 
@@ -76,6 +77,7 @@ async function serveLegacyShell(request, env) {
   html = patchAurelianCutawayCompositionRuntime(html);
   html = patchCombatPresentationDirectorRuntime(html);
   html = patchExpandedTacticalCutawayRuntime(html);
+  html = patchWarriorSelectionSigilRuntime(html);
   html = patchWarriorWeaponOriginRuntime(html);
   html = installSharedDeploymentController(html);
   return new Response(html, {status: assetResponse.status, statusText: assetResponse.statusText, headers});
