@@ -22,11 +22,10 @@ function acApplyAimSeal(progress){
  if(sealCount===acTacticalCutaway.lastSealCount)return;acTacticalCutaway.lastSealCount=sealCount;
  const sealed=new Set(order.slice(0,sealCount).map(x=>x.i));
  for(let i=0;i<modules.length;i++){const module=modules[i],room=rooms[i];if(!module)continue;if(room)syncRoomStructuralDamage(room);module.visible=i!==selected.roomIndex&&sealed.has(i)&&!room?.erased&&(room?.breach??0)<100}
- diag('TACTICAL HULL SEAL',`progress=${Math.round(progress*100)}% closed=${sealCount}/8 shooterRoom=${selected.roomIndex+1}`)
+ diag('TACTICAL HULL SEAL','progress='+Math.round(progress*100)+'% closed='+sealCount+'/8 shooterRoom='+(selected.roomIndex+1))
 }
 function acTacticalCutawayCamera(snap=false){
  if(!xrayOpen||typeof camera==='undefined')return false;
- // Once a shot exists, the presentation director owns the camera. Never pull back into our interior during travel/impact.
  if(acTacticalCutaway.mode==='attack')return false;
  const localRoot=localXraySide()==='aurelian'?aure:earth;
  if(!localRoot)return false;
@@ -61,6 +60,6 @@ function acTacticalCutawayCamera(snap=false){
   patched=replaceOnce(patched,camNeedle,camReplacement,status,'camera');status.seal=status.state&&status.camera;
   patched=patched.replace(/MATCH RECORDER v0\.3[56]\.[0-9]+/g,'MATCH RECORDER v0.36.9');
   patched=patched.replace(/build=2026-09-04_[A-Z0-9_]+/g,'build=2026-09-04_AIM_SEAL_ENEMY_IMPACT_CAMERA');
-  const summary=Object.entries(status).map(([k,v])=>`${k}:${v?'OK':'MISS'}`).join(' ');
-  return patched.replace('</head>',`<meta id="ac-expanded-tactical-cutaway-v0369" name="ac-expanded-tactical-cutaway" content="${summary}">\n</head>`)
+  const summary=Object.entries(status).map(([k,v])=>k+':'+(v?'OK':'MISS')).join(' ');
+  return patched.replace('</head>','<meta id="ac-expanded-tactical-cutaway-v0369" name="ac-expanded-tactical-cutaway" content="'+summary+'">\n</head>')
 }
