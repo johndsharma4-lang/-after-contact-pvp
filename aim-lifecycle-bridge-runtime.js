@@ -5,24 +5,12 @@ function replaceOnce(source, needle, replacement, status, key) {
 }
 
 export function patchAimLifecycleBridgeRuntime(html) {
-  if (html.includes('ac-aim-lifecycle-bridge-v0406')) return html;
+  if (html.includes('ac-aim-lifecycle-bridge-v0407')) return html;
   let patched = html;
   const status = { liveStep:false, originDiag:false, cutawayEntry:false, shellOwnership:false, aimHook:false, cameraChoreo:false };
 
-  // Hull choreography must advance from the authoritative aim gesture, not only from
-  // whichever camera branch happens to own a frame.
-  patched = replaceOnce(
-    patched,
-    "function acDirectorUpdateAimTarget(attacker,pt){acDirector.aimTargetProgress=acDirectorAimTarget(attacker,pt)}",
-    "function acDirectorUpdateAimTarget(attacker,pt){acDirector.aimTargetProgress=acDirectorAimTarget(attacker,pt);acDirectorStepAimPresentation(performance.now())}",
-    status,
-    'liveStep'
-  );
+  patched = replaceOnce(patched,"function acDirectorUpdateAimTarget(attacker,pt){acDirector.aimTargetProgress=acDirectorAimTarget(attacker,pt)}","function acDirectorUpdateAimTarget(attacker,pt){acDirector.aimTargetProgress=acDirectorAimTarget(attacker,pt);acDirectorStepAimPresentation(performance.now())}",status,'liveStep');
 
-  // The expanded cutaway hides the CURRENT shell through xrayShellState. The old
-  // damageModules array is only one historical subset and can be empty for rebuilt
-  // Aurelian hulls. Make the presentation director operate on the same shell inventory
-  // that applyXrayShell() actually hid, grouped to the nearest physical room.
   const oldSeal = /function acDirectorApplyAimSeal\(attacker,progress\)\{[\s\S]*?\n\}\nfunction acDirectorBeginAim\(attacker\)\{/;
   const newSeal = String.raw`function acDirectorApplyAimSeal(attacker,progress){
  if(!xrayOpen||!attacker)return;
@@ -40,54 +28,30 @@ export function patchAimLifecycleBridgeRuntime(html) {
  if(closeCount!==acDirector.sealedRooms){acDirector.sealedRooms=closeCount;diag('AIM HULL SEAL','visual='+Math.round(progress*100)+'% target='+Math.round(acDirector.aimTargetProgress*100)+'% closed='+closeCount+'/'+order.length+' shooterRoom='+(shooter+1))}
 }
 function acDirectorBeginAim(attacker){`;
-  const shellNext = patched.replace(oldSeal,newSeal);
-  status.shellOwnership = shellNext !== patched;
-  patched = shellNext;
+  const shellNext=patched.replace(oldSeal,newSeal);status.shellOwnership=shellNext!==patched;patched=shellNext;
 
-  // Ensure the director is attached to the live setAimVisual even if another earlier
-  // runtime already decorated that function and made the director's old exact needle miss.
   if(!patched.includes("acDirectorBeginAim(selected);acDirectorUpdateAimTarget(selected,b);")){
-    const hookNext=patched.replace(/function setAimVisual\(a,b\)\{\n\s*if\(!selected\)return;/,"function setAimVisual(a,b){\n  if(!selected)return;\n  acDirectorBeginAim(selected);acDirectorUpdateAimTarget(selected,b);");
-    status.aimHook=hookNext!==patched;patched=hookNext;
+    const hookNext=patched.replace(/function setAimVisual\(a,b\)\{\n\s*if\(!selected\)return;/,"function setAimVisual(a,b){\n  if(!selected)return;\n  acDirectorBeginAim(selected);acDirectorUpdateAimTarget(selected,b);");status.aimHook=hookNext!==patched;patched=hookNext;
   }else status.aimHook=true;
 
-  // Replace the aggressive battlefield zoom with staged choreography tied to the SAME
-  // smoothed progress that seals the hull. Early aim stays shooter-focused; enemy framing
-  // only begins once the hull is substantially sealed. Release/travel cameras remain separate.
-  const oldCamera = /if\(xrayOpen&&aiming&&selected\)\{[\s\S]*?camera\.lookAt\(targetLook\);return\n  \}/;
-  const newCamera = String.raw`if(xrayOpen&&aiming&&selected){
-    const progress=acDirectorStepAimPresentation(performance.now()),visual=xrayRoomVisuals?.find?.(v=>v.warrior===selected),shooter=visual?.rig3D?.getWorldPosition?.(new THREE.Vector3())||warriorWorld(selected),enemyRoot=selected.side==='aurelian'?earth:aure,enemy=enemyRoot.getWorldPosition(new THREE.Vector3());
-    const reveal=THREE.MathUtils.smoothstep(progress,.52,1),late=THREE.MathUtils.smoothstep(progress,.78,1),center=shooter.clone().lerp(enemy,.04+reveal*.22+late*.10),targetLook=shooter.clone().lerp(enemy,.03+reveal*.18+late*.12);
-    const earlySpan=46,lateSpan=Math.max(70,Math.abs(enemy.x-shooter.x)+34),span=THREE.MathUtils.lerp(earlySpan,lateSpan,reveal),vHalf=THREE.MathUtils.degToRad(camera.fov*.5),hHalf=Math.atan(Math.tan(vHalf)*camera.aspect),zNeed=(span*.5)/Math.max(.16,Math.tan(hHalf));
-    const targetPos=new THREE.Vector3(center.x,THREE.MathUtils.lerp(shooter.y+4.0,Math.max(shooter.y,enemy.y)+6.0,reveal),Math.max(66,THREE.MathUtils.lerp(69,zNeed+20,reveal))),alpha=snap?1:THREE.MathUtils.lerp(.10,.075,reveal);
-    camera.position.lerp(targetPos,alpha);camera.zoom=THREE.MathUtils.lerp(camera.zoom,THREE.MathUtils.lerp(1.16,1.06,reveal),alpha);camera.updateProjectionMatrix();camera.lookAt(targetLook);
-    if(acDirector.cameraStage!==Math.floor(progress*4)){acDirector.cameraStage=Math.floor(progress*4);diag('AIM CAMERA STAGE','progress='+Math.round(progress*100)+'% reveal='+Math.round(reveal*100)+'% shooterPriority=Y')}
+  // Aim owns a close physical-shooter composition. Do not frame the enemy while the
+  // finger is down: the travel/beam camera takes ownership only after release. Progress
+  // may gently widen the local cutaway, but can no longer throw the warrior across the field.
+  const oldCamera=/if\(xrayOpen&&aiming&&selected\)\{[\s\S]*?camera\.lookAt\(targetLook\);(?:\n\s*if\(acDirector\.cameraStage[\s\S]*?\})?\n\s*return\n\s*\}/;
+  const newCamera=String.raw`if(xrayOpen&&aiming&&selected){
+    const progress=acDirectorStepAimPresentation(performance.now()),visual=xrayRoomVisuals?.find?.(v=>v.warrior===selected),shooter=visual?.rig3D?.getWorldPosition?.(new THREE.Vector3())||warriorWorld(selected),localWide=THREE.MathUtils.smoothstep(progress,.35,1);
+    const targetLook=shooter.clone();targetLook.y+=1.1;
+    const targetPos=new THREE.Vector3(shooter.x-2.5,shooter.y+4.2,THREE.MathUtils.lerp(62,69,localWide)),alpha=snap?1:.10;
+    camera.position.lerp(targetPos,alpha);camera.zoom=THREE.MathUtils.lerp(camera.zoom,THREE.MathUtils.lerp(1.18,1.10,localWide),alpha);camera.updateProjectionMatrix();camera.lookAt(targetLook);
+    if(acDirector.cameraStage!==Math.floor(progress*4)){acDirector.cameraStage=Math.floor(progress*4);diag('AIM CAMERA STAGE','progress='+Math.round(progress*100)+'% localWide='+Math.round(localWide*100)+'% shooterOnly=Y enemyFraming=N')}
     return
   }`;
-  const cameraNext = patched.replace(oldCamera,newCamera);
-  status.cameraChoreo = cameraNext !== patched;
-  patched = cameraNext;
+  const cameraNext=patched.replace(oldCamera,newCamera);status.cameraChoreo=cameraNext!==patched;patched=cameraNext;
 
-  // Keep explicit telemetry for the physical muzzle versus the finger position.
-  patched = replaceOnce(
-    patched,
-    "aimOriginWorld=cutawayMuzzle?cutawayMuzzle.getWorldPosition(new THREE.Vector3()):muzzleWorld(selected,pt).clone();aimOriginStage=worldToStage(aimOriginWorld);startPx={x:aimOriginStage.x,y:aimOriginStage.y};currentPx={x:pt.x,y:pt.y};setAimVisual(startPx,currentPx);return true",
-    "aimOriginWorld=cutawayMuzzle?cutawayMuzzle.getWorldPosition(new THREE.Vector3()):muzzleWorld(selected,pt).clone();aimOriginStage=worldToStage(aimOriginWorld);startPx={x:aimOriginStage.x,y:aimOriginStage.y};currentPx={x:pt.x,y:pt.y};diag('AIM ORIGIN AUTHORITY','weapon='+selected.weaponKey+' muzzle='+Math.round(startPx.x)+','+Math.round(startPx.y)+' pointer='+Math.round(pt.x)+','+Math.round(pt.y)+' source='+(cutawayMuzzle?'CUTAWAY_MUZZLE':'BASE_MUZZLE'));setAimVisual(startPx,currentPx);return true",
-    status,
-    'originDiag'
-  );
+  patched=replaceOnce(patched,"aimOriginWorld=cutawayMuzzle?cutawayMuzzle.getWorldPosition(new THREE.Vector3()):muzzleWorld(selected,pt).clone();aimOriginStage=worldToStage(aimOriginWorld);startPx={x:aimOriginStage.x,y:aimOriginStage.y};currentPx={x:pt.x,y:pt.y};setAimVisual(startPx,currentPx);return true","aimOriginWorld=cutawayMuzzle?cutawayMuzzle.getWorldPosition(new THREE.Vector3()):muzzleWorld(selected,pt).clone();aimOriginStage=worldToStage(aimOriginWorld);startPx={x:aimOriginStage.x,y:aimOriginStage.y};currentPx={x:pt.x,y:pt.y};diag('AIM ORIGIN AUTHORITY','weapon='+selected.weaponKey+' muzzle='+Math.round(startPx.x)+','+Math.round(startPx.y)+' pointer='+Math.round(pt.x)+','+Math.round(pt.y)+' source='+(cutawayMuzzle?'CUTAWAY_MUZZLE':'BASE_MUZZLE'));setAimVisual(startPx,currentPx);return true",status,'originDiag');
 
-  // Retire the old Aurelian exterior-fire entrance. A tap on the local vessel now enters
-  // the physical cutaway first; aiming cannot begin until a real cutaway warrior has
-  // been selected and locked. This gives presentation, camera and muzzle one owner.
-  patched = replaceOnce(
-    patched,
-    "if(aiming)return;const pt=eventStagePoint(e);\n  if(xrayOpen){",
-    "if(aiming)return;const pt=eventStagePoint(e);\n  if(!xrayOpen&&localWorldSide()==='aurelian'){openPrivateXray('authoritative warrior firing entry');diag('AIM ENTRY ROUTE','EXTERIOR->CUTAWAY noFire=Y');return}\n  if(xrayOpen){",
-    status,
-    'cutawayEntry'
-  );
+  patched=replaceOnce(patched,"if(aiming)return;const pt=eventStagePoint(e);\n  if(xrayOpen){","if(aiming)return;const pt=eventStagePoint(e);\n  if(!xrayOpen&&localWorldSide()==='aurelian'){openPrivateXray('authoritative warrior firing entry');diag('AIM ENTRY ROUTE','EXTERIOR->CUTAWAY noFire=Y');return}\n  if(xrayOpen){",status,'cutawayEntry');
 
-  const summary = Object.entries(status).map(([k,v]) => k+':' +(v?'OK':'MISS')).join(' ');
-  return patched.replace('</head>', '<meta id="ac-aim-lifecycle-bridge-v0406" name="ac-aim-lifecycle-bridge" content="'+summary+' ballistics:UNCHANGED camera:STAGED_SHOOTER_PRIORITY hullSeal:CURRENT_XRAY_SHELL aurelianFireEntry:CUTAWAY_ONLY">\n</head>');
+  const summary=Object.entries(status).map(([k,v])=>k+':' +(v?'OK':'MISS')).join(' ');
+  return patched.replace('</head>','<meta id="ac-aim-lifecycle-bridge-v0407" name="ac-aim-lifecycle-bridge" content="'+summary+' ballistics:UNCHANGED camera:SHOOTER_ONLY_DURING_AIM hullSeal:CURRENT_XRAY_SHELL aurelianFireEntry:CUTAWAY_ONLY">\n</head>');
 }
