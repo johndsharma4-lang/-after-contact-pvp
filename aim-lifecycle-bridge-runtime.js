@@ -5,9 +5,9 @@ function replaceOnce(source, needle, replacement, status, key) {
 }
 
 export function patchAimLifecycleBridgeRuntime(html) {
-  if (html.includes('ac-aim-lifecycle-bridge-v0405')) return html;
+  if (html.includes('ac-aim-lifecycle-bridge-v0406')) return html;
   let patched = html;
-  const status = { liveStep:false, originDiag:false, cutawayEntry:false, shellOwnership:false, aimHook:false };
+  const status = { liveStep:false, originDiag:false, cutawayEntry:false, shellOwnership:false, aimHook:false, cameraChoreo:false };
 
   // Hull choreography must advance from the authoritative aim gesture, not only from
   // whichever camera branch happens to own a frame.
@@ -51,6 +51,23 @@ function acDirectorBeginAim(attacker){`;
     status.aimHook=hookNext!==patched;patched=hookNext;
   }else status.aimHook=true;
 
+  // Replace the aggressive battlefield zoom with staged choreography tied to the SAME
+  // smoothed progress that seals the hull. Early aim stays shooter-focused; enemy framing
+  // only begins once the hull is substantially sealed. Release/travel cameras remain separate.
+  const oldCamera = /if\(xrayOpen&&aiming&&selected\)\{[\s\S]*?camera\.lookAt\(targetLook\);return\n  \}/;
+  const newCamera = String.raw`if(xrayOpen&&aiming&&selected){
+    const progress=acDirectorStepAimPresentation(performance.now()),visual=xrayRoomVisuals?.find?.(v=>v.warrior===selected),shooter=visual?.rig3D?.getWorldPosition?.(new THREE.Vector3())||warriorWorld(selected),enemyRoot=selected.side==='aurelian'?earth:aure,enemy=enemyRoot.getWorldPosition(new THREE.Vector3());
+    const reveal=THREE.MathUtils.smoothstep(progress,.52,1),late=THREE.MathUtils.smoothstep(progress,.78,1),center=shooter.clone().lerp(enemy,.04+reveal*.22+late*.10),targetLook=shooter.clone().lerp(enemy,.03+reveal*.18+late*.12);
+    const earlySpan=46,lateSpan=Math.max(70,Math.abs(enemy.x-shooter.x)+34),span=THREE.MathUtils.lerp(earlySpan,lateSpan,reveal),vHalf=THREE.MathUtils.degToRad(camera.fov*.5),hHalf=Math.atan(Math.tan(vHalf)*camera.aspect),zNeed=(span*.5)/Math.max(.16,Math.tan(hHalf));
+    const targetPos=new THREE.Vector3(center.x,THREE.MathUtils.lerp(shooter.y+4.0,Math.max(shooter.y,enemy.y)+6.0,reveal),Math.max(66,THREE.MathUtils.lerp(69,zNeed+20,reveal))),alpha=snap?1:THREE.MathUtils.lerp(.10,.075,reveal);
+    camera.position.lerp(targetPos,alpha);camera.zoom=THREE.MathUtils.lerp(camera.zoom,THREE.MathUtils.lerp(1.16,1.06,reveal),alpha);camera.updateProjectionMatrix();camera.lookAt(targetLook);
+    if(acDirector.cameraStage!==Math.floor(progress*4)){acDirector.cameraStage=Math.floor(progress*4);diag('AIM CAMERA STAGE','progress='+Math.round(progress*100)+'% reveal='+Math.round(reveal*100)+'% shooterPriority=Y')}
+    return
+  }`;
+  const cameraNext = patched.replace(oldCamera,newCamera);
+  status.cameraChoreo = cameraNext !== patched;
+  patched = cameraNext;
+
   // Keep explicit telemetry for the physical muzzle versus the finger position.
   patched = replaceOnce(
     patched,
@@ -72,5 +89,5 @@ function acDirectorBeginAim(attacker){`;
   );
 
   const summary = Object.entries(status).map(([k,v]) => k+':' +(v?'OK':'MISS')).join(' ');
-  return patched.replace('</head>', '<meta id="ac-aim-lifecycle-bridge-v0405" name="ac-aim-lifecycle-bridge" content="'+summary+' ballistics:UNCHANGED camera:OBSERVER hullSeal:CURRENT_XRAY_SHELL aurelianFireEntry:CUTAWAY_ONLY">\n</head>');
+  return patched.replace('</head>', '<meta id="ac-aim-lifecycle-bridge-v0406" name="ac-aim-lifecycle-bridge" content="'+summary+' ballistics:UNCHANGED camera:STAGED_SHOOTER_PRIORITY hullSeal:CURRENT_XRAY_SHELL aurelianFireEntry:CUTAWAY_ONLY">\n</head>');
 }
