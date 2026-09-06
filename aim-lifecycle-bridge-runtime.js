@@ -5,14 +5,12 @@ function replaceOnce(source, needle, replacement, status, key) {
 }
 
 export function patchAimLifecycleBridgeRuntime(html) {
-  if (html.includes('ac-aim-lifecycle-bridge-v0403')) return html;
+  if (html.includes('ac-aim-lifecycle-bridge-v0404')) return html;
   let patched = html;
-  const status = { liveStep:false, originDiag:false };
+  const status = { liveStep:false, originDiag:false, cutawayEntry:false };
 
-  // The director previously updated aimTargetProgress from pointer motion but relied on
-  // updateBattleCamera() to advance the smoothed presentation. That left the hull seal
-  // disconnected whenever the camera path did not own the current frame. Advance the
-  // presentation from the authoritative aim gesture too; camera remains an observer.
+  // Hull choreography must advance from the authoritative aim gesture, not only from
+  // whichever camera branch happens to own a frame.
   patched = replaceOnce(
     patched,
     "function acDirectorUpdateAimTarget(attacker,pt){acDirector.aimTargetProgress=acDirectorAimTarget(attacker,pt)}",
@@ -21,9 +19,7 @@ export function patchAimLifecycleBridgeRuntime(html) {
     'liveStep'
   );
 
-  // Instrument the actual two origins instead of guessing. AIM START's x/y is the finger
-  // coordinate; startPx is the projected muzzle coordinate used by the canonical shot.
-  // This makes any future mismatch explicit in the recorder without rebasing ballistics.
+  // Keep explicit telemetry for the physical muzzle versus the finger position.
   patched = replaceOnce(
     patched,
     "aimOriginWorld=cutawayMuzzle?cutawayMuzzle.getWorldPosition(new THREE.Vector3()):muzzleWorld(selected,pt).clone();aimOriginStage=worldToStage(aimOriginWorld);startPx={x:aimOriginStage.x,y:aimOriginStage.y};currentPx={x:pt.x,y:pt.y};setAimVisual(startPx,currentPx);return true",
@@ -32,6 +28,17 @@ export function patchAimLifecycleBridgeRuntime(html) {
     'originDiag'
   );
 
+  // Retire the old Aurelian exterior-fire entrance. A tap on the local vessel now enters
+  // the physical cutaway first; aiming cannot begin until a real cutaway warrior has
+  // been selected and locked. This gives presentation, camera and muzzle one owner.
+  patched = replaceOnce(
+    patched,
+    "if(aiming)return;const pt=eventStagePoint(e);\n  if(xrayOpen){",
+    "if(aiming)return;const pt=eventStagePoint(e);\n  if(!xrayOpen&&localWorldSide()==='aurelian'){openPrivateXray('authoritative warrior firing entry');diag('AIM ENTRY ROUTE','EXTERIOR->CUTAWAY noFire=Y');return}\n  if(xrayOpen){",
+    status,
+    'cutawayEntry'
+  );
+
   const summary = Object.entries(status).map(([k,v]) => k+':' +(v?'OK':'MISS')).join(' ');
-  return patched.replace('</head>', '<meta id="ac-aim-lifecycle-bridge-v0403" name="ac-aim-lifecycle-bridge" content="'+summary+' ballistics:UNCHANGED camera:OBSERVER hullSeal:GESTURE_DRIVEN">\n</head>');
+  return patched.replace('</head>', '<meta id="ac-aim-lifecycle-bridge-v0404" name="ac-aim-lifecycle-bridge" content="'+summary+' ballistics:UNCHANGED camera:OBSERVER hullSeal:GESTURE_DRIVEN aurelianFireEntry:CUTAWAY_ONLY">\n</head>');
 }
