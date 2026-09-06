@@ -1,5 +1,5 @@
 export function patchAurelianInteriorCleanupRuntime(html){
- if(html.includes('ac-aurelian-interior-cleanup-v0370'))return html;
+ if(html.includes('ac-aurelian-interior-cleanup-v0371'))return html;
  const helper=String.raw`
 function acCleanAurelianInterior(){
  if(!xrayOpen||localXraySide()!=='aurelian'||!xrayGroup)return;
@@ -19,7 +19,8 @@ function acCleanAurelianInterior(){
 }
 `;
  let patched=html;
- if(!patched.includes('function acCleanAurelianInterior()'))patched=patched.replace('let acTacticalCutaway=',helper+'\nlet acTacticalCutaway=');
+ // Insert next to a stable base-game symbol, not the optional tactical-camera prototype.
+ if(!patched.includes('function acCleanAurelianInterior()'))patched=patched.replace('function refreshPrivateXrayVisuals(){',helper+'\nfunction refreshPrivateXrayVisuals(){');
  patched=patched.replace('applyXrayShell();buildPrivateXray();for(const w of localXrayWarriors())','applyXrayShell();buildPrivateXray();acCleanAurelianInterior();for(const w of localXrayWarriors())');
- return patched.replace('</head>','<meta id="ac-aurelian-interior-cleanup-v0370" name="ac-aurelian-interior-cleanup" content="CLEAR_WARRIOR_STAGES">\n</head>')
+ return patched.replace('</head>','<meta id="ac-aurelian-interior-cleanup-v0371" name="ac-aurelian-interior-cleanup" content="DECOUPLED_CLEAR_WARRIOR_STAGES">\n</head>')
 }
