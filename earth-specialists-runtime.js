@@ -1,8 +1,8 @@
 export function patchEarthSpecialistsRuntime(html) {
   let patched = html;
 
-  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.32');
-  patched = patched.replace(/build=2026-08-28_[A-Z0-9_]+/g, 'build=2026-08-28_CONTROLLER_RAY_ORIGIN_FIX');
+  patched = patched.replace(/MATCH RECORDER v0\.33\.\d+/g, 'MATCH RECORDER v0.33.33');
+  patched = patched.replace(/build=2026-08-28_[A-Z0-9_]+/g, 'build=2026-09-05_CONTROLLER_STANDALONE_STRIKE');
 
   const aimingHelpers = `let sniperAimSmooth=null;
 function smoothSniperProjectedPoint(x,y){
@@ -25,7 +25,8 @@ function drawControllerReticle(attacker,startWorld,pt){
   if(!hit)return null;const r=hit.screenRect,cx=hit.screenCenter.x,cy=hit.screenCenter.y,pulse=.78+.22*Math.sin(performance.now()*.009);
   const glow=document.createElementNS(ns,'rect');glow.setAttribute('x',r.x1-5);glow.setAttribute('y',r.y1-5);glow.setAttribute('width',Math.max(1,r.x2-r.x1+10));glow.setAttribute('height',Math.max(1,r.y2-r.y1+10));glow.setAttribute('rx','8');glow.setAttribute('fill','rgba(0,160,255,'+(0.22*pulse).toFixed(3)+')');glow.setAttribute('stroke','#7eeaff');glow.setAttribute('stroke-width','6');glow.style.filter='drop-shadow(0 0 14px #20bfff)';enemyAimOutlineLayer.appendChild(glow);
   const ring=document.createElementNS(ns,'circle');ring.setAttribute('cx',cx);ring.setAttribute('cy',cy);ring.setAttribute('r','28');ring.setAttribute('fill','rgba(70,205,255,.10)');ring.setAttribute('stroke','#ffffff');ring.setAttribute('stroke-width','3');ring.setAttribute('stroke-dasharray','9 5');enemyAimOutlineLayer.appendChild(ring);
-  const label=document.createElementNS(ns,'text');label.setAttribute('x',cx);label.setAttribute('y',Math.max(18,r.y1-10));label.setAttribute('text-anchor','middle');label.setAttribute('fill','#eaffff');label.setAttribute('stroke','#063654');label.setAttribute('stroke-width','3');label.setAttribute('paint-order','stroke');label.setAttribute('font-size','13');label.setAttribute('font-weight','900');label.textContent='ROOM '+(hit.roomIndex+1)+' • DESIGNATED';enemyAimOutlineLayer.appendChild(label);diag('TAC-LINK RAY LOCK','room='+(hit.roomIndex+1));return hit;
+  const label=document.createElementNS(ns,'text');label.setAttribute('x',cx);label.setAttribute('y',Math.max(18,r.y1-10));label.setAttribute('text-anchor','middle');label.setAttribute('fill','#eaffff');label.setAttribute('stroke','#063654');label.setAttribute('stroke-width','3');label.setAttribute('paint-order','stroke');label.setAttribute('font-size','13');label.setAttribute('font-weight','900');label.textContent='ROOM '+(hit.roomIndex+1)+' • DESIGNATED';enemyAimOutlineLayer.appendChild(label);
+  diag('TAC-LINK RAY LOCK','room='+(hit.roomIndex+1));return hit;
 }
 `;
   if (!patched.includes('function controllerRayHit(')) patched = patched.replace('function spawnTacLocator(attacker,start,pt,power,weapon){', aimingHelpers + 'function spawnTacLocator(attacker,start,pt,power,weapon){');
@@ -41,7 +42,11 @@ function drawControllerReticle(attacker,startWorld,pt){
 
   patched = patched.replace("if(firedKind!=='laser'&&firedKind!=='explosive'&&firedKind!=='acid')endSoloPlayerTurnAfterShot();", "if(firedKind!=='laser'&&firedKind!=='explosive'&&firedKind!=='acid'&&firedKind!=='locator')endSoloPlayerTurnAfterShot();");
   patched = patched.replace("diag('TAC-LINK ATTACHED',`${attacker.side} room=${hit.roomIndex+1} delayed=1_team_turn cooldown=3`)\n  }});return true", "diag('SUPPORT QUEUED',`${attacker.side} room=${hit.roomIndex+1} delayed=1_team_turn cooldown=3`);diag('TAC-LINK ATTACHED',`${attacker.side} room=${hit.roomIndex+1} delayed=1_team_turn cooldown=3`);if(!multiplayer&&attacker.side==='aurelian'&&battleStarted&&!matchEnded&&soloTurn==='aurelian')setTimeout(()=>{if(battleStarted&&!matchEnded&&soloTurn==='aurelian')endSoloPlayerTurnAfterShot()},180)\n  }});return true");
-  patched = patched.replace("function advanceSupportTurn(side){\n  const call=supportCalls[side];if(call){", "function advanceSupportTurn(side){\n  const call=supportCalls[side];diag(call?'SUPPORT ARRIVAL CHECK':'SUPPORT WAITING',`${side} queued=${call?'Y':'N'} cooldown=${supportCooldown[side]||0}`);if(call){");
+
+  // Combat Controller owns the gunship strike. In solo, resolve it as the Controller's one action
+  // instead of leaving a delayed strike queued to overlap a later Bombardier/Sniper turn.
+  patched = patched.replace("function advanceSupportTurn(side){\n  const call=supportCalls[side];diag(call?'SUPPORT ARRIVAL CHECK':'SUPPORT WAITING',`${side} queued=${call?'Y':'N'} cooldown=${supportCooldown[side]||0}`);if(call){", "function advanceSupportTurn(side){\n  const call=supportCalls[side];diag(call?'SUPPORT ARRIVAL CHECK':'SUPPORT WAITING',`${side} queued=${call?'Y':'N'} cooldown=${supportCooldown[side]||0}`);if(call){");
+  patched = patched.replace("statusEl.textContent=`TAC-LINK ATTACHED • ROOM ${hit.roomIndex+1} • SUPPORT NEXT TEAM TURN`;diag('TAC-LINK ATTACHED',`${attacker.side} room=${hit.roomIndex+1} cooldown=3`)", "statusEl.textContent=`TAC-LINK ATTACHED • ROOM ${hit.roomIndex+1}`;diag('TAC-LINK ATTACHED',`${attacker.side} room=${hit.roomIndex+1} cooldown=3`);if(!multiplayer&&attacker.side==='earth'){const call=supportCalls.earth;supportCalls.earth=null;setTimeout(()=>{if(!call||!battleStarted||matchEnded)return;const p=call.hit.room.hitPlane.getWorldPosition(new THREE.Vector3()),strike={...call.weapon,kind:'explosive',name:'ADAPTIVE GUNSHIP STRIKE',armorDamage:55,damage:55,splash:65,impactStrength:1.55};if(call.marker)call.marker.parent?.remove(call.marker);spawnExplosionVisual(p,0xffb34d,3.1);spawnImpactBurst(p,0xffedaa);spawnDebris(p,0x555b60,42,.14,.82);kickCamera(.46,.30);resolveHit(call.attacker,{...call.hit,end:p},strike);diag('COMBAT CONTROLLER GUNSHIP STRIKE','earth room='+(call.hit.roomIndex+1)+' standalone=Y')},420)}");
 
   patched = patched.replace("const tuned={...weapon,armorDamage:Math.round(weapon.armorDamage*hit.quality),damage:Math.round(weapon.damage*hit.quality),impactStrength:1.38};spawnExplosionVisual(target,0xffb45b,1.72*hit.quality);", "const tuned={...weapon,kind:'explosive',name:'EXPLOSIVE BREACH ROUND',armorDamage:Math.round(weapon.armorDamage*hit.quality),damage:Math.round(weapon.damage*hit.quality),splash:Math.round(22*hit.quality),impactStrength:1.52};spawnExplosionVisual(target,0xffb45b,2.05*hit.quality);");
   patched = patched.replace("diag('SNIPER IMPACT',", "diag('SNIPER EXPLOSIVE IMPACT',");
@@ -59,6 +64,6 @@ function bombardierAimGuide(a,b){
   patched = patched.replace("aimPath.setAttribute('d',guide.d);", "aimPath.setAttribute('d',guide.d);if(wp.kind==='explosive'){aimPath.style.stroke='#69cfff';aimPath.style.strokeWidth='3';aimPath.style.strokeDasharray='10 8';aimPath.style.opacity='.78';aimPath.style.filter='drop-shadow(0 0 5px #2caeff)'}");
   patched = patched.replace("function clearAim(){", "function clearAim(){sniperAimSmooth=null;if(enemyAimOutlineLayer)enemyAimOutlineLayer.innerHTML='';");
 
-  patched = patched.replace('</head>', '<meta name="ac-earth-specialists-runtime" content="controller-safe-origin-ray-lock bombardier-half-guide-probability sniper-smoothed-explosive support-queue">\n</head>');
+  patched = patched.replace('</head>', '<meta name="ac-earth-specialists-runtime" content="controller-standalone-gunship bombardier-isolated sniper-isolated support-queue">\n</head>');
   return patched;
 }
