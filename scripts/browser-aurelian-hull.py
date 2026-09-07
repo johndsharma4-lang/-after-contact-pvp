@@ -7,8 +7,8 @@ ROOT=Path(os.environ.get('AC_HULL_ROOT','/mnt/data/ac-hull-work')); SOURCE=Path(
 html=(OUT/'compiled.html').read_text()
 hook=r'''
 window.__hullReview={
-  get:()=>({phase:gameFlowPhase,battleStarted,xrayOpen,soloTurn,round:soloRound,rooms:aure.userData?.rooms?.length,crew:aWarriors.filter(w=>w.active).map(w=>({weapon:w.weaponKey,room:w.roomIndex,hp:w.hp})),panels:factionSkinA?.userData?.acCutawayBayPanels?.map(p=>({name:p.name,visible:p.visible})),draws:renderer.info.render.calls,tris:renderer.info.render.triangles,diag:diagLines.slice(-18)}),
-  start:()=>{musicEnabled=false;saveStorySeen();if(storyActive)endStoryIntro();multiplayer=false;localSide='aurelian';showFactionSelect();chooseFaction('aurelian');showCharacterSelect();continueToDeployment(null);[0,1,2].forEach((room,i)=>placeWarriorInSlot(i,room));startBattle(null);for(const id of ['homeOverlay','titleScreen','ndaOverlay','mpLobby','factionOverlay','characterOverlay','deployOverlay']){const e=document.getElementById(id);if(e){e.classList.remove('show');e.classList.add('hidden');e.style.display='none'}}return gameFlowPhase},
+  get:()=>({phase:gameFlowPhase,battleStarted,xrayOpen,soloTurn,round:soloRound,rooms:aRooms.userData?.rooms?.length,crew:aWarriors.filter(w=>w.active).map(w=>({weapon:w.weaponKey,room:w.roomIndex,hp:w.hp})),panels:factionSkinA?.userData?.acCutawayBayPanels?.map(p=>({name:p.name,visible:p.visible})),draws:renderer.info.render.calls,tris:renderer.info.render.triangles,diag:diagLines.slice(-18)}),
+  start:()=>{musicEnabled=false;saveStorySeen();if(storyActive)endStoryIntro();multiplayer=false;localSide='aurelian';forceSoloFactionScreen();chooseFaction('aurelian');showCharacterSelect();continueToDeployment(null);[0,1,2].forEach((room,i)=>placeWarriorInSlot(i,room));startBattle(null);for(const id of ['homeOverlay','titleScreen','ndaOverlay','mpOverlay','mpLobby','factionOverlay','characterOverlay','deployOverlay']){const e=document.getElementById(id);if(e){e.classList.remove('show');e.classList.add('hidden');e.style.display='none'}}return gameFlowPhase},
   open:()=>openPrivateXray('browser regression'),close:()=>closePrivateXray('browser regression'),
   cycle:()=>{for(let i=0;i<5;i++){closePrivateXray('browser cycle');openPrivateXray('browser cycle')}return xrayRoomVisuals.length},
   select:(index)=>{const v=xrayRoomVisuals.find(v=>v.warrior?.active&&v.warrior.hp>0&&v.index===index);if(!v)return false;selectXrayCrew(v.warrior);return true},
@@ -63,6 +63,8 @@ with sync_playwright() as p:
     point=page.evaluate('window.__hullReview.pressPoint()');rect=page.evaluate('window.__hullReview.canvasRect()')
     assert point, 'Solar Lancer cannot be selected'
     x=rect['x']+point['x']*rect['w']/1280;y=rect['y']+point['y']*rect['h']/720
+    result['pointerTarget']=page.evaluate('([x,y])=>({tag:document.elementFromPoint(x,y)?.tagName,id:document.elementFromPoint(x,y)?.id})',[x,y])
+    assert result['pointerTarget']['tag']=='CANVAS', 'Pointer blocked by '+str(result['pointerTarget'])
     page.mouse.move(x,y);page.mouse.down();page.mouse.move(x+18,y-2,steps=2);page.wait_for_timeout(250)
     page.mouse.move(min(rect['x']+rect['w']-15,x+540),max(rect['y']+20,y-150),steps=12);page.wait_for_timeout(1100)
     result['aim']=page.evaluate('window.__hullReview.aimState()')
@@ -70,6 +72,8 @@ with sync_playwright() as p:
     page.mouse.up();page.wait_for_timeout(150)
     result['release']=page.evaluate('window.__hullReview.aimState()')
     (OUT/'browser-report.json').write_text(json.dumps(result,indent=2))
+    assert result['aim']['aiming'] and result['aim']['selected']=='solar_lancer', 'Pointer aiming failed'
+    assert result['release']['shots']==result['aim']['shots']+1, 'Release did not fire exactly once'
     page.wait_for_function("window.__hullReview.aimState().round>=2 && window.__hullReview.aimState().soloTurn==='aurelian'",timeout=60000)
     result['nextTurn']=page.evaluate('window.__hullReview.aimState()')
     result['placeholderAssets']=placeholder_assets;result['errors']=errors;result['consoleErrors']=console[-10:]
