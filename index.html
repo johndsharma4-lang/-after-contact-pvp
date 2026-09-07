@@ -1257,7 +1257,7 @@ function vesselHealthColor(side){return({earth:0x4ebdff,aurelian:0xffd65a,lizard
 function resetShieldState(){shieldHp={aurelian:SHIELD_MAX,earth:SHIELD_MAX};shieldSections={aurelian:Array(9).fill(SHIELD_SECTION_MAX),earth:Array(9).fill(SHIELD_SECTION_MAX)}}
 function makeVesselHealthShell(side,kind){
   const skin=side==='aurelian'?factionSkinA:factionSkinE;if(!skin)return new THREE.Group();
-  const faction=factionForWorldSide(side),color=kind==='shield'?0x9fb3bb:vesselHealthColor(side),shape={earth:[18,10.4,9,5],gray:[20.5,4.5,9.8,0],aurelian:[21.5,6.5,9.8,0],lizard:[19,8.2,9.2,0]}[faction]||[20,7,10,side==='earth'?5:0];
+  const faction=factionForWorldSide(side),color=kind==='shield'?0x9fb3bb:vesselHealthColor(side),shape={earth:[18,10.4,9,5],gray:[20.5,4.5,9.8,0],aurelian:[21.5,10.0,9.8,0],lizard:[19,8.2,9.2,0]}[faction]||[20,7,10,side==='earth'?5:0];
   // One smooth Fresnel envelope keeps the faction-colored hull visible. The former cloned
   // EdgesGeometry broke into dozens of one-pixel gray dots on mobile.
   const uniforms={traceColor:{value:new THREE.Color(color)},traceOpacity:{value:kind==='shield'?.42:.36}},material=new THREE.ShaderMaterial({uniforms,transparent:true,depthTest:true,depthWrite:false,side:THREE.DoubleSide,blending:THREE.NormalBlending,
@@ -2862,7 +2862,35 @@ function addL1ArtPolish(g,faction,cy=0){
     for(const [x,y,r] of [[-10.5,7.5,-.08],[9.5,6.9,.11],[-2.5,-5.8,.05]]){const scrap=box(5.0,.48,1.3,0x24292b,.72,.78);scrap.position.set(x,y,-.15);scrap.rotation.z=r;g.add(scrap)}
   }
 }
-function addUnifiedExteriorShell(skin,faction,side){if(!skin)return;const cy=side==='aurelian'?0:5;const mat=(c,m=.7,r=.45,e=0)=>new THREE.MeshStandardMaterial({color:c,metalness:m,roughness:r,emissive:e,emissiveIntensity:e?0.28:0});if(faction==='earth'){const lower=box(31,3.2,15.5,0x252d2e,.72,.66);lower.position.set(0,cy-2.0,-1);skin.add(lower);for(const [x,y,w,h,rz] of [[-8,cy+1.0,13,6,-.11],[6,cy+1.4,16,6.5,.08]]){const slab=box(w,h,7,x<0?0x667064:0x3f4a45,.58,.68);slab.position.set(x,y,1.5);slab.rotation.z=rz;skin.add(slab)}const bunker=box(12,8.2,8.5,0x39433c,.64,.64);bunker.position.set(1,cy+4.4,-1.2);skin.add(bunker);const roof=box(13.5,1.1,9.2,0x252c2d,.72,.58);roof.position.set(1,cy+8.6,-1.2);skin.add(roof);for(const x of[-12.5,12.5]){const skirt=box(5,3.2,12,x<0?0x4b5544:0x30393a,.70,.62);skirt.position.set(x,cy-1.2,-1.2);skin.add(skirt)}for(const [x,z] of [[-10,4.5],[-4,4.9],[4,4.7],[10,4.1]]){const shutter=box(4.2,2.3,.32,x<0?0x737a70:0x343c3a,.66,.56);shutter.position.set(x,cy+2,z);skin.add(shutter)}}else if(faction==='gray'){const grayShellMat=new THREE.MeshStandardMaterial({color:0x453b58,metalness:.86,roughness:.31,emissive:0x4b2468,emissiveIntensity:.42}),upper=new THREE.Mesh(new THREE.SphereGeometry(9.4,48,22),grayShellMat);upper.scale.set(2.35,.35,1.25);upper.position.set(0,cy+1.3,0);skin.add(upper);const lower=upper.clone();lower.material=grayShellMat.clone();lower.scale.y=.22;lower.position.y=cy-.6;skin.add(lower)}else if(faction==='aurelian'){const shell=new THREE.Mesh(new THREE.SphereGeometry(8.8,42,20),mat(0x8b651f,.90,.25,0x392100));shell.name='AURELIAN_UNIFIED_EXTERIOR_HULL';shell.scale.set(2.25,.48,1.15);shell.position.set(0,cy,.2);shell.userData.acHullRadii=new THREE.Vector3(19.8,4.224,10.12);skin.userData.acPrimaryHull=shell;skin.add(shell)}else if(faction==='lizard'){const hull=new THREE.Mesh(new THREE.SphereGeometry(7.2,42,22),mat(0x264c43,.58,.62));hull.scale.set(2.15,.72,1.05);hull.position.set(0,cy-.3,0);skin.add(hull)}}
+function acAurelianModuleGeometry(points,depth=1.18){const shape=new THREE.Shape();shape.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)shape.lineTo(points[i][0],points[i][1]);shape.closePath();const geo=new THREE.ExtrudeGeometry(shape,{depth,steps:1,bevelEnabled:true,bevelSegments:3,bevelSize:.22,bevelThickness:.18,curveSegments:10});geo.computeVertexNormals();return geo}
+function buildAurelianDirectorHull(skin,cy,mat){
+  // Six real exterior modules follow the player's silhouette sketch. These same
+  // groups are hidden to open the cutaway and restored one by one during aim.
+  for(const child of [...skin.children]){child.visible=false;child.userData.acLegacyAurelianHull=true}
+  const gold=mat(0x8b651f,.90,.25,0x392100),bright=mat(0xd6a43d,.88,.20,0x5d3100),dark=mat(0x241608,.72,.48),glass=new THREE.MeshStandardMaterial({color:0x74cfff,emissive:0x174f82,emissiveIntensity:1.05,metalness:.34,roughness:.16,transparent:true,opacity:.78,side:THREE.DoubleSide});
+  const specs=[
+    {name:'PILOT_COCKPIT',x:-8.6,y:7.1,w:7.4,h:5.2,points:[[-3.7,-2.15],[3.7,-2.15],[3.15,2.15],[-2.8,2.55],[-3.75,1.15]]},
+    {name:'PORT_UPPER',x:-9.4,y:1.65,w:10.8,h:5.6,points:[[-5.4,-2.55],[4.55,-2.55],[5.4,-1.25],[4.55,2.65],[-4.9,2.45],[-5.65,.55]]},
+    {name:'PORT_LOWER',x:-9.0,y:-4.35,w:10.7,h:5.6,points:[[-5.35,-2.45],[4.45,-2.45],[5.35,-1.25],[4.65,2.55],[-5.35,2.55],[-5.85,.7]]},
+    {name:'STARBOARD_UPPER',x:7.15,y:4.55,w:11.7,h:5.8,points:[[-5.85,-2.65],[5.85,-2.65],[5.45,2.65],[-4.85,2.55],[-6.05,.35]]},
+    {name:'STARBOARD_LOWER',x:7.25,y:-1.45,w:11.4,h:5.7,points:[[-5.7,-2.55],[5.15,-2.35],[5.7,-.75],[5.55,2.55],[-4.65,2.45],[-5.95,.75]]},
+    {name:'SOLAR_CANNON_BAY',x:8.9,y:-6.35,w:8.6,h:4.5,points:[[-4.3,-1.95],[4.3,-1.55],[3.65,2.05],[-3.75,2.25]]}
+  ];
+  const structure=new THREE.Group();structure.name='AURELIAN_DIRECTOR_HULL_STRUCTURE';structure.userData.acHullRadii=new THREE.Vector3(20.5,9.6,9.3);structure.userData.acSketchSilhouette=true;skin.add(structure);
+  const spine=box(11.5,3.15,5.8,0x39230d,.82,.42);spine.name='AURELIAN_CENTRAL_WAIST';spine.position.set(-.6,cy-.1,1.8);structure.add(spine);
+  for(const [x,y,rz] of [[-4.6,4.7,-.48],[-4.8,-3.1,.45],[3.8,2.1,.22],[4.6,-4.0,-.30]]){const brace=box(9.0,.64,4.4,0x5b3a12,.86,.34);brace.position.set(x,cy+y,1.35);brace.rotation.z=rz;structure.add(brace)}
+  const panels=[];
+  for(let i=0;i<specs.length;i++){
+    const spec=specs[i],panel=new THREE.Group();panel.name=`AURELIAN_HULL_MODULE_${i+1}_${spec.name}`;panel.position.set(spec.x,cy+spec.y,7.95);panel.userData.acCutawayBayPanel=true;panel.userData.acCutawayBayIndex=i;panel.userData.acModuleRole=spec.name;
+    const armor=new THREE.Mesh(acAurelianModuleGeometry(spec.points,1.18),i===0?bright.clone():gold.clone());armor.name=`AURELIAN_HULL_ARMOR_${i+1}`;armor.castShadow=true;armor.receiveShadow=true;panel.add(armor);
+    const faceMat=mat(i===0?0xc49332:0xa87620,.88,.24,0x3a2100),inset=new THREE.Mesh(acAurelianModuleGeometry(spec.points.map(([x,y])=>[x*.94,y*.90]),.10),faceMat);inset.name=`AURELIAN_HULL_FACE_${i+1}`;inset.position.z=1.25;panel.add(inset);
+    if(i===0){const pilotBody=box(.62,1.10,.12,0x17130e,.28,.72);pilotBody.name='AURELIAN_PILOT_SILHOUETTE_BODY';pilotBody.position.set(-.08,-.22,1.37);const pilotHead=new THREE.Mesh(new THREE.SphereGeometry(.31,16,12),dark.clone());pilotHead.name='AURELIAN_PILOT_SILHOUETTE_HEAD';pilotHead.position.set(-.08,.54,1.37);const visor=new THREE.Mesh(new THREE.BoxGeometry(.40,.11,.06),new THREE.MeshBasicMaterial({color:0xffdc68}));visor.position.set(-.08,.56,1.69);panel.add(pilotBody,pilotHead,visor);const canopy=new THREE.Mesh(new THREE.CircleGeometry(1,40),glass.clone());canopy.name='AURELIAN_PILOT_OVAL_WINDOW';canopy.scale.set(2.35,1.18,1);canopy.position.set(-.05,.20,1.43);canopy.renderOrder=4;panel.add(canopy);for(const sx of[-1,1]){const mullion=box(.13,2.05,.12,0xdcc06a,.76,.24);mullion.position.set(sx*.78,.20,1.49);mullion.rotation.z=sx*.18;panel.add(mullion)}}
+    if(i===5){const cannonRoot=new THREE.Group();cannonRoot.name='AURELIAN_SOLAR_CANNON';cannonRoot.position.set(.55,.08,1.44);const breech=new THREE.Mesh(new THREE.CylinderGeometry(1.14,1.34,2.25,16),bright.clone());breech.name='AURELIAN_SOLAR_CANNON_BREECH';breech.rotation.z=-Math.PI/2;const chamber=new THREE.Mesh(new THREE.SphereGeometry(.72,22,14),new THREE.MeshStandardMaterial({color:0xffed91,emissive:0xff9d20,emissiveIntensity:2.4,metalness:.35,roughness:.16}));chamber.name='AURELIAN_SOLAR_CANNON_CHAMBER';const barrel=new THREE.Mesh(new THREE.CylinderGeometry(.40,.66,4.8,16),dark.clone());barrel.name='AURELIAN_SOLAR_CANNON_BARREL';barrel.rotation.z=-Math.PI/2;barrel.position.x=2.65;const muzzle=new THREE.Mesh(new THREE.TorusGeometry(.68,.18,10,36),bright.clone());muzzle.name='AURELIAN_SOLAR_CANNON_MUZZLE';muzzle.rotation.y=Math.PI/2;muzzle.position.x=5.02;cannonRoot.add(breech,chamber,barrel,muzzle);panel.add(cannonRoot)}
+    panel.traverse(o=>{o.userData=o.userData||{};o.userData.acCutawayBayIndex=i;o.userData.acCutawayBayPanelPart=true});skin.add(panel);panels.push(panel)
+  }
+  skin.userData.acSketchHull=true;skin.userData.acPrimaryHull=structure;skin.userData.acCutawayBayPanels=panels;skin.userData.acCutawayBayLayout=specs.map((s,i)=>({index:i,x:s.x,y:cy+s.y,w:s.w,h:s.h,role:s.name}));
+}
+function addUnifiedExteriorShell(skin,faction,side){if(!skin)return;const cy=side==='aurelian'?0:5;const mat=(c,m=.7,r=.45,e=0)=>new THREE.MeshStandardMaterial({color:c,metalness:m,roughness:r,emissive:e,emissiveIntensity:e?0.28:0});if(faction==='earth'){const lower=box(31,3.2,15.5,0x252d2e,.72,.66);lower.position.set(0,cy-2.0,-1);skin.add(lower);for(const [x,y,w,h,rz] of [[-8,cy+1.0,13,6,-.11],[6,cy+1.4,16,6.5,.08]]){const slab=box(w,h,7,x<0?0x667064:0x3f4a45,.58,.68);slab.position.set(x,y,1.5);slab.rotation.z=rz;skin.add(slab)}const bunker=box(12,8.2,8.5,0x39433c,.64,.64);bunker.position.set(1,cy+4.4,-1.2);skin.add(bunker);const roof=box(13.5,1.1,9.2,0x252c2d,.72,.58);roof.position.set(1,cy+8.6,-1.2);skin.add(roof);for(const x of[-12.5,12.5]){const skirt=box(5,3.2,12,x<0?0x4b5544:0x30393a,.70,.62);skirt.position.set(x,cy-1.2,-1.2);skin.add(skirt)}for(const [x,z] of [[-10,4.5],[-4,4.9],[4,4.7],[10,4.1]]){const shutter=box(4.2,2.3,.32,x<0?0x737a70:0x343c3a,.66,.56);shutter.position.set(x,cy+2,z);skin.add(shutter)}}else if(faction==='gray'){const grayShellMat=new THREE.MeshStandardMaterial({color:0x453b58,metalness:.86,roughness:.31,emissive:0x4b2468,emissiveIntensity:.42}),upper=new THREE.Mesh(new THREE.SphereGeometry(9.4,48,22),grayShellMat);upper.scale.set(2.35,.35,1.25);upper.position.set(0,cy+1.3,0);skin.add(upper);const lower=upper.clone();lower.material=grayShellMat.clone();lower.scale.y=.22;lower.position.y=cy-.6;skin.add(lower)}else if(faction==='aurelian'){buildAurelianDirectorHull(skin,cy,mat)}else if(faction==='lizard'){const hull=new THREE.Mesh(new THREE.SphereGeometry(7.2,42,22),mat(0x264c43,.58,.62));hull.scale.set(2.15,.72,1.05);hull.position.set(0,cy-.3,0);skin.add(hull)}}
 
 const factionStandards=[];
 function makeFactionFlagTexture(kind){
@@ -2918,7 +2946,7 @@ function addCurvedReptilianCrest(skin,side){
 }
 function addFactionEmblemAndStandards(skin,faction,side){
   if(!skin)return;const cy=side==='aurelian'?0:5,emblem=new THREE.Group();emblem.name=`FACTION_EMBLEM_${faction.toUpperCase()}`;
-  const colors={earth:[0x20282b,0xc4c9c3,0x6a735e],aurelian:[0x090602,0xffffd0,0xff9d20],lizard:[0x020d09,0xd7ffb8,0x31ff72],gray:[0x050208,0xf2d8ff,0x8c42ff]}[faction];if(faction==='aurelian'||faction==='gray'){addCurvedDiscCrest(skin,faction,side);return}if(faction==='lizard'){addCurvedReptilianCrest(skin,side);return}
+  const colors={earth:[0x20282b,0xc4c9c3,0x6a735e],aurelian:[0x090602,0xffffd0,0xff9d20],lizard:[0x020d09,0xd7ffb8,0x31ff72],gray:[0x050208,0xf2d8ff,0x8c42ff]}[faction];if(faction==='aurelian'&&skin.userData.acSketchHull)return;if(faction==='aurelian'||faction==='gray'){addCurvedDiscCrest(skin,faction,side);return}if(faction==='lizard'){addCurvedReptilianCrest(skin,side);return}
   const recess=new THREE.Mesh(new THREE.CircleGeometry(3.25,48),new THREE.MeshStandardMaterial({color:colors[0],metalness:.72,roughness:.50}));recess.position.z=-.08;emblem.add(recess);
   const rim=new THREE.Mesh(new THREE.TorusGeometry(3.05,.24,10,48),new THREE.MeshStandardMaterial({color:colors[1],metalness:.86,roughness:.20,emissive:colors[2],emissiveIntensity:(faction==='aurelian'||faction==='gray')?.92:faction==='lizard'?.78:.30}));emblem.add(rim);if(faction==='aurelian'||faction==='gray'||faction==='lizard'){const halo=new THREE.Mesh(new THREE.RingGeometry(2.58,3.45,48),new THREE.MeshBasicMaterial({color:colors[2],transparent:true,opacity:.20,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide}));halo.position.z=-.02;halo.renderOrder=29;emblem.add(halo)}
   if(faction==='earth'){
@@ -2983,11 +3011,17 @@ function addLevel2FactionArt(skin,faction,side){
     for(const x of[-10.5,-5.4,5.4,10.5]){const lamp=glowSphere(.20,0x8fcfff,1.5);lamp.position.set(x,cy+4.2,5.42);skin.add(lamp);registerLevel2Part(lamp,'pulse',x*.1,2.2)}
   }else if(faction==='aurelian'){
     const solar=standard(0xffd75b,.82,.20,0xff981f,1.35),frame=standard(0x9b6718,.88,.28),cell=standard(0xffed9a,.62,.18,0xffbd42,.72);
-    const gyro=new THREE.Mesh(new THREE.TorusGeometry(10.5,.18,10,72),solar);gyro.scale.y=.47;gyro.position.set(0,cy,6.55);gyro.name='L2_AURELIAN_REAR_SOLAR_GYRO';skin.add(gyro);registerLevel2Part(gyro,'spin',0,.10);
-    const crown=new THREE.Group();crown.name='L2_AURELIAN_THREE_PANEL_CROWN';
-    for(let panelIndex=0;panelIndex<3;panelIndex++){const panel=new THREE.Group(),px=(panelIndex-1)*6.0,tilt=(panelIndex-1)*.14,back=box(5.25,2.65,.42,0x5e3c0c,.88,.32);panel.add(back);for(let row=0;row<2;row++)for(let col=0;col<3;col++){const tile=box(1.46,.91,.12,(row+col)%2?0xffd75b:0xf3b538,.68,.22);tile.position.set((col-1)*1.62,(row-.5)*1.08,.29);panel.add(tile)}const rimTop=box(5.38,.15,.18,0xfff0ad,.78,.18);rimTop.position.set(0,1.28,.34);panel.add(rimTop);panel.position.set(px,cy+4.35,8.42);panel.rotation.z=tilt;crown.add(panel);const support=box(.34,2.35,.48,0x8a5b17,.82,.34);support.position.set(px,cy+2.25,7.88);support.rotation.z=tilt*.45;crown.add(support)}
-    const reactor=new THREE.Mesh(new THREE.CylinderGeometry(1.05,1.42,2.1,12),frame);reactor.position.set(0,cy+2.70,7.82);crown.add(reactor);const crownLight=glowSphere(.48,0xffd35a,2.2);crownLight.position.set(0,cy+4.35,8.88);crown.add(crownLight);registerLevel2Part(crownLight,'pulse',.2,2.2);skin.add(crown);
-    for(const x of[-9.1,9.1]){const node=glowSphere(.28,0xffc34a,1.9);node.position.set(x,cy,9.28);skin.add(node);registerLevel2Part(node,'pulse',x*.17,2.0)}
+    if(skin.userData.acSketchHull){
+      const cannonPanel=skin.userData.acCutawayBayPanels?.[5],halo=new THREE.Mesh(new THREE.TorusGeometry(3.15,.15,10,56),solar);halo.name='L2_AURELIAN_SOLAR_CANNON_FOCUS_RING';halo.scale.y=.56;halo.position.set(.7,.05,1.60);cannonPanel?.add(halo);registerLevel2Part(halo,'spin',0,.16);
+      for(const [x,y] of [[-13.8,4.7],[-13.5,-1.2],[-13.2,-6.0],[12.5,6.2],[12.7,.6],[12.1,-5.3]]){const node=glowSphere(.22,0xffc34a,1.9);node.position.set(x,cy+y,9.46);skin.add(node);registerLevel2Part(node,'pulse',x*.17,2.0)}
+      const keel=box(8.6,.34,2.3,0x9b6718,.88,.28);keel.name='L2_AURELIAN_SOLAR_KEEL';keel.position.set(6.9,cy-8.05,5.8);keel.rotation.z=.10;skin.add(keel)
+    }else{
+      const gyro=new THREE.Mesh(new THREE.TorusGeometry(10.5,.18,10,72),solar);gyro.scale.y=.47;gyro.position.set(0,cy,6.55);gyro.name='L2_AURELIAN_REAR_SOLAR_GYRO';skin.add(gyro);registerLevel2Part(gyro,'spin',0,.10);
+      const crown=new THREE.Group();crown.name='L2_AURELIAN_THREE_PANEL_CROWN';
+      for(let panelIndex=0;panelIndex<3;panelIndex++){const panel=new THREE.Group(),px=(panelIndex-1)*6.0,tilt=(panelIndex-1)*.14,back=box(5.25,2.65,.42,0x5e3c0c,.88,.32);panel.add(back);for(let row=0;row<2;row++)for(let col=0;col<3;col++){const tile=box(1.46,.91,.12,(row+col)%2?0xffd75b:0xf3b538,.68,.22);tile.position.set((col-1)*1.62,(row-.5)*1.08,.29);panel.add(tile)}const rimTop=box(5.38,.15,.18,0xfff0ad,.78,.18);rimTop.position.set(0,1.28,.34);panel.add(rimTop);panel.position.set(px,cy+4.35,8.42);panel.rotation.z=tilt;crown.add(panel);const support=box(.34,2.35,.48,0x8a5b17,.82,.34);support.position.set(px,cy+2.25,7.88);support.rotation.z=tilt*.45;crown.add(support)}
+      const reactor=new THREE.Mesh(new THREE.CylinderGeometry(1.05,1.42,2.1,12),frame);reactor.position.set(0,cy+2.70,7.82);crown.add(reactor);const crownLight=glowSphere(.48,0xffd35a,2.2);crownLight.position.set(0,cy+4.35,8.88);crown.add(crownLight);registerLevel2Part(crownLight,'pulse',.2,2.2);skin.add(crown);
+      for(const x of[-9.1,9.1]){const node=glowSphere(.28,0xffc34a,1.9);node.position.set(x,cy,9.28);skin.add(node);registerLevel2Part(node,'pulse',x*.17,2.0)}
+    }
   }else if(faction==='gray'){
     const phase=standard(0xba69ff,.68,.18,0x7137ff,1.48),armor=standard(0x6b4a84,.88,.28),pale=standard(0xe4ceff,.72,.16,0x9860ff,.78);
     const gyroRoot=new THREE.Group();gyroRoot.name='L2_GRAY_DUAL_GYRO';
@@ -4405,6 +4439,7 @@ function restoreXrayShell(){for(const item of xrayShellState){if(!item.mesh)cont
 function applyXrayShell(){
   restoreXrayShell();const side=localXraySide(),skin=side==='aurelian'?factionSkinA:factionSkinE,hidden=new Set();
   const hide=mesh=>{if(!mesh||hidden.has(mesh)||mesh.visible===false)return;hidden.add(mesh);xrayShellState.push({mesh,visible:mesh.visible});mesh.visible=false};
+  if(factionForWorldSide(side)==='aurelian'&&skin?.userData?.acCutawayBayPanels?.length===6){for(const panel of skin.userData.acCutawayBayPanels)hide(panel);diag('SIX-MODULE HULL CUTAWAY',`side=${side} physicalBays=6 logicalRooms=9 exteriorModulesHidden=${hidden.size} structuralHull=VISIBLE layout=PLAYER_SKETCH`);return}
   skin?.traverse?.(mesh=>{if(!mesh?.isMesh)return;let protectedVisual=false;for(let o=mesh;o&&o!==skin.parent;o=o.parent)if(o.userData?.wreckPersistent||o.userData?.healthVisual){protectedVisual=true;break}if(!protectedVisual)hide(mesh)});
   diag('SIX-BAY HULL CUTAWAY',`side=${side} physicalBays=6 logicalRooms=9 hiddenPanels=${hidden.size}`)
 }
@@ -4499,24 +4534,14 @@ function buildPrivateXray(){
   const wallMat=new THREE.MeshStandardMaterial({color:hullColor,roughness:.72,metalness:.28,side:THREE.DoubleSide});
   const insideMat=new THREE.MeshStandardMaterial({color:insideColor,roughness:.88,metalness:.08,side:THREE.DoubleSide});
   const trimMat=new THREE.MeshBasicMaterial({color:trimColor,transparent:true,opacity:.24,depthWrite:false,side:THREE.DoubleSide});
-  const roomW=6.70,roomH=5.35,roomD=4.80,floorY=-roomH*.5;
-  // Build six physical sectors from one continuous Aurelian ellipsoid. Outer sectors
-  // carry the rounded nose/belly silhouette and every shared boundary evaluates the
-  // same surface equation. Progressive closure therefore reconstructs the ship hull
-  // instead of stacking nine rectangular doors in front of the compartments.
-  const roomLocals=rooms.map(source=>vessel.worldToLocal(source.hitPlane.getWorldPosition(new THREE.Vector3()))),closureCenter=roomLocals.reduce((p,q)=>p.add(q),new THREE.Vector3()).multiplyScalar(1/Math.max(1,roomLocals.length)),closureHull=faction==='aurelian'?(localXraySide()==='aurelian'?factionSkinA:factionSkinE)?.userData?.acPrimaryHull:null,hullCenter=closureHull?vessel.worldToLocal(closureHull.getWorldPosition(new THREE.Vector3())):closureCenter.clone(),hullRadii=closureHull?.userData?.acHullRadii,hullRadiusX=hullRadii?.x||12.2,hullRadiusY=hullRadii?.y||6.5,hullRadiusZ=hullRadii?.z||7.2;
-  const logicalSpanX=Math.max(...roomLocals.map(p=>p.x))-Math.min(...roomLocals.map(p=>p.x)),bayStepX=faction==='aurelian'?Math.min(hullRadiusX*.38,7.55):Math.max(roomW*1.02,logicalSpanX*.82),closureCols=[hullCenter.x-bayStepX,hullCenter.x,hullCenter.x+bayStepX],closureRows=[hullCenter.y-roomH*.51,hullCenter.y+roomH*.51],bayLocals=[];
-  for(let row=1;row>=0;row--)for(let col=0;col<3;col++)bayLocals.push(new THREE.Vector3(closureCols[col],closureRows[row],closureCenter.z));
+  const roomW=6.45,roomH=5.25,roomD=4.80,floorY=-roomH*.5;
+  // Aurelian bay positions come directly from the six exterior modules in the
+  // player's ship sketch. Other factions retain the shared 2x3 presentation.
+  const roomLocals=rooms.map(source=>vessel.worldToLocal(source.hitPlane.getWorldPosition(new THREE.Vector3()))),closureCenter=roomLocals.reduce((p,q)=>p.add(q),new THREE.Vector3()).multiplyScalar(1/Math.max(1,roomLocals.length)),cutawaySkin=localXraySide()==='aurelian'?factionSkinA:factionSkinE,sketchLayout=faction==='aurelian'?cutawaySkin?.userData?.acCutawayBayLayout:null,bayLocals=[];
+  if(sketchLayout?.length===6){cutawaySkin.updateWorldMatrix(true,true);for(const spec of sketchLayout)bayLocals.push(vessel.worldToLocal(cutawaySkin.localToWorld(new THREE.Vector3(spec.x,spec.y,7.95))))}
+  else{const logicalSpanX=Math.max(...roomLocals.map(p=>p.x))-Math.min(...roomLocals.map(p=>p.x)),bayStepX=Math.max(roomW*1.02,logicalSpanX*.82),closureCols=[closureCenter.x-bayStepX,closureCenter.x,closureCenter.x+bayStepX],closureRows=[closureCenter.y-roomH*.51,closureCenter.y+roomH*.51];for(let row=1;row>=0;row--)for(let col=0;col<3;col++)bayLocals.push(new THREE.Vector3(closureCols[col],closureRows[row],closureCenter.z))}
   const logicalGroups=[[0,6],[1,7],[2,8],[3],[4],[5]],bayWarriors=Array(6).fill(null);
   for(const w of crew){let slot=logicalGroups.findIndex(indices=>indices.includes(w.roomIndex));if(slot<0||bayWarriors[slot]){const col=((w.roomIndex%3)+3)%3,candidates=[col+3,col,...bayWarriors.map((_,i)=>i)];slot=candidates.find(i=>i>=0&&i<6&&!bayWarriors[i])??0}const prior=logicalGroups.findIndex(indices=>indices.includes(w.roomIndex));if(prior>=0&&prior!==slot)logicalGroups[prior]=logicalGroups[prior].filter(i=>i!==w.roomIndex);if(!logicalGroups[slot].includes(w.roomIndex))logicalGroups[slot].push(w.roomIndex);bayWarriors[slot]=w}
-  function closureAxisBounds(value,centers,min,max){let rank=0,best=Infinity;for(let k=0;k<centers.length;k++){const d=Math.abs(value-centers[k]);if(d<best){best=d;rank=k}}return[rank===0?min:(centers[rank-1]+centers[rank])*.5,rank===centers.length-1?max:(centers[rank]+centers[rank+1])*.5]}
-  function buildAurelianHullSector(local){
-    const [xMin,xMax]=closureAxisBounds(local.x,closureCols,hullCenter.x-hullRadiusX,hullCenter.x+hullRadiusX),[yMin,yMax]=closureAxisBounds(local.y,closureRows,hullCenter.y-hullRadiusY,hullCenter.y+hullRadiusY),sx=22,sy=16,positions=[],normals=[],indices=[];
-    for(let iy=0;iy<=sy;iy++)for(let ix=0;ix<=sx;ix++){let gx=THREE.MathUtils.lerp(xMin,xMax,ix/sx),gy=THREE.MathUtils.lerp(yMin,yMax,iy/sy),ux=(gx-hullCenter.x)/hullRadiusX,uy=(gy-hullCenter.y)/hullRadiusY,rad=Math.sqrt(ux*ux+uy*uy);if(rad>1){gx=hullCenter.x+(gx-hullCenter.x)/rad;gy=hullCenter.y+(gy-hullCenter.y)/rad;ux=(gx-hullCenter.x)/hullRadiusX;uy=(gy-hullCenter.y)/hullRadiusY;rad=1}const surfaceZ=hullRadiusZ*Math.sqrt(Math.max(0,1-rad*rad)),n=new THREE.Vector3((gx-hullCenter.x)/(hullRadiusX*hullRadiusX),(gy-hullCenter.y)/(hullRadiusY*hullRadiusY),surfaceZ/(hullRadiusZ*hullRadiusZ)).normalize();positions.push(gx-local.x,gy-local.y,hullCenter.z+surfaceZ-local.z);normals.push(n.x,n.y,n.z)}
-    for(let iy=0;iy<sy;iy++)for(let ix=0;ix<sx;ix++){const gx=THREE.MathUtils.lerp(xMin,xMax,(ix+.5)/sx),gy=THREE.MathUtils.lerp(yMin,yMax,(iy+.5)/sy),ux=(gx-hullCenter.x)/hullRadiusX,uy=(gy-hullCenter.y)/hullRadiusY;if(ux*ux+uy*uy>1.015)continue;const a=iy*(sx+1)+ix,b=a+1,c=a+sx+1,d=c+1;indices.push(a,c,b,b,c,d)}
-    const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));geo.setIndex(indices);geo.computeBoundingSphere();return{geo,xMin,xMax,yMin,yMax}
-  }
-
   for(let i=0;i<bayLocals.length;i++){
     const logicalRoomIndices=logicalGroups[i],source=rooms[logicalRoomIndices[0]]||rooms[0],local=bayLocals[i].clone(),cell=new THREE.Group();
     cell.name=`NATIVE_3D_BAY_${i+1}`;cell.userData.xrayVisual=true;cell.userData.logicalRoomIndices=logicalRoomIndices.slice();cell.position.set(local.x,local.y,local.z-.15);g.add(cell);
@@ -4536,9 +4561,7 @@ function buildPrivateXray(){
     for(const z of[-.28,.05,.38]){const floorStrip=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.76,.045,.07),trimMat.clone()),79);floorStrip.position.set(0,floorY+.15,z*roomD);interiorRoot.add(floorStrip)}
     const frontShutter=markXray(new THREE.Group(),96);frontShutter.name=`CUTAWAY_FRONT_SHUTTER_${i+1}`;frontShutter.position.set(0,0,faction==='aurelian'?0:roomD*.51);frontShutter.visible=false;frontShutter.userData.acAimClosed=false;frontShutter.userData.acExteriorClosure=true;
     if(faction==='aurelian'){
-      const sector=buildAurelianHullSector(cell.position),armorMat=closureHull?.material?.clone?.()||new THREE.MeshStandardMaterial({color:0x8b651f,metalness:.90,roughness:.25,emissive:0x392100,emissiveIntensity:.28}),armor=markXray(new THREE.Mesh(sector.geo,armorMat),96);armorMat.side=THREE.DoubleSide;armor.name=`CUTAWAY_EXACT_EXTERIOR_HULL_SECTOR_${i+1}`;armor.castShadow=true;armor.receiveShadow=true;frontShutter.add(armor);frontShutter.userData.acHullSectorBounds=[sector.xMin,sector.xMax,sector.yMin,sector.yMax];frontShutter.userData.acExactExterior=true;
-      if(cell.position.y>hullCenter.y&&sector.yMin<=hullCenter.y&&sector.yMax>=hullCenter.y){const points=[];for(let k=0;k<=24;k++){const gx=THREE.MathUtils.lerp(sector.xMin,sector.xMax,k/24),ux=(gx-hullCenter.x)/hullRadiusX,surfaceZ=hullRadiusZ*Math.sqrt(Math.max(0,1-ux*ux));points.push(new THREE.Vector3(gx-cell.position.x,hullCenter.y-cell.position.y,hullCenter.z+surfaceZ-cell.position.z+.055))}const band=markXray(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color:0xf2c95c,transparent:true,opacity:.86,depthWrite:false})),98);band.name=`CUTAWAY_EXACT_SOLAR_BAND_${i+1}`;frontShutter.add(band)}
-      if(cell.position.y>hullCenter.y&&sector.xMin<=hullCenter.x&&sector.xMax>=hullCenter.x&&sector.yMin<=hullCenter.y&&sector.yMax>=hullCenter.y){const node=markXray(new THREE.Mesh(new THREE.SphereGeometry(.46,18,12),new THREE.MeshStandardMaterial({color:0xffdf71,emissive:0xffc84a,emissiveIntensity:2.0,metalness:.36,roughness:.20})),99);node.name='CUTAWAY_EXACT_HULL_SOLAR_CORE';node.scale.z=.32;node.position.set(hullCenter.x-cell.position.x,hullCenter.y-cell.position.y,hullCenter.z+hullRadiusZ-cell.position.z+.13);frontShutter.add(node)}
+      frontShutter.userData.acRevealOriginalExterior=true;frontShutter.userData.acExteriorModuleIndex=i;
     }else{
       const armor=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.94,roomH*.92,.16),wallMat.clone()),96);armor.name=`CUTAWAY_FRONT_SHUTTER_ARMOR_${i+1}`;frontShutter.add(armor)
     }
@@ -4546,7 +4569,8 @@ function buildPrivateXray(){
     // Full box-edge outlines recreated the unwanted tic-tac-toe cage, so the six bays
     // retain real floors, walls, ceilings and depth without a presentation-only rim.
     const rim=null;
-    const visual={warriorMarker:null,statusGroup:null,warrior:null,rig3D:null,aura:null,label:null,hit:null,railHit:null,index:i,logicalRoomIndices,lastHp:0,hitUntil:0,baseRigY:0,baseRigScale:null,rim,roomLight:null,aaBack:null,aaFill:null,aaWidth:0,nativeRoom:cell,interiorRoot,standAnchor:null,frontShutter,room:source,empty:true};
+    const exteriorPanel=faction==='aurelian'?cutawaySkin?.userData?.acCutawayBayPanels?.[i]||null:null;
+    const visual={warriorMarker:null,statusGroup:null,warrior:null,rig3D:null,aura:null,label:null,hit:null,railHit:null,index:i,logicalRoomIndices,lastHp:0,hitUntil:0,baseRigY:0,baseRigScale:null,rim,roomLight:null,aaBack:null,aaFill:null,aaWidth:0,nativeRoom:cell,interiorRoot,standAnchor:null,frontShutter,exteriorPanel,room:source,empty:true};
     xrayRoomVisuals.push(visual);
     const w=bayWarriors[i];if(!w)continue;
     // Dedicated standing anchor: feet sit on the new 3D floor. This anchor can later drive idle/hit/fall/death animation.
@@ -4562,7 +4586,7 @@ function buildPrivateXray(){
   }
   xrayScanBand=null;xrayGroup=g;g.updateWorldMatrix(true,true);refreshPrivateXrayVisuals();
   for(const v of xrayRoomVisuals){if(!v.rig3D||!v.standAnchor||!v.warrior)continue;const box=new THREE.Box3().setFromObject(v.rig3D),size=box.getSize(new THREE.Vector3()),wp=v.rig3D.getWorldPosition(new THREE.Vector3()),sp=v.standAnchor.getWorldPosition(new THREE.Vector3()),ndc=wp.clone().project(camera);diag('NATIVE 3D WARRIOR',`${v.warrior.weaponKey} bay=${v.index+1} logicalRoom=${v.warrior.roomIndex+1} size=${size.x.toFixed(2)},${size.y.toFixed(2)},${size.z.toFixed(2)} stand=${sp.x.toFixed(1)},${sp.y.toFixed(1)},${sp.z.toFixed(1)} ndc=${ndc.x.toFixed(2)},${ndc.y.toFixed(2)},${ndc.z.toFixed(2)}`)}
-  diag('NATIVE 3D CUTAWAY',`physicalBays=${xrayRoomVisuals.length} logicalRooms=${rooms.length} layout=2x3 occupied=${crew.length} empty=${xrayRoomVisuals.length-crew.length} crew=${crew.map(w=>w.weaponKey+'@R'+(w.roomIndex+1)).join(',')} combatGrid=UNCHANGED`)
+  diag('NATIVE 3D CUTAWAY',`physicalBays=${xrayRoomVisuals.length} logicalRooms=${rooms.length} layout=${sketchLayout?.length===6?'PLAYER_SKETCH_STACKED':'2x3'} occupied=${crew.length} empty=${xrayRoomVisuals.length-crew.length} cockpit=OVAL pilotBay=1 solarCannonBay=6 crew=${crew.map(w=>w.weaponKey+'@R'+(w.roomIndex+1)).join(',')} combatGrid=UNCHANGED`)
 }
 function refreshPrivateXrayVisuals(){
   if(!xrayOpen||!xrayGroup)return;const now=performance.now();
@@ -5464,6 +5488,7 @@ function setCutawayBayOpen(visual,open){
   if(!visual?.nativeRoom)return;visual.nativeRoom.visible=true;visual.nativeRoom.userData.acAimClosedBay=!open;
   const interior=visual.interiorRoot||visual.nativeRoom.userData?.interiorRoot;if(interior)interior.visible=!!open;
   const shutter=visual.frontShutter||visual.nativeRoom.userData?.frontShutter;if(shutter){shutter.userData.acAimClosed=!open;shutter.visible=!open}
+  if(visual.exteriorPanel)visual.exteriorPanel.visible=!open;
 }
 function setCutawayFiringStage(w){
   if(!xrayOpen||!w)return;
@@ -5472,7 +5497,7 @@ function setCutawayFiringStage(w){
   for(const visual of xrayRoomVisuals||[]){setCutawayBayOpen(visual,true);if(visual.nativeRoom?.userData)visual.nativeRoom.userData.firingStage=false}
   for(const entry of xrayShellState||[])if(entry?.mesh)entry.mesh.visible=false;
   const chosen=xrayRoomVisuals.find(v=>v.warrior===w);if(chosen?.nativeRoom){chosen.nativeRoom.visible=true;chosen.nativeRoom.userData.firingStage=true}
-  diag('WARRIOR FIRING STAGE',`${w.weaponKey} room=${w.roomIndex+1} shooterBayOpen=Y physicalBays=6 exactExteriorPendingAim=Y roomMoved=N`)
+  diag('WARRIOR FIRING STAGE',`${w.weaponKey} room=${w.roomIndex+1} shooterBayOpen=Y physicalBays=6 originalExteriorModulesPendingAim=Y roomMoved=N`)
 }
 function restoreFullCutawayStage(){
   for(const entry of xrayShellState||[])if(entry?.mesh)entry.mesh.visible=false;

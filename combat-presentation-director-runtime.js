@@ -5,15 +5,15 @@ function replaceOnce(source, needle, replacement, status, key) {
 }
 
 export function patchCombatPresentationDirectorRuntime(html) {
-  if (html.includes('ac-presentation-director-v0417')) return html;
+  if (html.includes('ac-presentation-director-v0418')) return html;
 
   let patched = html;
   const status = {director:false,singlePress:false,pressDrag:false,camera:false,turnSolo:false,turnMp:false,impactExterior:false,scatterCamera:false,sunadierTrack:false,diskTrack:false,beamTrack:false,clearAim:false,turnVfxGate:false,preAimClosed:false,aimSeal:false,releaseSeal:false};
 
   const helpers = String.raw`
-let acDirector={mode:'exterior',projectile:null,target:null,origin:null,hit:null,attacker:null,label:'',settleUntil:0,travelTotal:1,aimTargetProgress:0,aimVisualProgress:0,aimLastTs:0,aimInputOrigin:null,sealedRooms:0,cameraStage:-1,shellDetailBuckets:null,broadExteriorHidden:0};
+let acDirector={mode:'exterior',projectile:null,target:null,origin:null,hit:null,attacker:null,label:'',settleUntil:0,travelTotal:1,aimTargetProgress:0,aimVisualProgress:0,aimLastTs:0,aimInputOrigin:null,sealedRooms:0,cameraStage:-1};
 function acDirectorLocalTurn(){return multiplayer?currentTurn===localSide:soloTurn==='aurelian'}
-function acDirectorReset(reason='reset'){acDirector.mode='exterior';acDirector.projectile=null;acDirector.target=null;acDirector.origin=null;acDirector.hit=null;acDirector.attacker=null;acDirector.label='';acDirector.settleUntil=0;acDirector.aimTargetProgress=0;acDirector.aimVisualProgress=0;acDirector.aimLastTs=0;acDirector.aimInputOrigin=null;acDirector.sealedRooms=0;acDirector.cameraStage=-1;acDirector.shellDetailBuckets=null;acDirector.broadExteriorHidden=0;tacticalAimView=false;if(xrayOpen&&!acDirectorLocalTurn())closePrivateXray('director '+reason);diag('PRESENTATION DIRECTOR RESET',reason)}
+function acDirectorReset(reason='reset'){acDirector.mode='exterior';acDirector.projectile=null;acDirector.target=null;acDirector.origin=null;acDirector.hit=null;acDirector.attacker=null;acDirector.label='';acDirector.settleUntil=0;acDirector.aimTargetProgress=0;acDirector.aimVisualProgress=0;acDirector.aimLastTs=0;acDirector.aimInputOrigin=null;acDirector.sealedRooms=0;acDirector.cameraStage=-1;tacticalAimView=false;if(xrayOpen&&!acDirectorLocalTurn())closePrivateXray('director '+reason);diag('PRESENTATION DIRECTOR RESET',reason)}
 function acDirectorBusy(){
  const now=performance.now();
  if(acDirector.mode==='travel'&&!acDirector.projectile?.parent){acDirector.mode='settle';acDirector.settleUntil=Math.max(acDirector.settleUntil,now+430);diag('DIRECTOR SETTLE','projectile complete')}
@@ -37,22 +37,20 @@ function acDirectorAimTarget(attacker,pt){
 }
 function acDirectorApplyAimSeal(attacker,progress){
  if(!xrayOpen||!attacker)return;
- const rooms=localXrayRooms()?.userData?.rooms||[],visuals=xrayRoomVisuals||[],shooterVisual=visuals.find(v=>v.warrior===attacker),shooterBay=shooterVisual?.index,shell=(typeof xrayShellState!=='undefined'&&Array.isArray(xrayShellState))?xrayShellState:[];
+ const rooms=localXrayRooms()?.userData?.rooms||[],visuals=xrayRoomVisuals||[],shooterVisual=visuals.find(v=>v.warrior===attacker),shooterBay=shooterVisual?.index;
  if(!Number.isInteger(attacker.roomIndex)||!Number.isInteger(shooterBay)||visuals.length!==6)return;
  const sr=Math.floor(shooterBay/3),sc=shooterBay%3,order=[];
  for(let i=0;i<visuals.length;i++)if(i!==shooterBay)order.push(i);
  order.sort((a,b)=>{const ar=Math.floor(a/3),ac=a%3,br=Math.floor(b/3),bc=b%3,ad=Math.abs(ar-sr)+Math.abs(ac-sc),bd=Math.abs(br-sr)+Math.abs(bc-sc);return bd-ad||a-b});
- const closeCount=Math.min(order.length,Math.floor(THREE.MathUtils.clamp(progress,0,1)*order.length+.001)),closed=new Set(order.slice(0,closeCount));let nativeClosed=0,detailRestored=0;
- if(!acDirector.shellDetailBuckets){const bayPoints=visuals.map(v=>v.nativeRoom?.getWorldPosition?.(new THREE.Vector3())||null),detailBuckets=Array.from({length:visuals.length},()=>[]);let broadExteriorHidden=0;for(const entry of shell){const mesh=entry?.mesh;if(!mesh)continue;mesh.visible=false;if(!mesh.isMesh||!mesh.getWorldPosition)continue;const box=new THREE.Box3().setFromObject(mesh),size=box.getSize(new THREE.Vector3());if(size.x>8.2||size.y>6.2){broadExteriorHidden++;continue}const p=mesh.getWorldPosition(new THREE.Vector3());let best=-1,bestD=Infinity;for(let i=0;i<bayPoints.length;i++){const bp=bayPoints[i];if(!bp)continue;const dx=p.x-bp.x,dy=p.y-bp.y,d=dx*dx+dy*dy;if(d<bestD){bestD=d;best=i}}if(best>=0)detailBuckets[best].push(entry)}acDirector.shellDetailBuckets=detailBuckets;acDirector.broadExteriorHidden=broadExteriorHidden}
- const detailBuckets=acDirector.shellDetailBuckets;
- for(const visual of visuals){const shouldClose=visual.index!==shooterBay&&closed.has(visual.index);setCutawayBayOpen(visual,!shouldClose);if(shouldClose)nativeClosed++;for(const entry of detailBuckets[visual.index]||[]){entry.mesh.visible=shouldClose&&entry.visible!==false;if(entry.mesh.visible)detailRestored++}}
+ const closeCount=Math.min(order.length,Math.floor(THREE.MathUtils.clamp(progress,0,1)*order.length+.001)),closed=new Set(order.slice(0,closeCount));let nativeClosed=0;
+ for(const visual of visuals){const shouldClose=visual.index!==shooterBay&&closed.has(visual.index);setCutawayBayOpen(visual,!shouldClose);if(shouldClose)nativeClosed++}
  if(shooterVisual?.nativeRoom){setCutawayBayOpen(shooterVisual,true);shooterVisual.nativeRoom.userData.firingStage=true}
- if(acDirector.shellMapReported!==true){acDirector.shellMapReported=true;diag('AIM SHELL MAP','physicalBays='+visuals.length+' logicalRooms='+rooms.length+' exactHullSectors=6 closedBayInterior=HIDDEN localizedExteriorDetails=Y broadExteriorHidden='+acDirector.broadExteriorHidden+' combatGrid=UNCHANGED')}
- if(closeCount!==acDirector.sealedRooms){acDirector.sealedRooms=closeCount;diag('AIM HULL SEAL','visual='+Math.round(progress*100)+'% target='+Math.round(acDirector.aimTargetProgress*100)+'% closed='+closeCount+'/'+order.length+' exactHullSectors='+nativeClosed+' closedInteriors='+nativeClosed+' exteriorDetails='+detailRestored+' physicalBays=6 logicalRooms=9 shooterBay='+(shooterBay+1)+' shooterRoom='+(attacker.roomIndex+1))}
+ if(acDirector.shellMapReported!==true){acDirector.shellMapReported=true;diag('AIM SHELL MAP','physicalBays='+visuals.length+' logicalRooms='+rooms.length+' exteriorAuthority=ORIGINAL_SIX_MODULE_HULL closedBayInterior=HIDDEN layout=PLAYER_SKETCH_STACKED combatGrid=UNCHANGED')}
+ if(closeCount!==acDirector.sealedRooms){acDirector.sealedRooms=closeCount;diag('AIM HULL SEAL','visual='+Math.round(progress*100)+'% target='+Math.round(acDirector.aimTargetProgress*100)+'% closed='+closeCount+'/'+order.length+' originalExteriorModules='+nativeClosed+' closedInteriors='+nativeClosed+' physicalBays=6 logicalRooms=9 shooterBay='+(shooterBay+1)+' shooterRoom='+(attacker.roomIndex+1))}
 }
 function acDirectorBeginAim(attacker){
  if(!attacker)return;
- if(acDirector.mode!=='aim'){acDirector.aimTargetProgress=0;acDirector.aimVisualProgress=0;acDirector.aimLastTs=performance.now();acDirector.aimInputOrigin=startPx?{x:startPx.x,y:startPx.y}:null;acDirector.sealedRooms=0;acDirector.shellMapReported=false;acDirector.shellDetailBuckets=null;acDirector.broadExteriorHidden=0;acDirector.cameraStage=-1;restoreFullCutawayStage()}
+ if(acDirector.mode!=='aim'){acDirector.aimTargetProgress=0;acDirector.aimVisualProgress=0;acDirector.aimLastTs=performance.now();acDirector.aimInputOrigin=startPx?{x:startPx.x,y:startPx.y}:null;acDirector.sealedRooms=0;acDirector.shellMapReported=false;acDirector.cameraStage=-1;restoreFullCutawayStage()}
  acDirector.mode='aim';acDirector.attacker=attacker;tacticalAimView=true
 }
 function acDirectorUpdateAimTarget(attacker,pt){acDirector.aimTargetProgress=acDirectorAimTarget(attacker,pt)}
@@ -141,8 +139,8 @@ function acDirectorPreImpact(){if(acDirector.mode!=='travel'||!acDirector.hit?.r
   if(!patched.includes("scheduleXrayForTurn('solo transition')"))patched=patched.replace("soloTurn=side;\n  if(previous!==side&&battleStarted)advanceSupportTurn(side);","soloTurn=side;\n  if(battleStarted)scheduleXrayForTurn('solo transition');\n  if(previous!==side&&battleStarted)advanceSupportTurn(side);");
   patched=replaceOnce(patched,"mpTurn.classList.add('show');const mine=side===localSide;","mpTurn.classList.add('show');const mine=side===localSide;if(battleStarted&&!matchEnded)scheduleXrayForTurn('multiplayer transition');if(!mine)acDirectorReset('multiplayer opponent turn');",status,'turnMp');
   patched=patched.replace("statusEl.textContent='CUTAWAY • TAP A WARRIOR ONCE TO HIGHLIGHT • TAP AGAIN TO LOCK SHOOTER'","statusEl.textContent='CUTAWAY • PRESS A WARRIOR • HOLD + DRAG TO AIM • RELEASE TO FIRE'");
-  patched=patched.replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.41.7');
-  patched=patched.replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-07_CLEAN_HULL_STABLE_CREW_POSE');
+  patched=patched.replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.41.8');
+  patched=patched.replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-07_PLAYER_SKETCH_SIX_MODULE_HULL');
   const summary=Object.entries(status).map(([k,v])=>`${k}:${v?'OK':'MISS'}`).join(' ');
-  return patched.replace('</head>',`<meta id="ac-presentation-director-v0417" name="ac-presentation-director" content="${summary} aimTarget:RAW_READ_ONLY aimVisual:SMOOTH aimCamera:PROGRESSIVE_SHOOTER_TO_BATTLEFIELD enemyVisibleAtFullAim:Y physicalCutaway:SIX_BAYS_ALL_FACTIONS logicalCombatRooms:NINE_UNCHANGED hullSeal:EXTERIOR_FIVE_STEP closedBayInterior:HIDDEN localizedExteriorDetails:RESTORED shooterBay:PROTECTED preAimEnemyHull:CLOSED enemyDamage:EXTERIOR_ONLY impactReveal:DISABLED">\n</head>`);
+  return patched.replace('</head>',`<meta id="ac-presentation-director-v0418" name="ac-presentation-director" content="${summary} aimTarget:RAW_READ_ONLY aimVisual:SMOOTH aimCamera:PROGRESSIVE_SHOOTER_TO_BATTLEFIELD enemyVisibleAtFullAim:Y physicalCutaway:SIX_PLAYER_SKETCH_MODULES logicalCombatRooms:NINE_UNCHANGED hullSeal:RESTORE_ORIGINAL_EXTERIOR_MODULES closedBayInterior:HIDDEN shooterBay:PROTECTED preAimEnemyHull:CLOSED enemyDamage:EXTERIOR_ONLY impactReveal:DISABLED">\n</head>`);
 }
