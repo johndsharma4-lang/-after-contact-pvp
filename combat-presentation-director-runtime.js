@@ -5,15 +5,15 @@ function replaceOnce(source, needle, replacement, status, key) {
 }
 
 export function patchCombatPresentationDirectorRuntime(html) {
-  if (html.includes('ac-presentation-director-v0411')) return html;
+  if (html.includes('ac-presentation-director-v0412')) return html;
 
   let patched = html;
   const status = {director:false,singlePress:false,pressDrag:false,camera:false,turnSolo:false,turnMp:false,impact3d:false,scatterCamera:false,sunadierTrack:false,diskTrack:false,beamTrack:false,clearAim:false,turnVfxGate:false,preAimClosed:false,aimSeal:false,releaseSeal:false};
 
   const helpers = String.raw`
-let acDirector={mode:'exterior',projectile:null,target:null,origin:null,hit:null,attacker:null,label:'',settleUntil:0,travelTotal:1,aimTargetProgress:0,aimVisualProgress:0,aimLastTs:0,sealedRooms:0,cameraStage:-1};
+let acDirector={mode:'exterior',projectile:null,target:null,origin:null,hit:null,attacker:null,label:'',settleUntil:0,travelTotal:1,aimTargetProgress:0,aimVisualProgress:0,aimLastTs:0,aimInputOrigin:null,sealedRooms:0,cameraStage:-1};
 function acDirectorLocalTurn(){return multiplayer?currentTurn===localSide:soloTurn==='aurelian'}
-function acDirectorReset(reason='reset'){acDirector.mode='exterior';acDirector.projectile=null;acDirector.target=null;acDirector.origin=null;acDirector.hit=null;acDirector.attacker=null;acDirector.label='';acDirector.settleUntil=0;acDirector.aimTargetProgress=0;acDirector.aimVisualProgress=0;acDirector.aimLastTs=0;acDirector.sealedRooms=0;acDirector.cameraStage=-1;tacticalAimView=false;if(xrayOpen&&!acDirectorLocalTurn())closePrivateXray('director '+reason);diag('PRESENTATION DIRECTOR RESET',reason)}
+function acDirectorReset(reason='reset'){acDirector.mode='exterior';acDirector.projectile=null;acDirector.target=null;acDirector.origin=null;acDirector.hit=null;acDirector.attacker=null;acDirector.label='';acDirector.settleUntil=0;acDirector.aimTargetProgress=0;acDirector.aimVisualProgress=0;acDirector.aimLastTs=0;acDirector.aimInputOrigin=null;acDirector.sealedRooms=0;acDirector.cameraStage=-1;tacticalAimView=false;if(xrayOpen&&!acDirectorLocalTurn())closePrivateXray('director '+reason);diag('PRESENTATION DIRECTOR RESET',reason)}
 function acDirectorBusy(){
  const now=performance.now();
  if(acDirector.mode==='travel'&&!acDirector.projectile?.parent){acDirector.mode='settle';acDirector.settleUntil=Math.max(acDirector.settleUntil,now+430);diag('DIRECTOR SETTLE','projectile complete')}
@@ -27,9 +27,13 @@ function acDirectorWaitForPresentation(done,label){
  const wait=()=>{if(!battleStarted||matchEnded)return;if(acDirectorBusy()){setTimeout(wait,70);return}diag('TURN VFX RELEASE',label||'WEAPON');done()};setTimeout(wait,70);return true
 }
 function acDirectorAimTarget(attacker,pt){
- if(!attacker||!pt||!startPx)return 0;
- const direction=attacker.side==='aurelian'?1:-1,forward=(pt.x-startPx.x)*direction;
- return THREE.MathUtils.clamp((forward-18)/260,0,1)
+ if(!attacker||!pt)return 0;
+ const origin=acDirector.aimInputOrigin||startPx;if(!origin)return 0;
+ const dx=pt.x-origin.x,dy=pt.y-origin.y,direction=attacker.side==='aurelian'?1:-1;
+ if(dx*direction<=18)return 0;
+ // Match the standard Aurelian power gesture: the full presentation arrives at the
+ // same 510px drag that reaches 100% power, without changing the raw input point.
+ return THREE.MathUtils.clamp((Math.hypot(dx,dy)-45)/465,0,1)
 }
 function acDirectorApplyAimSeal(attacker,progress){
  if(!xrayOpen||!attacker)return;
@@ -45,7 +49,7 @@ function acDirectorApplyAimSeal(attacker,progress){
 }
 function acDirectorBeginAim(attacker){
  if(!attacker)return;
- if(acDirector.mode!=='aim'){acDirector.aimTargetProgress=0;acDirector.aimVisualProgress=0;acDirector.aimLastTs=performance.now();acDirector.sealedRooms=0;acDirector.cameraStage=-1;restoreFullCutawayStage()}
+ if(acDirector.mode!=='aim'){acDirector.aimTargetProgress=0;acDirector.aimVisualProgress=0;acDirector.aimLastTs=performance.now();acDirector.aimInputOrigin=startPx?{x:startPx.x,y:startPx.y}:null;acDirector.sealedRooms=0;acDirector.cameraStage=-1;restoreFullCutawayStage()}
  acDirector.mode='aim';acDirector.attacker=attacker;tacticalAimView=true
 }
 function acDirectorUpdateAimTarget(attacker,pt){acDirector.aimTargetProgress=acDirectorAimTarget(attacker,pt)}
@@ -82,14 +86,13 @@ function acDirectorPreImpact(){if(acDirector.mode!=='travel'||!acDirector.hit?.r
   if(!battleStarted||typeof camera==='undefined')return;
   acDirectorBusy();
   if(xrayOpen&&aiming&&selected){
-    const progress=acDirectorStepAimPresentation(performance.now()),visual=xrayRoomVisuals?.find?.(v=>v.warrior===selected),shooter=visual?.standAnchor?.getWorldPosition?.(new THREE.Vector3())||visual?.rig3D?.getWorldPosition?.(new THREE.Vector3())||warriorWorld(selected),targetLook=shooter.clone();
-    targetLook.y+=.85;
-    const targetPos=new THREE.Vector3(targetLook.x,targetLook.y+1.9,targetLook.z+38),stage=Math.min(4,Math.floor(progress*4+.001));
-    // Pointer-down aim is a fixed physical-shooter composition. Snap before the muzzle
-    // is captured and do not animate this camera afterward, so presentation cannot
-    // change the world-space meaning of an unchanged raw drag.
-    camera.position.copy(targetPos);cameraLookTarget.copy(targetLook);camera.zoom=1.16;camera.aspect=16/9;camera.near=.1;camera.far=900;camera.updateProjectionMatrix();camera.lookAt(cameraLookTarget);
-    if(acDirector.cameraStage!==stage){acDirector.cameraStage=stage;diag('AIM CAMERA STAGE','progress='+Math.round(progress*100)+'% shooterOnly=Y enemyFraming=N fixedDuringPointer=Y distance=38')}
+    const progress=acDirectorStepAimPresentation(performance.now()),visual=xrayRoomVisuals?.find?.(v=>v.warrior===selected),shooter=visual?.standAnchor?.getWorldPosition?.(new THREE.Vector3())||visual?.rig3D?.getWorldPosition?.(new THREE.Vector3())||warriorWorld(selected),closeLook=shooter.clone();
+    closeLook.y+=.85;
+    const closePos=new THREE.Vector3(closeLook.x,closeLook.y+1.9,closeLook.z+38),sep=currentCombatRange(),maxY=Math.max(aure.position.y,earth.position.y),minY=Math.min(aure.position.y,earth.position.y),midX=(aure.position.x+earth.position.x)/2,midY=(maxY+minY)/2,rangeExtra=Math.max(0,Math.min(82,(sep-55)*.92)),altExtra=Math.max(0,(maxY-18)*.72),vHalf=THREE.MathUtils.degToRad(camera.fov*.5),hHalf=Math.atan(Math.tan(vHalf)*camera.aspect),horizontalNeed=(sep*.5+29)/Math.max(.18,Math.tan(hHalf)),verticalNeed=((maxY-minY)*.5+17)/Math.max(.18,Math.tan(vHalf)),battleZ=Math.max(92+rangeExtra+altExtra*.72,horizontalNeed,verticalNeed),battlePos=new THREE.Vector3(midX,27.5+midY*.11+altExtra*.22,battleZ),battleLook=new THREE.Vector3(midX,Math.max(10,midY*.48)+Math.min(8,sep*.045),0),pullback=THREE.MathUtils.smoothstep(progress,.08,.96),targetPos=closePos.clone().lerp(battlePos,pullback),targetLook=closeLook.clone().lerp(battleLook,pullback),stage=Math.min(4,Math.floor(progress*4+.001));
+    // Raw drag remains the input authority. This branch only interpolates presentation
+    // from the physical shooter to the safe two-vessel frame as that same drag grows.
+    camera.position.copy(targetPos);cameraLookTarget.copy(targetLook);camera.zoom=THREE.MathUtils.lerp(1.16,1,pullback);camera.aspect=16/9;camera.near=.1;camera.far=900;camera.updateProjectionMatrix();camera.lookAt(cameraLookTarget);
+    if(acDirector.cameraStage!==stage){acDirector.cameraStage=stage;diag('AIM CAMERA STAGE','progress='+Math.round(progress*100)+'% pullback='+Math.round(pullback*100)+'% shooterVisible=Y enemyVisible='+(progress>=.96?'Y':'N')+' framing=SHOOTER_TO_BATTLEFIELD')}
     return
   }
   if(acDirector.mode==='travel'&&acDirector.projectile?.parent){
@@ -130,14 +133,14 @@ function acDirectorPreImpact(){if(acDirector.mode!=='travel'||!acDirector.hit?.r
   const finishReplacement="function finishAurelianWeaponAction(attacker,label){\n const finishNow=()=>{solarActionLock=false;refreshMovePad();diag('ACTION UNLOCK',(attacker.side===localWorldSide()?'LOCAL ':'REMOTE ')+label+' COMPLETE');if(!multiplayer&&battleStarted&&!matchEnded&&attacker.side==='aurelian'&&soloTurn==='aurelian')endSoloPlayerTurnAfterShot()};\n if(attacker.side===localWorldSide()&&acDirectorWaitForPresentation(finishNow,label))return;finishNow()\n}";
   patched=replaceOnce(patched,finishNeedle,finishReplacement,status,'turnVfxGate');
 
-  if(!patched.includes("function clearAim(){if(acDirector.mode==='aim')")){const next=patched.replace('function clearAim(){',"function clearAim(){if(acDirector.mode==='aim'){acDirector.mode=xrayOpen?'cutaway':'exterior';acDirector.aimTargetProgress=0;acDirector.aimVisualProgress=0;acDirector.aimLastTs=0;acDirector.sealedRooms=0;if(xrayOpen)restoreFullCutawayStage()}tacticalAimView=false;");status.clearAim=next!==patched;patched=next}else status.clearAim=true;
+  if(!patched.includes("function clearAim(){if(acDirector.mode==='aim')")){const next=patched.replace('function clearAim(){',"function clearAim(){if(acDirector.mode==='aim'){acDirector.mode=xrayOpen?'cutaway':'exterior';acDirector.aimTargetProgress=0;acDirector.aimVisualProgress=0;acDirector.aimLastTs=0;acDirector.aimInputOrigin=null;acDirector.sealedRooms=0;if(xrayOpen)restoreFullCutawayStage()}tacticalAimView=false;");status.clearAim=next!==patched;patched=next}else status.clearAim=true;
   if(patched.includes("setSoloTurn('earth');movePending=false;refreshMovePad();"))patched=replaceOnce(patched,"setSoloTurn('earth');movePending=false;refreshMovePad();","acDirectorReset('solo handoff');setSoloTurn('earth');movePending=false;refreshMovePad();",status,'turnSolo');
   else patched=replaceOnce(patched,"soloTurn='earth';movePending=false;refreshMovePad();","acDirectorReset('solo handoff');setSoloTurn('earth');movePending=false;refreshMovePad();",status,'turnSolo');
   if(!patched.includes("scheduleXrayForTurn('solo transition')"))patched=patched.replace("soloTurn=side;\n  if(previous!==side&&battleStarted)advanceSupportTurn(side);","soloTurn=side;\n  if(battleStarted)scheduleXrayForTurn('solo transition');\n  if(previous!==side&&battleStarted)advanceSupportTurn(side);");
   patched=replaceOnce(patched,"mpTurn.classList.add('show');const mine=side===localSide;","mpTurn.classList.add('show');const mine=side===localSide;if(battleStarted&&!matchEnded)scheduleXrayForTurn('multiplayer transition');if(!mine)acDirectorReset('multiplayer opponent turn');",status,'turnMp');
   patched=patched.replace("statusEl.textContent='CUTAWAY • TAP A WARRIOR ONCE TO HIGHLIGHT • TAP AGAIN TO LOCK SHOOTER'","statusEl.textContent='CUTAWAY • PRESS A WARRIOR • HOLD + DRAG TO AIM • RELEASE TO FIRE'");
-  patched=patched.replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.41.1');
-  patched=patched.replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-07_AIM_DIRECTOR_SHOOTER_LOCK');
+  patched=patched.replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.41.2');
+  patched=patched.replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-07_FULL_CUTAWAY_PROGRESSIVE_TARGETING');
   const summary=Object.entries(status).map(([k,v])=>`${k}:${v?'OK':'MISS'}`).join(' ');
-  return patched.replace('</head>',`<meta id="ac-presentation-director-v0411" name="ac-presentation-director" content="${summary} aimTarget:RAW_READ_ONLY aimVisual:SMOOTH aimCamera:FIXED_PHYSICAL_SHOOTER enemyFraming:N hullSeal:FURTHEST_FIRST shooterRoom:PROTECTED preAimEnemyHull:CLOSED impactReveal:POST_HIT_ONLY">\n</head>`);
+  return patched.replace('</head>',`<meta id="ac-presentation-director-v0412" name="ac-presentation-director" content="${summary} aimTarget:RAW_READ_ONLY aimVisual:SMOOTH aimCamera:PROGRESSIVE_SHOOTER_TO_BATTLEFIELD enemyVisibleAtFullAim:Y hullSeal:FURTHEST_FIRST shooterRoom:PROTECTED preAimEnemyHull:CLOSED impactReveal:POST_HIT_ONLY">\n</head>`);
 }

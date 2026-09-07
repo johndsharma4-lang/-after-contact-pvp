@@ -4510,9 +4510,14 @@ function buildPrivateXray(){
     for(const sx of[-1,1]){const wall=markXray(new THREE.Mesh(new THREE.BoxGeometry(.20,roomH,roomD),wallMat.clone()),72);wall.position.x=sx*roomW*.5;cell.add(wall)}
     for(const sx of[-1,1]){const rail=markXray(new THREE.Mesh(new THREE.BoxGeometry(.10,roomH*.88,.10),trimMat.clone()),78);rail.position.set(sx*(roomW*.5-.22),0,roomD*.48);cell.add(rail)}
     const floorStrip=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.82,.06,.12),trimMat.clone()),79);floorStrip.position.set(0,floorY+.20,roomD*.49);cell.add(floorStrip);
-    const frontShutter=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.94,roomH*.92,.16),wallMat.clone()),96);frontShutter.name=`CUTAWAY_FRONT_SHUTTER_${i+1}`;frontShutter.position.set(0,0,roomD*.51);frontShutter.visible=false;cell.add(frontShutter);cell.userData.frontShutter=frontShutter;
+    const frontShutter=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.94,roomH*.92,.16),wallMat.clone()),96);frontShutter.name=`CUTAWAY_FRONT_SHUTTER_${i+1}`;frontShutter.position.set(0,0,roomD*.51);frontShutter.visible=false;frontShutter.userData.acAimClosed=false;cell.add(frontShutter);cell.userData.frontShutter=frontShutter;
     const rim=markXray(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(roomW,roomH,roomD)),new THREE.LineBasicMaterial({color:trimColor,transparent:true,opacity:.26,depthTest:false,depthWrite:false})),84);cell.add(rim);
 
+    // Register every physical room, not only occupied rooms. The Aurelian cleanup layer
+    // uses this registry to decide which native interior geometry survives, so omitting
+    // empty cells made six of the nine already-built compartments disappear.
+    const visual={warriorMarker:null,statusGroup:null,warrior:null,rig3D:null,aura:null,label:null,hit:null,railHit:null,index:i,lastHp:0,hitUntil:0,baseRigY:0,baseRigScale:null,rim,roomLight:null,aaBack:null,aaFill:null,aaWidth:0,nativeRoom:cell,standAnchor:null,frontShutter,room:source,empty:true};
+    xrayRoomVisuals.push(visual);
     const w=crew.find(x=>x.roomIndex===i);if(!w)continue;
     // Dedicated standing anchor: feet sit on the new 3D floor. This anchor can later drive idle/hit/fall/death animation.
     const stand=new THREE.Group();stand.name=`WARRIOR_STAND_ANCHOR_ROOM_${i+1}`;stand.userData.xrayVisual=true;stand.userData.xrayWarrior=w;stand.position.set(0,floorY+.90,.42);cell.add(stand);
@@ -4523,11 +4528,11 @@ function buildPrivateXray(){
     const aura=markXray(new THREE.Mesh(new THREE.RingGeometry(.62,.70,22),xrayBasic(w.assignedColor,.10,true)),88);aura.rotation.x=-Math.PI/2;aura.position.set(0,-.80,.15);stand.add(aura);
     const label=makeXrayCrewLabel(w);label.scale.set(1.72,.43,1);label.position.set(0,floorY+.34,roomD*.50+.06);cell.add(label);
     const light=new THREE.PointLight(faction==='aurelian'?0xfff0cf:0xd9f4ff,.42,6.2,2.0);light.position.set(-.75,1.55,1.70);cell.add(light);
-    xrayRoomVisuals.push({warriorMarker:stand,statusGroup:null,warrior:w,rig3D,aura,label,hit,railHit:null,index:i,lastHp:w.hp,hitUntil:0,baseRigY:rig3D.position.y,baseRigScale:rig3D.scale.clone(),rim,roomLight:light,aaBack:null,aaFill:null,aaWidth:0,nativeRoom:cell,standAnchor:stand,frontShutter})
+    Object.assign(visual,{warriorMarker:stand,warrior:w,rig3D,aura,label,hit,lastHp:w.hp,baseRigY:rig3D.position.y,baseRigScale:rig3D.scale.clone(),roomLight:light,standAnchor:stand,empty:false})
   }
   xrayScanBand=null;xrayGroup=g;g.updateWorldMatrix(true,true);refreshPrivateXrayVisuals();
-  for(const v of xrayRoomVisuals){const box=new THREE.Box3().setFromObject(v.rig3D),size=box.getSize(new THREE.Vector3()),wp=v.rig3D.getWorldPosition(new THREE.Vector3()),sp=v.standAnchor.getWorldPosition(new THREE.Vector3()),ndc=wp.clone().project(camera);diag('NATIVE 3D WARRIOR',`${v.warrior.weaponKey} room=${v.index+1} size=${size.x.toFixed(2)},${size.y.toFixed(2)},${size.z.toFixed(2)} stand=${sp.x.toFixed(1)},${sp.y.toFixed(1)},${sp.z.toFixed(1)} ndc=${ndc.x.toFixed(2)},${ndc.y.toFixed(2)},${ndc.z.toFixed(2)}`)}
-  diag('NATIVE 3D CUTAWAY',`rooms=9 crew=${crew.map(w=>w.weaponKey+'@R'+(w.roomIndex+1)).join(',')} legacySpriteGridPositioning=N`)
+  for(const v of xrayRoomVisuals){if(!v.rig3D||!v.standAnchor||!v.warrior)continue;const box=new THREE.Box3().setFromObject(v.rig3D),size=box.getSize(new THREE.Vector3()),wp=v.rig3D.getWorldPosition(new THREE.Vector3()),sp=v.standAnchor.getWorldPosition(new THREE.Vector3()),ndc=wp.clone().project(camera);diag('NATIVE 3D WARRIOR',`${v.warrior.weaponKey} room=${v.index+1} size=${size.x.toFixed(2)},${size.y.toFixed(2)},${size.z.toFixed(2)} stand=${sp.x.toFixed(1)},${sp.y.toFixed(1)},${sp.z.toFixed(1)} ndc=${ndc.x.toFixed(2)},${ndc.y.toFixed(2)},${ndc.z.toFixed(2)}`)}
+  diag('NATIVE 3D CUTAWAY',`rooms=${rooms.length} registered=${xrayRoomVisuals.length} occupied=${crew.length} empty=${rooms.length-crew.length} crew=${crew.map(w=>w.weaponKey+'@R'+(w.roomIndex+1)).join(',')} legacySpriteGridPositioning=N`)
 }
 function refreshPrivateXrayVisuals(){
   if(!xrayOpen||!xrayGroup)return;const now=performance.now();
@@ -4537,6 +4542,7 @@ function refreshPrivateXrayVisuals(){
       if(v.rig3D){const hit=now<v.hitUntil,breath=Math.sin(now*.0026+w.roomIndex*.53),base=v.baseRigScale;v.rig3D.position.y=v.baseRigY+(dead?-.24:breath*.012);v.rig3D.rotation.z=dead?.86:(hit?Math.sin(now*.05)*.10:breath*.003);const m=dead?.94:1+(chosen?.016:.004)*breath;v.rig3D.scale.set(base.x*m,base.y*m,base.z*m)}
       v.aura.material.opacity=dead?(chosen?.82:.40):(chosen?.86:.20);v.aura.material.color.setHex(dead?0xff4b3e:w.assignedColor);v.aura.scale.setScalar(chosen?1.16:1);if(v.rim?.material)v.rim.material.opacity=chosen?.46:.16;if(v.roomLight)v.roomLight.intensity=chosen?.72:.28;continue
     }
+    if(v.nativeRoom){if(v.rim?.material)v.rim.material.opacity=.10;if(v.roomLight)v.roomLight.intensity=.20;continue}
     const b=Math.max(0,Math.min(100,v.room.breach||0))/100,pulse=.54+.10*Math.abs(Math.sin(now*.003+v.index*.45));v.lamp.material.opacity=Math.max(.18,.92-b*.66)+pulse*.08;v.damage.material.opacity=b>0?.08+b*.52:0;
     v.damage.material.color.setHex(b>=.55?0xff4938:b>=.25?0xff8a45:0xffc04d)
   }
@@ -4547,7 +4553,7 @@ function updatePrivateXrayAnimation(dt){
 }
 function openPrivateXray(reason='own vessel tap'){
   if(!battleStarted||matchEnded||xrayOpen)return;const mine=multiplayer?currentTurn===localSide:soloTurn==='aurelian';if(!mine)return;
-  xrayOpen=true;xrayConfirmedShooter=null;xraySelectedCrew=null;tacticalAimView=false;clearAim?.();applyXrayShell();buildPrivateXray();for(const w of localXrayWarriors())syncWarriorConcealment(w);refreshXrayCrewCard();updateBattleCamera();statusEl.textContent='CUTAWAY • TAP A WARRIOR ONCE TO HIGHLIGHT • TAP AGAIN TO LOCK SHOOTER';diag('CUTAWAY OPEN',`${reason} side=${localXraySide()} selected=${xraySelectedCrew?.weaponKey||'NONE'} room=${(xraySelectedCrew?.roomIndex??0)+1} singleRoom=Y surroundingHull=VISIBLE`)
+  xrayOpen=true;xrayConfirmedShooter=null;xraySelectedCrew=null;tacticalAimView=false;clearAim?.();applyXrayShell();buildPrivateXray();for(const w of localXrayWarriors())syncWarriorConcealment(w);refreshXrayCrewCard();updateBattleCamera();statusEl.textContent='CUTAWAY • TAP A WARRIOR ONCE TO HIGHLIGHT • TAP AGAIN TO LOCK SHOOTER';diag('CUTAWAY OPEN',`${reason} side=${localXraySide()} selected=${xraySelectedCrew?.weaponKey||'NONE'} room=${(xraySelectedCrew?.roomIndex??0)+1} fullInterior=9/9 warriors=${xrayRoomVisuals.filter(v=>v.warrior).length} surroundingHull=VISIBLE`)
 }
 function closePrivateXray(reason='manual'){
   if(!xrayOpen)return;xrayOpen=false;xraySelectedCrew=null;xrayConfirmedShooter=null;restoreXrayShell();if(xrayGroup){localCommandVessel().remove(xrayGroup);disposeXrayObject(xrayGroup)}xrayGroup=null;xrayScanBand=null;xrayRoomVisuals=[];refreshXrayCrewCard();for(const w of localXrayWarriors())syncWarriorConcealment(w);updateBattleCamera();diag('CUTAWAY CLOSE',`${reason} side=${localXraySide()}`);const mine=multiplayer?currentTurn===localSide:soloTurn==='aurelian';if(mine&&!matchEnded)statusEl.textContent='YOUR TURN • MOVE OR FIRE • TAP OWN VESSEL FOR CUTAWAY'
@@ -5426,8 +5432,9 @@ function xrayWarriorAtStagePoint(pt){
 }
 function setCutawayFiringStage(w){
   if(!xrayOpen||!w)return;
-  // Never use the temporary flat shutters. Restore the vessel's real per-room exterior modules instead.
-  for(const cell of xrayGroup?.children||[]){const shutter=cell?.userData?.frontShutter;if(shutter)shutter.visible=false;if(cell?.userData)cell.userData.firingStage=false}
+  // Firing-stage entry starts with all nine physical room fronts open. The aim
+  // director then closes the eight non-shooter fronts progressively.
+  for(const cell of xrayGroup?.children||[]){const shutter=cell?.userData?.frontShutter;if(shutter){shutter.userData.acAimClosed=false;shutter.visible=false}if(cell?.userData)cell.userData.firingStage=false}
   const side=localXraySide(),skin=side==='aurelian'?factionSkinA:factionSkinE,rooms=localXrayRooms()?.userData?.rooms||[],modules=skin?.userData?.damageModules||[];
   for(let i=0;i<modules.length;i++){
     const module=modules[i],room=rooms[i];if(!module)continue;
@@ -5440,7 +5447,7 @@ function setCutawayFiringStage(w){
 function restoreFullCutawayStage(){
   const side=localXraySide(),skin=side==='aurelian'?factionSkinA:factionSkinE;
   for(const module of skin?.userData?.damageModules||[])if(module)module.visible=false;
-  for(const cell of xrayGroup?.children||[]){const shutter=cell?.userData?.frontShutter;if(shutter)shutter.visible=false;if(cell?.userData)cell.userData.firingStage=false}
+  for(const cell of xrayGroup?.children||[]){const shutter=cell?.userData?.frontShutter;if(shutter){shutter.userData.acAimClosed=false;shutter.visible=false}if(cell?.userData)cell.userData.firingStage=false}
 }
 function selectXrayCrew(w){
   if(!xrayOpen||!w||!w.active||w.hp<=0||w.passive)return;
