@@ -1,5 +1,5 @@
 export function patchAurelianLogicalCutawayRuntime(html){
-  if(html.includes('ac-aurelian-logical-cutaway-v0413'))return html;
+  if(html.includes('ac-aurelian-logical-cutaway-v0414'))return html;
   const helper=String.raw`
 function acSeparateAurelianLogicalCutaway(){
   if(!xrayOpen||localXraySide()!=='aurelian'||!xrayGroup)return;
@@ -43,5 +43,5 @@ function acSeparateAurelianLogicalCutaway(){
   const refreshNeedle='function refreshPrivateXrayVisuals(){\n  if(!xrayOpen||!xrayGroup)return;';
   const refreshReplacement='function refreshPrivateXrayVisuals(){\n  if(!xrayOpen||!xrayGroup)return;\n  if(localXraySide()===\'aurelian\'&&typeof acSeparateAurelianLogicalCutaway===\'function\')queueMicrotask(()=>{if(xrayOpen&&xrayGroup)acSeparateAurelianLogicalCutaway()});';
   const refreshed=patched.replace(refreshNeedle,refreshReplacement),refreshGuard=refreshed!==patched;patched=refreshed;
-  return patched.replace('</head>','<meta id="ac-aurelian-logical-cutaway-v0413" name="ac-aurelian-logical-cutaway" content="openRoute:'+(openRoute?'OK':'MISS')+' refreshGuard:'+(refreshGuard?'OK':'MISS')+' nativeInterior:ALL_9_VISIBLE roomCageRims:HIDDEN aimPanels:AURELIAN_EXTERIOR_ARMOR combatGeometry:PRESERVED warriorRigs:VISIBLE">\n</head>');
+  return patched.replace('</head>','<meta id="ac-aurelian-logical-cutaway-v0414" name="ac-aurelian-logical-cutaway" content="openRoute:'+(openRoute?'OK':'MISS')+' refreshGuard:'+(refreshGuard?'OK':'MISS')+' nativeInterior:ALL_9_VISIBLE roomCageRims:HIDDEN aimPanels:CONTINUOUS_CURVED_HULL_SECTORS combatGeometry:PRESERVED warriorRigs:VISIBLE">\n</head>');
 }

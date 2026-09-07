@@ -5,7 +5,7 @@ function replaceOnce(source, needle, replacement, status, key) {
 }
 
 export function patchCombatPresentationDirectorRuntime(html) {
-  if (html.includes('ac-presentation-director-v0413')) return html;
+  if (html.includes('ac-presentation-director-v0414')) return html;
 
   let patched = html;
   const status = {director:false,singlePress:false,pressDrag:false,camera:false,turnSolo:false,turnMp:false,impactExterior:false,scatterCamera:false,sunadierTrack:false,diskTrack:false,beamTrack:false,clearAim:false,turnVfxGate:false,preAimClosed:false,aimSeal:false,releaseSeal:false};
@@ -138,8 +138,8 @@ function acDirectorPreImpact(){if(acDirector.mode!=='travel'||!acDirector.hit?.r
   if(!patched.includes("scheduleXrayForTurn('solo transition')"))patched=patched.replace("soloTurn=side;\n  if(previous!==side&&battleStarted)advanceSupportTurn(side);","soloTurn=side;\n  if(battleStarted)scheduleXrayForTurn('solo transition');\n  if(previous!==side&&battleStarted)advanceSupportTurn(side);");
   patched=replaceOnce(patched,"mpTurn.classList.add('show');const mine=side===localSide;","mpTurn.classList.add('show');const mine=side===localSide;if(battleStarted&&!matchEnded)scheduleXrayForTurn('multiplayer transition');if(!mine)acDirectorReset('multiplayer opponent turn');",status,'turnMp');
   patched=patched.replace("statusEl.textContent='CUTAWAY • TAP A WARRIOR ONCE TO HIGHLIGHT • TAP AGAIN TO LOCK SHOOTER'","statusEl.textContent='CUTAWAY • PRESS A WARRIOR • HOLD + DRAG TO AIM • RELEASE TO FIRE'");
-  patched=patched.replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.41.3');
-  patched=patched.replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-07_EXTERIOR_SEAL_CLOSED_HULL_DAMAGE');
+  patched=patched.replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.41.4');
+  patched=patched.replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-07_CURVED_HULL_FULL_BODY_AIM');
   const summary=Object.entries(status).map(([k,v])=>`${k}:${v?'OK':'MISS'}`).join(' ');
-  return patched.replace('</head>',`<meta id="ac-presentation-director-v0413" name="ac-presentation-director" content="${summary} aimTarget:RAW_READ_ONLY aimVisual:SMOOTH aimCamera:PROGRESSIVE_SHOOTER_TO_BATTLEFIELD enemyVisibleAtFullAim:Y hullSeal:FURTHEST_FIRST shooterRoom:PROTECTED preAimEnemyHull:CLOSED enemyDamage:EXTERIOR_ONLY impactReveal:DISABLED">\n</head>`);
+  return patched.replace('</head>',`<meta id="ac-presentation-director-v0414" name="ac-presentation-director" content="${summary} aimTarget:RAW_READ_ONLY aimVisual:SMOOTH aimCamera:PROGRESSIVE_SHOOTER_TO_BATTLEFIELD enemyVisibleAtFullAim:Y hullSeal:FURTHEST_FIRST_CONTINUOUS_EXTERIOR shooterRoom:PROTECTED preAimEnemyHull:CLOSED enemyDamage:EXTERIOR_ONLY impactReveal:DISABLED">\n</head>`);
 }

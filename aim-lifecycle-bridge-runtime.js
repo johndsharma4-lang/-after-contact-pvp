@@ -5,9 +5,9 @@ function replaceOnce(source, needle, replacement, status, key) {
 }
 
 export function patchAimLifecycleBridgeRuntime(html) {
-  if (html.includes('ac-aim-lifecycle-bridge-v0413')) return html;
+  if (html.includes('ac-aim-lifecycle-bridge-v0414')) return html;
   let patched = html;
-  const status = { liveStep:false, originDiag:false, cutawayEntry:false, shellOwnership:false, aimHook:false, stableAimEntry:false };
+  const status = { liveStep:false, originDiag:false, cutawayEntry:false, shellOwnership:false, aimHook:false, rawRelease:false, stableAimEntry:false };
 
   patched = replaceOnce(patched,"function acDirectorUpdateAimTarget(attacker,pt){acDirector.aimTargetProgress=acDirectorAimTarget(attacker,pt)}","function acDirectorUpdateAimTarget(attacker,pt){acDirector.aimTargetProgress=acDirectorAimTarget(attacker,pt);acDirectorStepAimPresentation(performance.now())}",status,'liveStep');
 
@@ -25,19 +25,21 @@ export function patchAimLifecycleBridgeRuntime(html) {
  for(let i=0;i<rooms.length;i++){const room=rooms[i],shouldClose=i!==shooter&&closed.has(i)&&!room?.erased&&(room?.breach??0)<100;for(const entry of buckets[i])entry.mesh.visible=shouldClose?(entry.visible!==false):false;const visual=visualByRoom.get(i),shutter=visual?.frontShutter;if(shutter){shutter.userData.acAimClosed=shouldClose;shutter.visible=shouldClose;if(shouldClose)nativeClosed++}}
  const chosen=xrayRoomVisuals?.find?.(v=>v.warrior===attacker);if(chosen?.nativeRoom){chosen.nativeRoom.visible=true;chosen.nativeRoom.userData.firingStage=true;if(chosen.frontShutter){chosen.frontShutter.userData.acAimClosed=false;chosen.frontShutter.visible=false}}
  if(acDirector.shellMapReported!==true){acDirector.shellMapReported=true;diag('AIM SHELL MAP','shell='+shell.length+' mapped='+mapped+' global='+global+' legacyModules='+((localXraySide()==='aurelian'?factionSkinA:factionSkinE)?.userData?.damageModules?.length||0))}
- if(closeCount!==acDirector.sealedRooms){acDirector.sealedRooms=closeCount;diag('AIM HULL SEAL','visual='+Math.round(progress*100)+'% target='+Math.round(acDirector.aimTargetProgress*100)+'% closed='+closeCount+'/'+order.length+' exteriorPanels='+nativeClosed+' shooterRoom='+(shooter+1))}
+ if(closeCount!==acDirector.sealedRooms){acDirector.sealedRooms=closeCount;diag('AIM HULL SEAL','visual='+Math.round(progress*100)+'% target='+Math.round(acDirector.aimTargetProgress*100)+'% closed='+closeCount+'/'+order.length+' hullSectors='+nativeClosed+' continuousExterior='+(localXraySide()==='aurelian'?'Y':'N')+' shooterRoom='+(shooter+1))}
 }
 function acDirectorBeginAim(attacker){`;
   const shellNext=patched.replace(oldSeal,newSeal);status.shellOwnership=shellNext!==patched;patched=shellNext;
 
-  // Re-project the physical muzzle every time the aim visual updates. The previous
-  // implementation froze startPx once, while the camera continued moving, so the line,
-  // distance/power calculation and visible shooter could diverge from one another.
-  if(!patched.includes("if(aiming&&aimOriginWorld){aimOriginStage=worldToStage(aimOriginWorld);")){
+  // Pose first, then sample the articulated muzzle from the resulting skeleton. The
+  // pointer target stays untouched; only the visible/physical launch origin follows
+  // the moving weapon while the director's captured input origin owns drag power.
+  if(!patched.includes("if(aiming&&acLiveMuzzle)aimOriginWorld=acLiveMuzzle.getWorldPosition")){
     const hookNeedle='acDirectorBeginAim(selected);acDirectorUpdateAimTarget(selected,b);';
-    const hookReplacement="if(aiming&&aimOriginWorld){aimOriginStage=worldToStage(aimOriginWorld);startPx={x:aimOriginStage.x,y:aimOriginStage.y};a=startPx}\n  "+hookNeedle;
+    const hookReplacement="const acLiveMuzzle=acWarriorCutawayRig(selected)?.userData?.muzzle;if(aiming&&acLiveMuzzle)aimOriginWorld=acLiveMuzzle.getWorldPosition(new THREE.Vector3());if(aiming&&aimOriginWorld){aimOriginStage=worldToStage(aimOriginWorld);startPx={x:aimOriginStage.x,y:aimOriginStage.y};a=startPx}\n  "+hookNeedle;
     patched=replaceOnce(patched,hookNeedle,hookReplacement,status,'aimHook');
   }else status.aimHook=true;
+
+  patched=replaceOnce(patched,"const pt=currentPx||eventStagePoint(e),dist=startPx?Math.hypot(pt.x-startPx.x,pt.y-startPx.y):0;","const pt=currentPx||eventStagePoint(e),acRawStart=acDirector?.aimInputOrigin||startPx,dist=acRawStart?Math.hypot(pt.x-acRawStart.x,pt.y-acRawStart.y):0;",status,'rawRelease');
 
   // The old entry path changed camera state before aiming=true, so updateBattleCamera()
   // executed the normal/tactical branch first and moved the camera before the physical
@@ -49,5 +51,5 @@ function acDirectorBeginAim(attacker){`;
   patched=replaceOnce(patched,"if(aiming)return;const pt=eventStagePoint(e);\n  if(xrayOpen){","if(aiming)return;const pt=eventStagePoint(e);\n  if(!xrayOpen&&localWorldSide()==='aurelian'){openPrivateXray('authoritative warrior firing entry');diag('AIM ENTRY ROUTE','EXTERIOR->CUTAWAY noFire=Y');return}\n  if(xrayOpen){",status,'cutawayEntry');
 
   const summary=Object.entries(status).map(([k,v])=>k+':' +(v?'OK':'MISS')).join(' ');
-  return patched.replace('</head>','<meta id="ac-aim-lifecycle-bridge-v0413" name="ac-aim-lifecycle-bridge" content="'+summary+' aimAuthority:PHYSICAL_MUZZLE_REPROJECTED cameraOwner:PRESENTATION_DIRECTOR hullSeal:CURRENT_XRAY_SHELL+AURELIAN_EXTERIOR_ARMOR_PANELS aurelianFireEntry:CUTAWAY_ONLY">\n</head>');
+  return patched.replace('</head>','<meta id="ac-aim-lifecycle-bridge-v0414" name="ac-aim-lifecycle-bridge" content="'+summary+' aimAuthority:LIVE_ARTICULATED_MUZZLE rawInput:CAPTURED_POINTER_DRAG cameraOwner:PRESENTATION_DIRECTOR hullSeal:CONTINUOUS_CURVED_AURELIAN_HULL_SECTORS aurelianFireEntry:CUTAWAY_ONLY">\n</head>');
 }
