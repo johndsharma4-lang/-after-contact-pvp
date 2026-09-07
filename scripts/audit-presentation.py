@@ -38,10 +38,12 @@ checks = {
     'raw pointer drag owns release power': 'acRawStart=acDirector?.aimInputOrigin||startPx' in bridge and 'pt.x-acRawStart.x' in bridge,
     'single press shooter': 'xrayConfirmedShooter=w' in director and 'singlePress=Y' in director,
     'pre-aim target windows removed': 'patched.replace(/function acDirectorBuild3DWindow' in director and 'patched.replace(/acDirectorPreviewSolarWindows' in director and 'status.preAimClosed=' in director,
-    'all nine native rooms registered': 'xrayRoomVisuals.push(visual);' in base and 'registered=${xrayRoomVisuals.length}' in base and 'fullInterior=9/9' in base,
-    'empty native rooms preserved': 'if(v.nativeRoom){if(v.rim?.material)' in base and 'nativeInterior:ALL_9_VISIBLE' in cutaway,
-    'aurelian room cage rims hidden': 'v.rim.visible=false' in cutaway and 'roomCageRimsHidden=' in cutaway,
-    'room fronts own visible aim seal': 'frontShutter' in bridge and 'acAimClosed=shouldClose' in bridge and 'hullSectors=' in bridge,
+    'six physical bays shared by all factions': 'bayLocals=[]' in base and 'for(let row=1;row>=0;row--)for(let col=0;col<3;col++)' in base and 'physicalInterior=6/6 logicalRooms=9' in base,
+    'nine logical combat rooms preserved': 'const logicalGroups=[[0,6],[1,7],[2,8],[3],[4],[5]]' in base and 'combatGrid=UNCHANGED' in base and 'logicalCombatRooms:NINE_UNCHANGED' in director,
+    'three empty physical bays preserved': 'xrayRoomVisuals.length-crew.length' in base and 'physicalInterior:ALL_6_VISIBLE' in cutaway,
+    'room cage edge geometry removed': 'const rim=null;' in base and 'new THREE.EdgesGeometry(new THREE.BoxGeometry(roomW,roomH,roomD))' not in base,
+    'presentation director owns five-step bay seal': 'visuals.length!==6' in director and 'frontShutter' in director and 'acAimClosed=shouldClose' in director and "closed='+closeCount+'/'+order.length" in director,
+    'lifecycle bridge does not replace seal authority': 'const oldSeal=' not in bridge and 'status.shellOwnership=patched.includes' in bridge,
     'aurelian closure uses actual exterior silhouette': "shell.name='AURELIAN_UNIFIED_EXTERIOR_HULL'" in base and 'skin.userData.acPrimaryHull=shell' in base and 'closureHull?.userData?.acHullRadii' in base,
     'aurelian closure uses one curved hull equation': 'buildAurelianHullSector(local)' in base and 'CUTAWAY_CURVED_HULL_SECTOR_' in base and 'hullDepth*Math.sqrt(Math.max(0,1-rad*rad))' in base,
     'aurelian closure restores continuous solar trim': 'CUTAWAY_CONTINUOUS_SOLAR_BAND_' in base and 'CUTAWAY_HULL_SOLAR_CORE' in base,
@@ -63,7 +65,7 @@ checks = {
     'aim pose has recoil and recovery': 'recoil=FULL_BODY' in weapon_origin and 'acWarriorRelaxPose' in weapon_origin and 'requestAnimationFrame(settle)' in weapon_origin,
     'release resamples posed muzzle': 'aimOriginWorld=flashPos.clone()' in weapon_origin and 'aimOriginStage=worldToStage(aimOriginWorld)' in weapon_origin,
     'aim pose recorder proof': "diag('WARRIOR AIM BODY'" in weapon_origin and 'muzzle=LIVE rawTarget=UNCHANGED' in weapon_origin,
-    'v0414 build marker': 'MATCH RECORDER v0.41.4' in director and '2026-09-07_CURVED_HULL_FULL_BODY_AIM' in director,
+    'v0415 build marker': 'MATCH RECORDER v0.41.5' in director and '2026-09-07_SIX_BAY_ALL_FACTIONS' in director,
 }
 impact_start = director.find('function spawnImpactCompartmentReveal(attacker,hit,duration=1450)')
 impact_end = director.find('const impactRegex=', impact_start)

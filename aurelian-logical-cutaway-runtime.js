@@ -1,5 +1,5 @@
 export function patchAurelianLogicalCutawayRuntime(html){
-  if(html.includes('ac-aurelian-logical-cutaway-v0414'))return html;
+  if(html.includes('ac-aurelian-logical-cutaway-v0415'))return html;
   const helper=String.raw`
 function acSeparateAurelianLogicalCutaway(){
   if(!xrayOpen||localXraySide()!=='aurelian'||!xrayGroup)return;
@@ -9,7 +9,7 @@ function acSeparateAurelianLogicalCutaway(){
     if(v?.rig3D)v.rig3D.traverse?.(o=>nativeKeep.add(o));
     if(v?.standAnchor)v.standAnchor.traverse?.(o=>nativeKeep.add(o));
   }
-  let hiddenLegacy=0,visibleInterior=0,logicalHidden=0,roomRimsHidden=0,nativeRoomsVisible=0;
+  let hiddenLegacy=0,visibleInterior=0,logicalHidden=0,nativeRoomsVisible=0;
   xrayGroup.traverse(o=>{
     if(!o||o===xrayGroup)return;
     const n=String(o.name||'').toLowerCase();
@@ -23,15 +23,11 @@ function acSeparateAurelianLogicalCutaway(){
   });
   for(const v of xrayRoomVisuals||[]){
     if(v?.nativeRoom){v.nativeRoom.visible=true;nativeRoomsVisible++}
-    // The giant tic-tac-toe silhouette came from the EdgesGeometry rim wrapped around
-    // every native room. It is presentation-only; floors, back panels, ceilings, side
-    // walls, trim, lights and warrior stages remain visible.
-    if(v?.rim){v.rim.visible=false;v.rim.userData.acRoomCageRimHidden=true;roomRimsHidden++}
     if(v?.rig3D){v.rig3D.visible=true;v.rig3D.traverse?.(o=>{if(o.isMesh)o.visible=true})}
     if(v?.frontShutter)v.frontShutter.visible=!!v.frontShutter.userData?.acAimClosed;
   }
-  const signature=visibleInterior+'|'+hiddenLegacy+'|'+logicalHidden+'|'+roomRimsHidden+'|'+nativeRoomsVisible;
-  if(acSeparateAurelianLogicalCutaway._last!==signature){acSeparateAurelianLogicalCutaway._last=signature;diag('AURELIAN CUTAWAY PRESENTATION','nativeInterior=VISIBLE nativeRooms='+nativeRoomsVisible+'/9 interiorMeshes='+visibleInterior+' legacyHidden='+hiddenLegacy+' roomCageRimsHidden='+roomRimsHidden+' logicalHitMeshes='+logicalHidden+' warriorRigs=VISIBLE')}
+  const signature=visibleInterior+'|'+hiddenLegacy+'|'+logicalHidden+'|'+nativeRoomsVisible;
+  if(acSeparateAurelianLogicalCutaway._last!==signature){acSeparateAurelianLogicalCutaway._last=signature;diag('AURELIAN CUTAWAY PRESENTATION','nativeInterior=VISIBLE physicalBays='+nativeRoomsVisible+'/6 logicalRooms=9 interiorMeshes='+visibleInterior+' legacyHidden='+hiddenLegacy+' roomCageRims=REMOVED_AT_SOURCE logicalHitMeshes='+logicalHidden+' warriorRigs=VISIBLE')}
 }
 `;
   let patched=html;
@@ -43,5 +39,5 @@ function acSeparateAurelianLogicalCutaway(){
   const refreshNeedle='function refreshPrivateXrayVisuals(){\n  if(!xrayOpen||!xrayGroup)return;';
   const refreshReplacement='function refreshPrivateXrayVisuals(){\n  if(!xrayOpen||!xrayGroup)return;\n  if(localXraySide()===\'aurelian\'&&typeof acSeparateAurelianLogicalCutaway===\'function\')queueMicrotask(()=>{if(xrayOpen&&xrayGroup)acSeparateAurelianLogicalCutaway()});';
   const refreshed=patched.replace(refreshNeedle,refreshReplacement),refreshGuard=refreshed!==patched;patched=refreshed;
-  return patched.replace('</head>','<meta id="ac-aurelian-logical-cutaway-v0414" name="ac-aurelian-logical-cutaway" content="openRoute:'+(openRoute?'OK':'MISS')+' refreshGuard:'+(refreshGuard?'OK':'MISS')+' nativeInterior:ALL_9_VISIBLE roomCageRims:HIDDEN aimPanels:CONTINUOUS_CURVED_HULL_SECTORS combatGeometry:PRESERVED warriorRigs:VISIBLE">\n</head>');
+  return patched.replace('</head>','<meta id="ac-aurelian-logical-cutaway-v0415" name="ac-aurelian-logical-cutaway" content="openRoute:'+(openRoute?'OK':'MISS')+' refreshGuard:'+(refreshGuard?'OK':'MISS')+' physicalInterior:ALL_6_VISIBLE logicalCombatRooms:9_UNCHANGED roomCageRims:REMOVED aimPanels:CONTINUOUS_CURVED_HULL_SECTORS combatGeometry:PRESERVED warriorRigs:VISIBLE">\n</head>');
 }
