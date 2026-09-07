@@ -1,11 +1,11 @@
 export function patchAurelianCutawayCompositionRuntime(html){
-  if(html.includes('ac-aurelian-cutaway-composition-v0368'))return html;
+  if(html.includes('ac-aurelian-cutaway-composition-v0416'))return html;
   const helper=String.raw`
 function acComposeAurelianCutaway(rig,type){
   if(!rig||rig.userData?.acCutawayComposed)return rig;
   const r=rig.userData?.rig||{};
   // Composition owns visual staging. Combat, camera and ballistics never resize these rigs.
-  rig.scale.multiplyScalar(.60);
+  rig.scale.multiplyScalar(.76);
   rig.rotation.set(0,type==='sun_disk_gunner'?.10:type==='sunadier'?-.12:.12,0);
   rig.position.y+=.10;
   if(r.pelvis)r.pelvis.rotation.set(0,0,0);
@@ -39,9 +39,9 @@ function acComposeAurelianCutaway(rig,type){
     if(n.includes('helmet')||n.includes('birdmask')||n==='beak'||n==='visor'||n.includes('breastplate')||n.includes('chestcore'))o.renderOrder=Math.max(o.renderOrder||0,40);
     if(o.material&&('emissiveIntensity' in o.material)&&(n.includes('disk')||n.includes('grenade')||n.includes('lance')))o.material.emissiveIntensity=Math.min(o.material.emissiveIntensity||0,2.8)
   });
-  const key=new THREE.PointLight(0xffd08a,.44,4.2,2);key.name='AURELIAN_ROOM_KEY';key.position.set(.10,1.70,1.55);rig.add(key);
-  const fill=new THREE.PointLight(0xfff0c0,.26,3.2,2);fill.name='AURELIAN_ROOM_FILL';fill.position.set(-.55,1.05,1.05);rig.add(fill);
-  rig.userData.acCutawayComposed=true;rig.userData.acStageRule='ONE_ROOM_UPRIGHT_READABLE';rig.userData.acCutawayScale=.60;return rig
+  const key=new THREE.PointLight(0xffd08a,.58,5.2,2);key.name='AURELIAN_ROOM_KEY';key.position.set(.10,1.70,1.55);rig.add(key);
+  const fill=new THREE.PointLight(0xfff0c0,.34,4.0,2);fill.name='AURELIAN_ROOM_FILL';fill.position.set(-.55,1.05,1.05);rig.add(fill);
+  rig.userData.acCutawayComposed=true;rig.userData.acStageRule='SIX_BAY_HIGH_DETAIL_READABLE';rig.userData.acCutawayScale=.76;return rig
 }
 `;
   const needle="function buildCutawayOnlyWarrior3D(type){\n  if(type==='solar_lancer')return acBuildSolarLancerRebuilt();\n  if(type==='sun_disk_gunner')return acBuildSunDiskGunnerRebuilt();\n  if(type==='sunadier')return acBuildSunadierRebuilt();";
@@ -49,5 +49,5 @@ function acComposeAurelianCutaway(rig,type){
   let patched=html.replace(needle,replacement);const ok=patched!==html;
   patched=patched.replace(/MATCH RECORDER v0\.3[56]\.[0-9]+/g,'MATCH RECORDER v0.36.8');
   patched=patched.replace(/build=2026-09-04_[A-Z0-9_]+/g,'build=2026-09-05_AURELIAN_UPRIGHT_STAGING');
-  return patched.replace('</head>','<meta id="ac-aurelian-cutaway-composition-v0368" name="ac-aurelian-cutaway-composition" content="stage:'+(ok?'OK':'MISS')+' scale:.60 owner:COMPOSITION identity:UPRIGHT_READABLE">\n</head>')
+  return patched.replace('</head>','<meta id="ac-aurelian-cutaway-composition-v0416" name="ac-aurelian-cutaway-composition" content="stage:'+(ok?'OK':'MISS')+' scale:.76 owner:COMPOSITION identity:HIGH_DETAIL_UPRIGHT_READABLE">\n</head>')
 }
