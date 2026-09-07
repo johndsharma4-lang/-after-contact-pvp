@@ -5,7 +5,7 @@ function replaceOnce(source, needle, replacement, status, key) {
 }
 
 export function patchAurelianCanonExteriorRuntime(html) {
-  if (html.includes('ac-aurelian-canon-exterior-v0422')) return html;
+  if (html.includes('ac-aurelian-canon-exterior-v0423')) return html;
   let patched = html;
   const status = { renameBase:false, wrapper:false };
 
@@ -21,72 +21,68 @@ export function patchAurelianCanonExteriorRuntime(html) {
 function acAurelianCanonExteriorMesh(geo,material,name){
   const mesh=new THREE.Mesh(geo,material);mesh.name=name;mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData.acCanonExteriorArt=true;return mesh
 }
+function acAurelianCanonShape(points){const shape=new THREE.Shape();shape.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)shape.lineTo(points[i][0],points[i][1]);shape.closePath();return shape}
 function acAurelianCanonPlate(points,depth,material,name,z=0){
-  const shape=new THREE.Shape();shape.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)shape.lineTo(points[i][0],points[i][1]);shape.closePath();
-  const geo=new THREE.ExtrudeGeometry(shape,{depth,steps:1,bevelEnabled:true,bevelSegments:4,bevelSize:.16,bevelThickness:.13,curveSegments:14});geo.computeVertexNormals();
+  const geo=new THREE.ExtrudeGeometry(acAurelianCanonShape(points),{depth,steps:1,bevelEnabled:true,bevelSegments:4,bevelSize:.16,bevelThickness:.13,curveSegments:14});geo.computeVertexNormals();
   const mesh=acAurelianCanonExteriorMesh(geo,material,name);mesh.position.z=z;return mesh
+}
+function acAurelianCanonFrameGeometry(layout,cy){
+  // One shallow sculpted fuselage skin with six real apertures. The functional bay
+  // panels remain underneath and continue to own opening/closing and combat state.
+  const outer=[[-23.7,cy-4.8],[-22.4,cy+4.9],[-18.4,cy+8.7],[-11.8,cy+11.5],[-4.1,cy+12.5],[5.5,cy+11.8],[13.6,cy+9.0],[19.7,cy+6.1],[24.9,cy+1.0],[21.9,cy-2.5],[17.1,cy-6.5],[11.0,cy-9.9],[2.4,cy-11.6],[-7.2,cy-10.9],[-15.6,cy-8.8],[-21.5,cy-7.0]];
+  const shape=acAurelianCanonShape(outer);
+  for(const spec of layout||[]){
+    const pts=(spec.points||[]).map(([x,y])=>[spec.x+x*1.045,spec.y+y*1.045]);
+    if(pts.length<3)continue;
+    const hole=new THREE.Path();for(let n=pts.length-1;n>=0;n--){const [x,y]=pts[n];if(n===pts.length-1)hole.moveTo(x,y);else hole.lineTo(x,y)}hole.closePath();shape.holes.push(hole)
+  }
+  const geo=new THREE.ExtrudeGeometry(shape,{depth:.62,steps:1,bevelEnabled:true,bevelSegments:5,bevelSize:.25,bevelThickness:.18,curveSegments:22});geo.computeVertexNormals();return geo
 }
 function acDecorateAurelianCanonExterior(skin,cy,mat){
   if(!skin||skin.userData?.acCanonExteriorApplied)return;
-  const structure=skin.getObjectByName?.('AURELIAN_DIRECTOR_HULL_STRUCTURE');
-  if(!structure)return;
-  const gold=mat(0xb97922,.93,.17,0x4b2600),bright=mat(0xe4b64c,.90,.13,0x6b3700),deep=mat(0x4b2c0c,.94,.27,0x1d0d00),dark=mat(0x120e0a,.84,.35),ivory=mat(0xe8d7aa,.74,.20,0x33220b),black=mat(0x080706,.78,.44),sun=new THREE.MeshStandardMaterial({color:0xffcf50,emissive:0xff7b0d,emissiveIntensity:2.45,metalness:.52,roughness:.12});
+  const structure=skin.getObjectByName?.('AURELIAN_DIRECTOR_HULL_STRUCTURE');if(!structure)return;
+  const layout=skin.userData?.acCutawayBayLayout||[];
+  const gold=mat(0xb97922,.93,.17,0x4b2600),bright=mat(0xe7b84f,.90,.13,0x6b3700),deep=mat(0x4b2c0c,.94,.27,0x1d0d00),dark=mat(0x120e0a,.84,.35),ivory=mat(0xe8d7aa,.74,.20,0x33220b),sun=new THREE.MeshStandardMaterial({color:0xffcf50,emissive:0xff7b0d,emissiveIntensity:2.45,metalness:.52,roughness:.12});
   const kit=new THREE.Group();kit.name='AURELIAN_CANON_EXTERIOR_KIT';kit.userData.acCanonExteriorArt=true;structure.add(kit);
 
-  // Long tapered prow. This extends the current right side into a real spacecraft nose
-  // without changing any room, hit plane, muzzle, or cutaway panel ownership.
-  const prow=acAurelianCanonPlate([[15.3,3.3],[20.9,2.25],[23.7,.35],[20.8,-1.55],[15.1,-3.25],[16.25,-.35]],2.25,gold,'AURELIAN_CANON_PROW',2.05);kit.add(prow);
-  const prowTop=acAurelianCanonPlate([[14.6,6.8],[18.7,5.7],[21.4,3.0],[16.3,3.8]],1.15,bright,'AURELIAN_CANON_PROW_TOP',2.65);kit.add(prowTop);
-  const prowBottom=acAurelianCanonPlate([[14.0,-6.6],[18.8,-5.3],[21.2,-2.7],[15.6,-3.6]],1.15,ivory,'AURELIAN_CANON_PROW_LOWER',2.55);kit.add(prowBottom);
-  const noseRing=new THREE.Mesh(new THREE.TorusGeometry(1.08,.18,12,42),sun.clone());noseRing.name='AURELIAN_CANON_NOSE_REACTOR_RING';noseRing.position.set(18.0,cy+.25,5.45);noseRing.scale.y=.72;kit.add(noseRing);
-  const noseCore=new THREE.Mesh(new THREE.CircleGeometry(.63,36),new THREE.MeshBasicMaterial({color:0xffffd6}));noseCore.name='AURELIAN_CANON_NOSE_REACTOR_CORE';noseCore.position.set(18.0,cy+.25,5.49);kit.add(noseCore);
-
-  // Rear engine mass and armored taper. The reference has a substantial drive section,
-  // so the ship no longer ends like a cut-off stack of rooms.
-  const stern=acAurelianCanonPlate([[-18.0,6.9],[-21.0,5.2],[-22.9,2.2],[-23.4,-2.5],[-21.6,-6.0],[-17.2,-7.4],[-18.4,-3.2],[-18.9,2.8]],2.35,deep,'AURELIAN_CANON_STERN_ARMOR',1.85);kit.add(stern);
-  for(const y of[-4.4,0,4.4]){
-    const barrel=acAurelianCanonExteriorMesh(new THREE.CylinderGeometry(1.15,1.48,4.25,24),dark.clone(),'AURELIAN_CANON_ENGINE_BARREL');barrel.rotation.z=Math.PI/2;barrel.position.set(-21.1,cy+y,3.15);kit.add(barrel);
-    const collar=acAurelianCanonExteriorMesh(new THREE.CylinderGeometry(1.38,1.38,.42,24),gold.clone(),'AURELIAN_CANON_ENGINE_COLLAR');collar.rotation.z=Math.PI/2;collar.position.set(-19.4,cy+y,3.15);kit.add(collar);
-    const glow=new THREE.Mesh(new THREE.CircleGeometry(.78,28),new THREE.MeshBasicMaterial({color:0xffc04a,transparent:true,opacity:.92}));glow.name='AURELIAN_CANON_ENGINE_GLOW';glow.position.set(-23.24,cy+y,3.15);glow.rotation.y=-Math.PI/2;kit.add(glow)
+  // The key fidelity change: the six doors are now visually recessed into one ship.
+  if(layout.length===6){
+    const frame=acAurelianCanonExteriorMesh(acAurelianCanonFrameGeometry(layout,cy),gold.clone(),'AURELIAN_CANON_CONTINUOUS_FUSELAGE');frame.position.z=7.04;kit.add(frame);
+    const trim=acAurelianCanonExteriorMesh(acAurelianCanonFrameGeometry(layout,cy),bright.clone(),'AURELIAN_CANON_FUSELAGE_EDGE_TRIM');trim.scale.set(.994,.985,1);trim.position.z=7.37;trim.material.transparent=true;trim.material.opacity=.58;trim.material.depthWrite=false;kit.add(trim)
   }
 
-  // Dorsal armor and cockpit crown: layered, swept plates instead of a rectangular roof.
-  const dorsal=acAurelianCanonPlate([[-14.9,9.0],[-9.8,11.65],[-2.8,12.35],[6.8,11.2],[13.2,8.2],[8.2,8.55],[-1.1,9.75],[-8.8,9.65]],1.35,bright,'AURELIAN_CANON_DORSAL_SPINE',2.10);kit.add(dorsal);
-  const dorsalInset=acAurelianCanonPlate([[-9.3,10.55],[-3.1,11.45],[5.6,10.7],[10.0,9.25],[4.0,9.50],[-2.8,10.25]],.62,ivory,'AURELIAN_CANON_DORSAL_IVORY',3.18);kit.add(dorsalInset);
-  const cockpitBrow=acAurelianCanonPlate([[-14.0,8.45],[-11.6,10.55],[-5.25,10.30],[-3.9,8.85],[-7.4,8.55]],.72,gold,'AURELIAN_CANON_COCKPIT_BROW',3.36);kit.add(cockpitBrow);
+  // Long pointed prow and layered shoulder armor.
+  kit.add(acAurelianCanonPlate([[15.0,cy+6.7],[20.1,cy+5.7],[25.8,cy+1.0],[21.1,cy-2.0],[15.0,cy-3.7],[17.1,cy+.5]],2.15,gold,'AURELIAN_CANON_PROW',2.00));
+  kit.add(acAurelianCanonPlate([[13.8,cy+8.4],[19.2,cy+6.5],[22.3,cy+3.7],[16.0,cy+5.1]],1.0,bright,'AURELIAN_CANON_PROW_TOP',2.75));
+  kit.add(acAurelianCanonPlate([[13.7,cy-6.4],[20.0,cy-4.8],[22.0,cy-2.5],[15.7,cy-3.8]],1.0,ivory,'AURELIAN_CANON_PROW_LOWER',2.65));
+  const noseRing=new THREE.Mesh(new THREE.TorusGeometry(1.12,.18,12,42),sun.clone());noseRing.name='AURELIAN_CANON_NOSE_REACTOR_RING';noseRing.position.set(19.0,cy+.55,7.84);noseRing.scale.y=.72;kit.add(noseRing);
 
-  // Ventral keel around the cannon bay. It frames the cannon like a weapon bay rather
-  // than letting the bottom module read as another independent box.
-  const keel=acAurelianCanonPlate([[-14.8,-8.35],[-8.3,-10.45],[2.2,-11.25],[11.2,-9.95],[15.0,-7.4],[9.4,-8.15],[1.5,-9.35],[-7.8,-9.15]],1.42,deep,'AURELIAN_CANON_VENTRAL_KEEL',2.08);kit.add(keel);
-  const cannonJawTop=acAurelianCanonPlate([[2.7,-4.25],[13.4,-4.75],[16.0,-6.0],[12.8,-5.55],[3.2,-5.2]],.72,ivory,'AURELIAN_CANON_CANNON_JAW_TOP',3.34);kit.add(cannonJawTop);
-  const cannonJawBottom=acAurelianCanonPlate([[1.9,-8.65],[12.5,-8.15],[15.3,-7.1],[11.5,-9.15],[3.1,-9.65]],.72,gold,'AURELIAN_CANON_CANNON_JAW_BOTTOM',3.18);kit.add(cannonJawBottom);
-
-  // Structural bridges sit behind the six movable bay panels. They visually connect
-  // the modules while leaving the panel groups free to open/close during aiming.
-  for(const [x,y,w,h,rz,c] of [
-    [-3.0,6.75,8.6,.62,-.04,bright],[-3.6,2.75,8.0,.58,.03,deep],[-3.5,-2.85,7.7,.58,-.03,gold],[-2.8,-6.05,7.5,.62,.05,deep],
-    [1.25,7.7,.62,3.2,-.14,ivory],[.65,1.4,.60,3.7,.10,gold],[1.0,-4.15,.62,3.2,-.11,ivory]
-  ]){const bridge=acAurelianCanonExteriorMesh(new THREE.BoxGeometry(w,h,.64),c.clone(),'AURELIAN_CANON_MODULE_BRIDGE');bridge.position.set(x,cy+y,3.18);bridge.rotation.z=rz;kit.add(bridge)}
-
-  // Swept side fins / shoulders that create the layered silhouette visible in the canon art.
-  for(const [sx,sy,rz] of [[-1,1,-.10],[-1,-1,.10],[1,1,.08],[1,-1,-.08]]){
-    const fin=acAurelianCanonExteriorMesh(new THREE.BoxGeometry(6.8,.50,1.05),sx<0?deep.clone():gold.clone(),'AURELIAN_CANON_SWEEP_FIN');
-    fin.position.set(sx<0?-15.1:12.2,cy+sy*8.25,2.15);fin.rotation.z=rz;kit.add(fin)
+  // Rear drive block has enough mass to balance the long nose, matching the reference.
+  kit.add(acAurelianCanonPlate([[-18.0,cy+7.6],[-22.1,cy+6.0],[-24.3,cy+2.6],[-24.7,cy-3.0],[-22.2,cy-6.7],[-17.3,cy-8.0],[-18.7,cy-3.4],[-19.0,cy+3.0]],2.35,deep,'AURELIAN_CANON_STERN_ARMOR',1.85));
+  for(const y of[-4.6,0,4.6]){
+    const barrel=acAurelianCanonExteriorMesh(new THREE.CylinderGeometry(1.18,1.52,4.5,24),dark.clone(),'AURELIAN_CANON_ENGINE_BARREL');barrel.rotation.z=Math.PI/2;barrel.position.set(-21.8,cy+y,3.15);kit.add(barrel);
+    const collar=acAurelianCanonExteriorMesh(new THREE.CylinderGeometry(1.42,1.42,.45,24),gold.clone(),'AURELIAN_CANON_ENGINE_COLLAR');collar.rotation.z=Math.PI/2;collar.position.set(-19.8,cy+y,3.15);kit.add(collar)
   }
 
-  // Ivory breakup plates mirror the reference without covering the cutaway apertures.
-  for(const [x,y,w,h,r] of [[9.9,7.85,3.5,.44,-.10],[12.8,4.9,2.7,.40,-.17],[11.4,-2.55,3.0,.42,.10],[7.2,-9.0,3.8,.45,.06],[-6.0,10.0,3.5,.40,.03]]){
-    const plate=acAurelianCanonExteriorMesh(new THREE.BoxGeometry(w,h,.36),ivory.clone(),'AURELIAN_CANON_IVORY_PLATE');plate.position.set(x,cy+y,3.74);plate.rotation.z=r;kit.add(plate)
+  // Swept top spine and ventral keel are deliberately longer than the room stack.
+  kit.add(acAurelianCanonPlate([[-15.2,cy+9.1],[-9.8,cy+11.7],[-2.8,cy+12.6],[6.9,cy+11.6],[14.2,cy+8.5],[8.0,cy+9.0],[-1.2,cy+10.1],[-8.8,cy+9.9]],1.35,bright,'AURELIAN_CANON_DORSAL_SPINE',2.10));
+  kit.add(acAurelianCanonPlate([[-9.4,cy+10.7],[-2.8,cy+11.6],[5.8,cy+10.9],[10.6,cy+9.45],[4.0,cy+9.75],[-2.8,cy+10.45]],.58,ivory,'AURELIAN_CANON_DORSAL_IVORY',3.18));
+  kit.add(acAurelianCanonPlate([[-15.1,cy-8.5],[-8.5,cy-10.6],[2.5,cy-11.7],[11.8,cy-10.1],[15.8,cy-7.3],[9.4,cy-8.2],[1.5,cy-9.55],[-7.8,cy-9.3]],1.42,deep,'AURELIAN_CANON_VENTRAL_KEEL',2.08));
+
+  // Cannon bay jaws frame the existing cannon instead of replacing it.
+  kit.add(acAurelianCanonPlate([[2.4,cy-4.2],[13.9,cy-4.6],[16.7,cy-5.9],[12.9,cy-5.5],[3.0,cy-5.15]],.72,ivory,'AURELIAN_CANON_CANNON_JAW_TOP',3.34));
+  kit.add(acAurelianCanonPlate([[1.7,cy-8.8],[12.9,cy-8.25],[16.0,cy-7.0],[11.8,cy-9.25],[3.0,cy-9.8]],.72,gold,'AURELIAN_CANON_CANNON_JAW_BOTTOM',3.18));
+
+  // A few shallow rails break the rectangular module rhythm while staying outside apertures.
+  for(const [x,y,w,r,c] of [[-4.8,cy+8.4,7.0,-.04,ivory],[5.4,cy+8.8,6.3,.03,gold],[-5.2,cy-8.0,6.6,.03,deep],[6.0,cy-8.2,6.8,-.04,ivory]]){
+    const rail=acAurelianCanonExteriorMesh(new THREE.BoxGeometry(w,.42,.40),c.clone(),'AURELIAN_CANON_LONGITUDINAL_RAIL');rail.position.set(x,y,7.82);rail.rotation.z=r;kit.add(rail)
   }
 
-  structure.userData.acCanonExterior=true;structure.userData.acCanonReference='AURELIAN_SIX_BAY_SOLAR_WARSHIP';structure.userData.acHullRadii=new THREE.Vector3(24.2,12.2,9.2);
+  structure.userData.acCanonExterior=true;structure.userData.acCanonReference='AURELIAN_SIX_BAY_SOLAR_WARSHIP';structure.userData.acHullRadii=new THREE.Vector3(25.8,12.8,9.2);
   skin.userData.acCanonExteriorApplied=true;
-  diag('AURELIAN CANON EXTERIOR','visualOnly=Y gameplayGeometry=UNCHANGED roomOwnership=UNCHANGED cutawayPanels=UNCHANGED weaponOrigins=UNCHANGED silhouette=PROW+STERN+DORSAL+KEEL+BRIDGES cannonBay=PRESERVED');
+  diag('AURELIAN CANON EXTERIOR','visualOnly=Y continuousFuselage=Y apertures=6 gameplayGeometry=UNCHANGED roomOwnership=UNCHANGED cutawayPanels=UNCHANGED weaponOrigins=UNCHANGED cannonBay=PRESERVED');
 }
-function buildAurelianDirectorHull(skin,cy,mat){
-  acBuildAurelianDirectorHullBase(skin,cy,mat);
-  acDecorateAurelianCanonExterior(skin,cy,mat)
-}
+function buildAurelianDirectorHull(skin,cy,mat){acBuildAurelianDirectorHullBase(skin,cy,mat);acDecorateAurelianCanonExterior(skin,cy,mat)}
 `;
 
   const insertion = 'function addUnifiedExteriorShell(skin,faction,side){';
@@ -96,8 +92,8 @@ function buildAurelianDirectorHull(skin,cy,mat){
     patched = next;
   } else status.wrapper = true;
 
-  patched = patched.replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.42.2');
-  patched = patched.replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-07_AURELIAN_CANON_EXTERIOR_PASS');
+  patched = patched.replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.42.3');
+  patched = patched.replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-07_AURELIAN_CANON_CONTINUOUS_FUSELAGE');
   const summary = Object.entries(status).map(([k,v])=>`${k}:${v?'OK':'MISS'}`).join(' ');
-  return patched.replace('</head>',`<meta id="ac-aurelian-canon-exterior-v0422" name="ac-aurelian-canon-exterior" content="${summary} visualOnly:Y combatLifecycle:UNCHANGED roomGeometry:UNCHANGED cutawayPanels:UNCHANGED weaponOrigins:UNCHANGED multiplayer:UNCHANGED canonSilhouette:PROW_STERN_DORSAL_KEEL cannonBay:PRESERVED">\n</head>`);
+  return patched.replace('</head>',`<meta id="ac-aurelian-canon-exterior-v0423" name="ac-aurelian-canon-exterior" content="${summary} visualOnly:Y continuousFuselage:Y sixApertures:Y combatLifecycle:UNCHANGED roomGeometry:UNCHANGED cutawayPanels:UNCHANGED weaponOrigins:UNCHANGED multiplayer:UNCHANGED cannonBay:PRESERVED">\n</head>`);
 }
