@@ -1,5 +1,5 @@
 export function patchAurelianLogicalCutawayRuntime(html){
-  if(html.includes('ac-aurelian-logical-cutaway-v0420'))return html;
+  if(html.includes('ac-aurelian-logical-cutaway-v0421'))return html;
   const helper=String.raw`
 function acSeparateAurelianLogicalCutaway(){
   if(!xrayOpen||localXraySide()!=='aurelian'||!xrayGroup)return;
@@ -39,5 +39,5 @@ function acSeparateAurelianLogicalCutaway(){
   const refreshNeedle='function refreshPrivateXrayVisuals(){\n  if(!xrayOpen||!xrayGroup)return;';
   const refreshReplacement='function refreshPrivateXrayVisuals(){\n  if(!xrayOpen||!xrayGroup)return;\n  if(localXraySide()===\'aurelian\'&&typeof acSeparateAurelianLogicalCutaway===\'function\')queueMicrotask(()=>{if(xrayOpen&&xrayGroup)acSeparateAurelianLogicalCutaway()});';
   const refreshed=patched.replace(refreshNeedle,refreshReplacement),refreshGuard=refreshed!==patched;patched=refreshed;
-  return patched.replace('</head>','<meta id="ac-aurelian-logical-cutaway-v0420" name="ac-aurelian-logical-cutaway" content="openRoute:'+(openRoute?'OK':'MISS')+' refreshGuard:'+(refreshGuard?'OK':'MISS')+' physicalInterior:ALL_6_POLYGONAL_ROLE_DRESSED logicalCombatRooms:9_UNCHANGED layout:PLAYER_SKETCH_STACKED pressureHull:ANGULAR_CONTOUR roomCageRims:REMOVED interiorExteriorOwnership:SEPARATE_ROOTS aimPanels:EXACT_UNIFIED_HULL_MODULES combatGeometry:PRESERVED warriorRigs:VISIBLE">\n</head>');
+  return patched.replace('</head>','<meta id="ac-aurelian-logical-cutaway-v0421" name="ac-aurelian-logical-cutaway" content="openRoute:'+(openRoute?'OK':'MISS')+' refreshGuard:'+(refreshGuard?'OK':'MISS')+' physicalInterior:ALL_6_SEGMENTED_DEEP_ROLE_DRESSED logicalCombatRooms:9_UNCHANGED layout:PLAYER_SKETCH_STACKED pressureHull:ANGULAR_REAR_WITH_INDIVIDUAL_COLLARS roomCageRims:REMOVED interiorExteriorOwnership:SEPARATE_ROOTS aimPanels:EXACT_UNIFIED_HULL_MODULES combatGeometry:PRESERVED warriorRigs:VISIBLE">\n</head>');
 }
