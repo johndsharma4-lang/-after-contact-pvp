@@ -5,7 +5,7 @@ function replaceOnce(source, needle, replacement, status, key) {
 }
 
 export function patchAimLifecycleBridgeRuntime(html) {
-  if (html.includes('ac-aim-lifecycle-bridge-v0412')) return html;
+  if (html.includes('ac-aim-lifecycle-bridge-v0413')) return html;
   let patched = html;
   const status = { liveStep:false, originDiag:false, cutawayEntry:false, shellOwnership:false, aimHook:false, stableAimEntry:false };
 
@@ -25,7 +25,7 @@ export function patchAimLifecycleBridgeRuntime(html) {
  for(let i=0;i<rooms.length;i++){const room=rooms[i],shouldClose=i!==shooter&&closed.has(i)&&!room?.erased&&(room?.breach??0)<100;for(const entry of buckets[i])entry.mesh.visible=shouldClose?(entry.visible!==false):false;const visual=visualByRoom.get(i),shutter=visual?.frontShutter;if(shutter){shutter.userData.acAimClosed=shouldClose;shutter.visible=shouldClose;if(shouldClose)nativeClosed++}}
  const chosen=xrayRoomVisuals?.find?.(v=>v.warrior===attacker);if(chosen?.nativeRoom){chosen.nativeRoom.visible=true;chosen.nativeRoom.userData.firingStage=true;if(chosen.frontShutter){chosen.frontShutter.userData.acAimClosed=false;chosen.frontShutter.visible=false}}
  if(acDirector.shellMapReported!==true){acDirector.shellMapReported=true;diag('AIM SHELL MAP','shell='+shell.length+' mapped='+mapped+' global='+global+' legacyModules='+((localXraySide()==='aurelian'?factionSkinA:factionSkinE)?.userData?.damageModules?.length||0))}
- if(closeCount!==acDirector.sealedRooms){acDirector.sealedRooms=closeCount;diag('AIM HULL SEAL','visual='+Math.round(progress*100)+'% target='+Math.round(acDirector.aimTargetProgress*100)+'% closed='+closeCount+'/'+order.length+' nativePanels='+nativeClosed+' shooterRoom='+(shooter+1))}
+ if(closeCount!==acDirector.sealedRooms){acDirector.sealedRooms=closeCount;diag('AIM HULL SEAL','visual='+Math.round(progress*100)+'% target='+Math.round(acDirector.aimTargetProgress*100)+'% closed='+closeCount+'/'+order.length+' exteriorPanels='+nativeClosed+' shooterRoom='+(shooter+1))}
 }
 function acDirectorBeginAim(attacker){`;
   const shellNext=patched.replace(oldSeal,newSeal);status.shellOwnership=shellNext!==patched;patched=shellNext;
@@ -49,5 +49,5 @@ function acDirectorBeginAim(attacker){`;
   patched=replaceOnce(patched,"if(aiming)return;const pt=eventStagePoint(e);\n  if(xrayOpen){","if(aiming)return;const pt=eventStagePoint(e);\n  if(!xrayOpen&&localWorldSide()==='aurelian'){openPrivateXray('authoritative warrior firing entry');diag('AIM ENTRY ROUTE','EXTERIOR->CUTAWAY noFire=Y');return}\n  if(xrayOpen){",status,'cutawayEntry');
 
   const summary=Object.entries(status).map(([k,v])=>k+':' +(v?'OK':'MISS')).join(' ');
-  return patched.replace('</head>','<meta id="ac-aim-lifecycle-bridge-v0412" name="ac-aim-lifecycle-bridge" content="'+summary+' aimAuthority:PHYSICAL_MUZZLE_REPROJECTED cameraOwner:PRESENTATION_DIRECTOR hullSeal:CURRENT_XRAY_SHELL+NATIVE_ROOM_PANELS aurelianFireEntry:CUTAWAY_ONLY">\n</head>');
+  return patched.replace('</head>','<meta id="ac-aim-lifecycle-bridge-v0413" name="ac-aim-lifecycle-bridge" content="'+summary+' aimAuthority:PHYSICAL_MUZZLE_REPROJECTED cameraOwner:PRESENTATION_DIRECTOR hullSeal:CURRENT_XRAY_SHELL+AURELIAN_EXTERIOR_ARMOR_PANELS aurelianFireEntry:CUTAWAY_ONLY">\n</head>');
 }

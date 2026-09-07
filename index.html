@@ -4460,30 +4460,31 @@ function buildCutawayOnlyWarrior3D(type){
   add(headRoot,new THREE.SphereGeometry(.31,18,14),ivory,'HELMET');
   const face=add(headRoot,new THREE.BoxGeometry(.42,.15,.13),sun,'VISOR',0,.02,.29);face.rotation.x=-.08;
   add(headRoot,new THREE.BoxGeometry(.12,.38,.34),gold,'HELMET_CREST',0,.32,-.02);
-  const armRoots=[];
-  for(const sx of[-1,1]){const shoulder=new THREE.Group();shoulder.name=sx<0?'LEFT_SHOULDER':'RIGHT_SHOULDER';shoulder.position.set(sx*.61,1.00,.02);torso.add(shoulder);armRoots.push(shoulder);add(shoulder,new THREE.SphereGeometry(.25,12,9),gold,'PAULDRON');const upper=add(shoulder,new THREE.CylinderGeometry(.12,.15,.54,9),ivory,'UPPER_ARM',sx*.08,-.33,.02);upper.rotation.z=sx*.10;const elbow=new THREE.Group();elbow.name='ELBOW';elbow.position.set(sx*.12,-.62,.02);shoulder.add(elbow);add(elbow,new THREE.SphereGeometry(.14,10,8),gold,'ELBOW_ARMOR');const fore=add(elbow,new THREE.CylinderGeometry(.12,.15,.50,9),ivory,'FOREARM',sx*.03,-.29,.06);fore.rotation.z=-sx*.08;add(elbow,new THREE.BoxGeometry(.28,.30,.32),gold,'GAUNTLET',sx*.04,-.60,.12)}
+  const armRoots=[],elbowRoots=[];
+  for(const sx of[-1,1]){const shoulder=new THREE.Group();shoulder.name=sx<0?'LEFT_SHOULDER':'RIGHT_SHOULDER';shoulder.position.set(sx*.61,1.00,.02);torso.add(shoulder);armRoots.push(shoulder);add(shoulder,new THREE.SphereGeometry(.25,12,9),gold,'PAULDRON');const upper=add(shoulder,new THREE.CylinderGeometry(.12,.15,.54,9),ivory,'UPPER_ARM',sx*.08,-.33,.02);upper.rotation.z=sx*.10;const elbow=new THREE.Group();elbow.name=sx<0?'LEFT_ELBOW':'RIGHT_ELBOW';elbow.position.set(sx*.12,-.62,.02);shoulder.add(elbow);elbowRoots.push(elbow);add(elbow,new THREE.SphereGeometry(.14,10,8),gold,'ELBOW_ARMOR');const fore=add(elbow,new THREE.CylinderGeometry(.12,.15,.50,9),ivory,'FOREARM',sx*.03,-.29,.06);fore.rotation.z=-sx*.08;add(elbow,new THREE.BoxGeometry(.28,.30,.32),gold,'GAUNTLET',sx*.04,-.60,.12)}
   const legRoots=[];
   for(const sx of[-1,1]){const hip=new THREE.Group();hip.name=sx<0?'LEFT_HIP':'RIGHT_HIP';hip.position.set(sx*.23,-.16,.02);pelvis.add(hip);legRoots.push(hip);add(hip,new THREE.SphereGeometry(.16,10,8),gold,'HIP_ARMOR');add(hip,new THREE.CylinderGeometry(.15,.19,.58,9),ivory,'THIGH',0,-.34,0);const knee=new THREE.Group();knee.name='KNEE';knee.position.y=-.67;hip.add(knee);add(knee,new THREE.BoxGeometry(.27,.22,.25),gold,'KNEE_PLATE',0,0,.10);add(knee,new THREE.CylinderGeometry(.13,.17,.55,9),gold,'SHIN',0,-.34,0);const boot=add(knee,new THREE.BoxGeometry(.30,.24,.50),dark,'BOOT',0,-.69,.12);boot.position.z=.14}
+  let primaryWeapon=null,secondaryWeapon=null;
   if(type==='solar_lancer'){
     const cape=add(torso,new THREE.BoxGeometry(.84,1.38,.06),P(0x8b4c23,.18,.58),'CAPE',0,.35,-.34);cape.rotation.x=-.08;
-    const weapon=new THREE.Group();weapon.name='WEAPON_MUZZLE_RIG';weapon.position.set(.72,.46,.26);torso.add(weapon);weapon.rotation.z=-.34;
+    const weapon=new THREE.Group();weapon.name='WEAPON_MUZZLE_RIG';weapon.position.set(.72,.46,.26);torso.add(weapon);weapon.rotation.z=-.34;primaryWeapon=weapon;
     add(weapon,new THREE.CylinderGeometry(.045,.065,2.35,10),gold,'LANCE_SHAFT',0,.45,0);
     const barrel=add(weapon,new THREE.CylinderGeometry(.11,.16,.70,12),sun,'LANCE_EMITTER',0,1.72,0);add(weapon,new THREE.ConeGeometry(.15,.42,12),ivory,'LANCE_TIP',0,2.25,0);
     const muzzle=new THREE.Object3D();muzzle.name='MUZZLE';muzzle.position.set(0,2.48,0);weapon.add(muzzle);g.userData.muzzle=muzzle;
     const halo=add(headRoot,new THREE.TorusGeometry(.43,.035,8,28),sun,'SOLAR_HALO',0,.02,-.26);halo.rotation.x=.12;
   }else if(type==='sun_disk_gunner'){
     chest.scale.x=1.12;
-    for(const shoulder of armRoots){const sx=shoulder.position.x<0?-1:1;const emitter=new THREE.Group();emitter.name=sx<0?'LEFT_DISK_GAUNTLET':'RIGHT_DISK_GAUNTLET';emitter.position.set(sx*.05,-.70,.28);shoulder.add(emitter);add(emitter,new THREE.BoxGeometry(.38,.42,.46),gold,'HEAVY_GAUNTLET');const disk=add(emitter,new THREE.TorusGeometry(.34,.065,10,32),sun,'SOLAR_DISK',0,0,.28);disk.rotation.x=Math.PI/2;if(sx>0){const muzzle=new THREE.Object3D();muzzle.name='MUZZLE';muzzle.position.set(0,0,.48);emitter.add(muzzle);g.userData.muzzle=muzzle}}
+    for(const shoulder of armRoots){const sx=shoulder.position.x<0?-1:1;const emitter=new THREE.Group();emitter.name=sx<0?'LEFT_DISK_GAUNTLET':'RIGHT_DISK_GAUNTLET';emitter.position.set(sx*.05,-.70,.28);shoulder.add(emitter);add(emitter,new THREE.BoxGeometry(.38,.42,.46),gold,'HEAVY_GAUNTLET');const disk=add(emitter,new THREE.TorusGeometry(.34,.065,10,32),sun,'SOLAR_DISK',0,0,.28);disk.rotation.x=Math.PI/2;if(sx<0)secondaryWeapon=emitter;else{primaryWeapon=emitter;const muzzle=new THREE.Object3D();muzzle.name='MUZZLE';muzzle.position.set(0,0,.48);emitter.add(muzzle);g.userData.muzzle=muzzle}}
     const halo=add(headRoot,new THREE.TorusGeometry(.47,.05,9,32),sun,'DISK_HALO',0,.02,-.25);halo.rotation.x=.12;
   }else if(type==='sunadier'){
     const pack=add(torso,new THREE.BoxGeometry(.76,.92,.34),bronze,'ARTILLERY_PACK',0,.52,-.34);
-    const hand=armRoots[1];const chain=new THREE.Group();chain.name='WEAPON_MUZZLE_RIG';chain.position.set(.08,-.78,.28);hand.add(chain);
+    const hand=armRoots[1];const chain=new THREE.Group();chain.name='WEAPON_MUZZLE_RIG';chain.position.set(.08,-.78,.28);hand.add(chain);primaryWeapon=chain;
     for(let i=0;i<10;i++){const link=add(chain,new THREE.TorusGeometry(.065,.018,6,10),bronze,'CHAIN_LINK',.12*i,-.055*i,.02*i);link.rotation.y=i*.38}
     const grenade=add(chain,new THREE.SphereGeometry(.27,14,11),sun,'SOLAR_GRENADE',1.30,-.52,.20);add(chain,new THREE.TorusGeometry(.29,.035,7,18),gold,'GRENADE_CAGE',1.30,-.52,.20);
     const muzzle=new THREE.Object3D();muzzle.name='MUZZLE';muzzle.position.copy(grenade.position);chain.add(muzzle);g.userData.muzzle=muzzle;
     add(headRoot,new THREE.ConeGeometry(.08,.44,6),sun,'SUNADIER_CREST',0,.53,0);
   }
-  g.userData.rig={pelvis,torso,headRoot,armRoots,legRoots};g.userData.animationReady=true;
+  g.userData.rig={pelvis,torso,headRoot,armRoots,elbowRoots,legRoots,weapon:primaryWeapon,secondaryWeapon};g.userData.animationReady=true;
   g.traverse(o=>{o.visible=true;if(o.isMesh){o.frustumCulled=false;o.renderOrder=Math.max(o.renderOrder||0,110)}});return g
 }
 function buildPrivateXray(){
@@ -4499,6 +4500,12 @@ function buildPrivateXray(){
   const insideMat=new THREE.MeshStandardMaterial({color:insideColor,roughness:.88,metalness:.08,side:THREE.DoubleSide});
   const trimMat=new THREE.MeshBasicMaterial({color:trimColor,transparent:true,opacity:.24,depthWrite:false,side:THREE.DoubleSide});
   const roomW=5.15,roomH=4.35,roomD=4.25,floorY=-roomH*.5;
+  // The progressive aim closure is a piece of exterior armor, not an interior wall.
+  // A chamfered metallic face and raised solar trim keep every sealed room visually
+  // continuous with the Aurelian hull while the physical room behind it stays intact.
+  const closureW=roomW*.96,closureH=roomH*.94,closureCut=.34,closureShape=new THREE.Shape();
+  closureShape.moveTo(-closureW*.5+closureCut,-closureH*.5);closureShape.lineTo(closureW*.5-closureCut,-closureH*.5);closureShape.lineTo(closureW*.5,-closureH*.5+closureCut);closureShape.lineTo(closureW*.5,closureH*.5-closureCut);closureShape.lineTo(closureW*.5-closureCut,closureH*.5);closureShape.lineTo(-closureW*.5+closureCut,closureH*.5);closureShape.lineTo(-closureW*.5,closureH*.5-closureCut);closureShape.lineTo(-closureW*.5,-closureH*.5+closureCut);closureShape.closePath();
+  const aurelianClosureGeo=new THREE.ExtrudeGeometry(closureShape,{depth:.20,bevelEnabled:true,bevelSegments:1,bevelSize:.065,bevelThickness:.045});aurelianClosureGeo.translate(0,0,-.10);
 
   for(let i=0;i<rooms.length;i++){
     const source=rooms[i],world=source.hitPlane.getWorldPosition(new THREE.Vector3()),local=vessel.worldToLocal(world.clone()),cell=new THREE.Group();
@@ -4510,7 +4517,17 @@ function buildPrivateXray(){
     for(const sx of[-1,1]){const wall=markXray(new THREE.Mesh(new THREE.BoxGeometry(.20,roomH,roomD),wallMat.clone()),72);wall.position.x=sx*roomW*.5;cell.add(wall)}
     for(const sx of[-1,1]){const rail=markXray(new THREE.Mesh(new THREE.BoxGeometry(.10,roomH*.88,.10),trimMat.clone()),78);rail.position.set(sx*(roomW*.5-.22),0,roomD*.48);cell.add(rail)}
     const floorStrip=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.82,.06,.12),trimMat.clone()),79);floorStrip.position.set(0,floorY+.20,roomD*.49);cell.add(floorStrip);
-    const frontShutter=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.94,roomH*.92,.16),wallMat.clone()),96);frontShutter.name=`CUTAWAY_FRONT_SHUTTER_${i+1}`;frontShutter.position.set(0,0,roomD*.51);frontShutter.visible=false;frontShutter.userData.acAimClosed=false;cell.add(frontShutter);cell.userData.frontShutter=frontShutter;
+    const frontShutter=markXray(new THREE.Group(),96);frontShutter.name=`CUTAWAY_FRONT_SHUTTER_${i+1}`;frontShutter.position.set(0,0,roomD*.51);frontShutter.visible=false;frontShutter.userData.acAimClosed=false;frontShutter.userData.acExteriorClosure=true;
+    if(faction==='aurelian'){
+      const armor=markXray(new THREE.Mesh(i===0?aurelianClosureGeo:aurelianClosureGeo.clone(),new THREE.MeshStandardMaterial({color:0x9a6815,metalness:.91,roughness:.27,emissive:0x442600,emissiveIntensity:.24,side:THREE.DoubleSide})),96);armor.name=`CUTAWAY_FRONT_SHUTTER_ARMOR_${i+1}`;armor.castShadow=true;armor.receiveShadow=true;frontShutter.add(armor);
+      const bright=new THREE.MeshStandardMaterial({color:0xd4ae48,metalness:.88,roughness:.23,emissive:0x5a3100,emissiveIntensity:.18});
+      for(const [ri,y] of[-closureH*.36,closureH*.36].entries()){const rail=markXray(new THREE.Mesh(new THREE.BoxGeometry(closureW*.76,.11,.13),ri===0?bright:bright.clone()),98);rail.name=`CUTAWAY_FRONT_SHUTTER_SOLAR_RAIL_${i+1}`;rail.position.set(0,y,.16);frontShutter.add(rail)}
+      const spine=markXray(new THREE.Mesh(new THREE.BoxGeometry(.12,closureH*.62,.14),bright.clone()),98);spine.name=`CUTAWAY_FRONT_SHUTTER_SOLAR_SPINE_${i+1}`;spine.position.set(((i%3)-1)*.12,0,.17);spine.rotation.z=((i%3)-1)*.045;frontShutter.add(spine);
+      const node=markXray(new THREE.Mesh(new THREE.SphereGeometry(.18,12,8),new THREE.MeshStandardMaterial({color:0xffdf71,emissive:0xffc84a,emissiveIntensity:1.8,metalness:.36,roughness:.20})),99);node.name=`CUTAWAY_FRONT_SHUTTER_SOLAR_NODE_${i+1}`;node.scale.z=.36;node.position.set(((i%3)-1)*.12,0,.22);frontShutter.add(node)
+    }else{
+      const armor=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.94,roomH*.92,.16),wallMat.clone()),96);armor.name=`CUTAWAY_FRONT_SHUTTER_ARMOR_${i+1}`;frontShutter.add(armor)
+    }
+    cell.add(frontShutter);cell.userData.frontShutter=frontShutter;
     const rim=markXray(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(roomW,roomH,roomD)),new THREE.LineBasicMaterial({color:trimColor,transparent:true,opacity:.26,depthTest:false,depthWrite:false})),84);cell.add(rim);
 
     // Register every physical room, not only occupied rooms. The Aurelian cleanup layer

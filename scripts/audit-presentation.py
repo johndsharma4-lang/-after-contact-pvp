@@ -40,9 +40,9 @@ checks = {
     'all nine native rooms registered': 'xrayRoomVisuals.push(visual);' in base and 'registered=${xrayRoomVisuals.length}' in base and 'fullInterior=9/9' in base,
     'empty native rooms preserved': 'if(v.nativeRoom){if(v.rim?.material)' in base and 'nativeInterior:ALL_9_VISIBLE' in cutaway,
     'aurelian room cage rims hidden': 'v.rim.visible=false' in cutaway and 'roomCageRimsHidden=' in cutaway,
-    'native room fronts own visible aim seal': 'frontShutter' in bridge and 'acAimClosed=shouldClose' in bridge and 'nativePanels=' in bridge,
-    'real 3d warrior window': 'buildCutawayOnlyWarrior3D' in director,
-    'impact window is 3d': 'IMPACT 3D WINDOW' in director,
+    'room fronts own visible aim seal': 'frontShutter' in bridge and 'acAimClosed=shouldClose' in bridge and 'exteriorPanels=' in bridge,
+    'aurelian closure uses exterior armor': 'acExteriorClosure=true' in base and 'new THREE.ExtrudeGeometry(closureShape' in base and 'color:0x9a6815,metalness:.91' in base,
+    'aurelian closure has solar hull trim': 'CUTAWAY_FRONT_SHUTTER_SOLAR_RAIL_' in base and 'CUTAWAY_FRONT_SHUTTER_SOLAR_NODE_' in base,
     'sunadier primary tracked': 'acDirectorTrackProjectile(attacker,grenade' in director,
     'sun disk tracked': 'acDirectorTrackProjectile(attacker,visual.group' in director,
     'solar beam tracked': 'acDirectorBeginBeam(attacker,start,beamPath)' in director,
@@ -54,12 +54,16 @@ checks = {
     'multiplayer transition cleanup': "scheduleXrayForTurn('multiplayer transition')" in director,
     'release seals firing stage': 'acDirectorForceFiringStage(selected)' in director and 'releaseSeal:false' in director,
     'release pose follows authoritative point': 'acWarriorPoseAim(acReleaseWarrior,releasePt,true)' in weapon_origin,
-    'v0412 build marker': 'MATCH RECORDER v0.41.2' in director and '2026-09-07_FULL_CUTAWAY_PROGRESSIVE_TARGETING' in director,
+    'aim pose owns weapon root and arm joints': 'body?.weapon||muzzle?.parent' in weapon_origin and 'rightArm.rotation.z=' in weapon_origin and 'rightElbow.rotation.z=' in weapon_origin,
+    'aim pose recorder proof': "diag('WARRIOR AIM POSE'" in weapon_origin and 'physicsOrigin=UNCHANGED' in weapon_origin,
+    'v0413 build marker': 'MATCH RECORDER v0.41.3' in director and '2026-09-07_EXTERIOR_SEAL_CLOSED_HULL_DAMAGE' in director,
 }
 impact_start = director.find('function spawnImpactCompartmentReveal(attacker,hit,duration=1450)')
 impact_end = director.find('const impactRegex=', impact_start)
 impact_block = director[impact_start:impact_end] if impact_start >= 0 and impact_end > impact_start else ''
-checks['impact room window has no THREE.Sprite'] = bool(impact_block) and 'THREE.Sprite' not in impact_block and 'CanvasTexture' not in impact_block
+checks['enemy impact keeps hull closed'] = bool(impact_block) and 'hullClosed=Y compartmentReveal=N' in impact_block and 'module.visible=false' not in impact_block and 'removedPanels' not in impact_block
+checks['enemy impact does not build interior'] = bool(impact_block) and 'new THREE.Group' not in impact_block and 'buildCutawayOnlyWarrior3D' not in impact_block and 'IMPACT 3D WINDOW' not in impact_block
+checks['closed hull uses existing damage feedback'] = 'syncExteriorBattleScar(room)' in impact_block and 'feedback=SCAR+SPARKS+SMOKE+FIRE+HUD' in impact_block and 'enemyDamage:EXTERIOR_ONLY' in director
 failed = [name for name, ok in checks.items() if not ok]
 for name, ok in checks.items():
     print(('OK   ' if ok else 'FAIL ') + name)

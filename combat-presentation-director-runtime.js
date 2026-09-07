@@ -5,10 +5,10 @@ function replaceOnce(source, needle, replacement, status, key) {
 }
 
 export function patchCombatPresentationDirectorRuntime(html) {
-  if (html.includes('ac-presentation-director-v0412')) return html;
+  if (html.includes('ac-presentation-director-v0413')) return html;
 
   let patched = html;
-  const status = {director:false,singlePress:false,pressDrag:false,camera:false,turnSolo:false,turnMp:false,impact3d:false,scatterCamera:false,sunadierTrack:false,diskTrack:false,beamTrack:false,clearAim:false,turnVfxGate:false,preAimClosed:false,aimSeal:false,releaseSeal:false};
+  const status = {director:false,singlePress:false,pressDrag:false,camera:false,turnSolo:false,turnMp:false,impactExterior:false,scatterCamera:false,sunadierTrack:false,diskTrack:false,beamTrack:false,clearAim:false,turnVfxGate:false,preAimClosed:false,aimSeal:false,releaseSeal:false};
 
   const helpers = String.raw`
 let acDirector={mode:'exterior',projectile:null,target:null,origin:null,hit:null,attacker:null,label:'',settleUntil:0,travelTotal:1,aimTargetProgress:0,aimVisualProgress:0,aimLastTs:0,aimInputOrigin:null,sealedRooms:0,cameraStage:-1};
@@ -62,7 +62,7 @@ function acDirectorStepAimPresentation(now=performance.now()){
 function acDirectorForceFiringStage(attacker){if(!attacker)return;acDirector.aimTargetProgress=1;acDirector.aimVisualProgress=1;acDirectorApplyAimSeal(attacker,1)}
 function acDirectorTrackProjectile(attacker,projectile,target,hit,label){if(!attacker||attacker.side!==localWorldSide()||!projectile)return;acDirectorForceFiringStage(attacker);acDirector.mode='travel';acDirector.attacker=attacker;acDirector.projectile=projectile;acDirector.origin=projectile.getWorldPosition(new THREE.Vector3());acDirector.target=target?.clone?.()||null;acDirector.travelTotal=Math.max(1,acDirector.target?acDirector.origin.distanceTo(acDirector.target):1);acDirector.hit=hit||null;acDirector.label=label||'PROJECTILE';acDirector.settleUntil=0;tacticalAimView=false;diag('DIRECTOR PROJECTILE',acDirector.label+' target='+(Number.isInteger(hit?.roomIndex)?hit.roomIndex+1:'MISS'))}
 function acDirectorBeginBeam(attacker,start,beamPath){if(!attacker||attacker.side!==localWorldSide())return;acDirectorForceFiringStage(attacker);acDirector.mode='beam';acDirector.attacker=attacker;acDirector.origin=start.clone();acDirector.target=(beamPath?.path?.at?.(-1)?.end||beamPath?.end||start).clone();acDirector.hit=beamPath?.path?.[0]||null;acDirector.label='SOLAR LANCER';acDirector.settleUntil=performance.now()+1450;tacticalAimView=false;setTimeout(()=>{if(acDirector.mode==='beam'&&xrayOpen)closePrivateXray('beam visibly cleared firing compartment')},520);diag('DIRECTOR BEAM','two-vessel framing=Y turnHeld=Y')}
-function acDirectorPreImpact(){if(acDirector.mode!=='travel'||!acDirector.hit?.room||acDirector.hit._directorOpened)return;acDirector.hit._directorOpened=true;if(typeof spawnImpactCompartmentReveal==='function')spawnImpactCompartmentReveal(acDirector.attacker,acDirector.hit,1450);if(typeof beginImpactFocus==='function')beginImpactFocus(structureTargetSide(acDirector.attacker),acDirector.hit.roomIndex,'INCOMING '+acDirector.label,1250,true);diag('DIRECTOR PREIMPACT','room='+(acDirector.hit.roomIndex+1)+' primaryPriority=Y')}
+function acDirectorPreImpact(){if(acDirector.mode!=='travel'||!acDirector.hit?.room||acDirector.hit._directorOpened)return;acDirector.hit._directorOpened=true;if(typeof spawnImpactCompartmentReveal==='function')spawnImpactCompartmentReveal(acDirector.attacker,acDirector.hit,1450);if(typeof beginImpactFocus==='function')beginImpactFocus(structureTargetSide(acDirector.attacker),acDirector.hit.roomIndex,'INCOMING '+acDirector.label,1250,true);diag('DIRECTOR PREIMPACT','room='+(acDirector.hit.roomIndex+1)+' primaryPriority=Y enemyHull=CLOSED')}
 `;
 
   if (!patched.includes('let acDirector=')) {const next=patched.replace('let cameraLastUpdate=performance.now();',helpers+'\nlet cameraLastUpdate=performance.now();');status.director=next!==patched;patched=next}else status.director=true;
@@ -115,18 +115,17 @@ function acDirectorPreImpact(){if(acDirector.mode!=='travel'||!acDirector.hit?.r
   patched=replaceOnce(patched,"const visual=makeSunDiskVisual(start),history=","const visual=makeSunDiskVisual(start);acDirectorTrackProjectile(attacker,visual.group,terminal,hits[0]||null,'SUN DISK');const history=",status,'diskTrack');
   patched=replaceOnce(patched,"function spawnSolarLancerBeam(attacker,start,beamPath,weapon){\n  const localAction=","function spawnSolarLancerBeam(attacker,start,beamPath,weapon){\n  acDirectorBeginBeam(attacker,start,beamPath);\n  const localAction=",status,'beamTrack');
 
-  const impact3d=String.raw`function spawnImpactCompartmentReveal(attacker,hit,duration=1450){
-  if(!hit?.room||!Number.isInteger(hit.roomIndex))return false;clearImpactCompartmentReveal();const room=hit.room,targetSide=structureTargetSide(attacker),targetCrew=opposing(attacker),occupant=targetCrew.find(w=>w.active&&w.hp>0&&w.roomIndex===hit.roomIndex)||null,skin=targetSide==='aurelian'?factionSkinA:factionSkinE,module=skin?.userData?.damageModules?.[hit.roomIndex]||null,moduleWasVisible=!!module?.visible,removedPanels=[],hidden=[];
-  if(module)module.visible=false;const removePanel=mesh=>{if(!mesh||mesh===module||mesh.visible===false||mesh.userData?.healthVisual||mesh.userData?.xrayVisual||removedPanels.some(x=>x.mesh===mesh))return;removedPanels.push({mesh,visible:mesh.visible});mesh.visible=false};if(hit.hullObject&&isDescendantOf(hit.hullObject,skin))removePanel(hit.hullObject);
-  const group=new THREE.Group(),point=room.hitPlane.getWorldPosition(new THREE.Vector3()),quat=room.hitPlane.getWorldQuaternion(new THREE.Quaternion()),aurelianTarget=factionForSide(targetSide)==='aurelian';group.position.copy(point);group.quaternion.copy(quat);group.renderOrder=116;scene.add(group);
-  const metal=new THREE.MeshStandardMaterial({color:aurelianTarget?0x70451f:0x344954,metalness:.5,roughness:.62}),inside=new THREE.MeshStandardMaterial({color:0x050b11,metalness:.16,roughness:.92});const back=new THREE.Mesh(new THREE.BoxGeometry(5.7,3.95,.30),inside),floor=new THREE.Mesh(new THREE.BoxGeometry(5.7,.23,2.18),inside),ceiling=new THREE.Mesh(new THREE.BoxGeometry(5.7,.19,2.08),inside),leftWall=new THREE.Mesh(new THREE.BoxGeometry(.19,3.95,2.08),metal),rightWall=leftWall.clone();back.position.z=-.86;floor.position.set(0,-1.84,.06);ceiling.position.set(0,1.84,-.03);leftWall.position.set(-2.74,0,-.04);rightWall.position.set(2.74,0,-.04);group.add(back,floor,ceiling,leftWall,rightWall);
-  const panels=[];for(const side of[-1,1]){const panel=new THREE.Mesh(new THREE.BoxGeometry(2.84,4.04,.26),metal.clone());panel.position.set(side*1.42,0,.25);panel.userData.closed=panel.position.clone();panel.userData.open=new THREE.Vector3(side*3.46,.10,.78);panel.userData.openRot=side*.82;group.add(panel);panels.push(panel)}
-  if(occupant){try{const rig=buildCutawayOnlyWarrior3D(occupant.weaponKey);if(rig){rig.position.set(0,-.52,.40);rig.renderOrder=118;group.add(rig);occupant.impactRevealGroup=group;occupant.impactRevealUntil=performance.now()+duration}}catch(err){diag('IMPACT 3D RIG ERROR',String(err?.message||err))}}
-  const born=performance.now();(function open(now){if(!group.parent)return;const t=Math.min(1,(now-born)/410),e=1-Math.pow(1-t,3);for(const panel of panels){panel.position.copy(panel.userData.closed).lerp(panel.userData.open,e);panel.rotation.y=panel.userData.openRot*e}if(t<1)requestAnimationFrame(open)})(born);
-  const timer=setTimeout(()=>{if(activeImpactCompartmentReveal?.group===group)clearImpactCompartmentReveal()},duration+220);activeImpactCompartmentReveal={group,room,module,moduleWasVisible,removedPanels,hidden,occupant,timer};diag('IMPACT 3D WINDOW','side='+targetSide+' room='+(hit.roomIndex+1)+' warrior='+(occupant?.weaponKey||'NONE')+' primaryPriority=Y sprite=N');return true
+  // Keep the compatibility function name because older hit paths call it, but its
+  // authoritative behavior is now exterior-only. Impacts never remove a target hull
+  // panel or expose a warrior; existing scars, debris, sparks, smoke, fire and the
+  // damage monitor communicate escalating damage on the closed physical exterior.
+  const impactExterior=String.raw`function spawnImpactCompartmentReveal(attacker,hit,duration=1450){
+  if(!hit?.room||!Number.isInteger(hit.roomIndex))return false;if(activeImpactCompartmentReveal)clearImpactCompartmentReveal();const room=hit.room,targetSide=structureTargetSide(attacker),skin=targetSide==='aurelian'?factionSkinA:factionSkinE,module=skin?.userData?.damageModules?.[hit.roomIndex]||null;
+  if(module&&!room.erased&&(room.breach??0)<100){syncRoomStructuralDamage(room);module.visible=!module.userData?.structureHpHidden}syncExteriorBattleScar(room);
+  diag('EXTERIOR DAMAGE FEEDBACK','side='+targetSide+' room='+(hit.roomIndex+1)+' hullClosed=Y compartmentReveal=N feedback=SCAR+SPARKS+SMOKE+FIRE+HUD');return true
 }
 `;
-  const impactRegex=/function spawnImpactCompartmentReveal\(attacker,hit,duration=1450\)\{[\s\S]*?\n\}\n\s*(?=let acDirector=)/;const impactNext=patched.replace(impactRegex,impact3d);status.impact3d=impactNext!==patched;patched=impactNext;
+  const impactRegex=/function spawnImpactCompartmentReveal\(attacker,hit,duration=1450\)\{[\s\S]*?\n\}\n\s*(?=let acDirector=)/;const impactNext=patched.replace(impactRegex,impactExterior);status.impactExterior=impactNext!==patched;patched=impactNext;
   patched=replaceOnce(patched,"presentImpact=!he9||performance.now()>=groupedHe9ImpactUntil;if(presentImpact){","secondaryScatter=(weapon.name||'')==='SUNADIER PLASMA SCATTER',presentImpact=!secondaryScatter&&(!he9||performance.now()>=groupedHe9ImpactUntil);if(presentImpact){",status,'scatterCamera');
 
   const finishNeedle="function finishAurelianWeaponAction(attacker,label){\n solarActionLock=false;refreshMovePad();diag('ACTION UNLOCK',(attacker.side===localWorldSide()?'LOCAL ':'REMOTE ')+label+' COMPLETE');\n if(!multiplayer&&battleStarted&&!matchEnded&&attacker.side==='aurelian'&&soloTurn==='aurelian')endSoloPlayerTurnAfterShot()\n}";
@@ -139,8 +138,8 @@ function acDirectorPreImpact(){if(acDirector.mode!=='travel'||!acDirector.hit?.r
   if(!patched.includes("scheduleXrayForTurn('solo transition')"))patched=patched.replace("soloTurn=side;\n  if(previous!==side&&battleStarted)advanceSupportTurn(side);","soloTurn=side;\n  if(battleStarted)scheduleXrayForTurn('solo transition');\n  if(previous!==side&&battleStarted)advanceSupportTurn(side);");
   patched=replaceOnce(patched,"mpTurn.classList.add('show');const mine=side===localSide;","mpTurn.classList.add('show');const mine=side===localSide;if(battleStarted&&!matchEnded)scheduleXrayForTurn('multiplayer transition');if(!mine)acDirectorReset('multiplayer opponent turn');",status,'turnMp');
   patched=patched.replace("statusEl.textContent='CUTAWAY • TAP A WARRIOR ONCE TO HIGHLIGHT • TAP AGAIN TO LOCK SHOOTER'","statusEl.textContent='CUTAWAY • PRESS A WARRIOR • HOLD + DRAG TO AIM • RELEASE TO FIRE'");
-  patched=patched.replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.41.2');
-  patched=patched.replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-07_FULL_CUTAWAY_PROGRESSIVE_TARGETING');
+  patched=patched.replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.41.3');
+  patched=patched.replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-07_EXTERIOR_SEAL_CLOSED_HULL_DAMAGE');
   const summary=Object.entries(status).map(([k,v])=>`${k}:${v?'OK':'MISS'}`).join(' ');
-  return patched.replace('</head>',`<meta id="ac-presentation-director-v0412" name="ac-presentation-director" content="${summary} aimTarget:RAW_READ_ONLY aimVisual:SMOOTH aimCamera:PROGRESSIVE_SHOOTER_TO_BATTLEFIELD enemyVisibleAtFullAim:Y hullSeal:FURTHEST_FIRST shooterRoom:PROTECTED preAimEnemyHull:CLOSED impactReveal:POST_HIT_ONLY">\n</head>`);
+  return patched.replace('</head>',`<meta id="ac-presentation-director-v0413" name="ac-presentation-director" content="${summary} aimTarget:RAW_READ_ONLY aimVisual:SMOOTH aimCamera:PROGRESSIVE_SHOOTER_TO_BATTLEFIELD enemyVisibleAtFullAim:Y hullSeal:FURTHEST_FIRST shooterRoom:PROTECTED preAimEnemyHull:CLOSED enemyDamage:EXTERIOR_ONLY impactReveal:DISABLED">\n</head>`);
 }

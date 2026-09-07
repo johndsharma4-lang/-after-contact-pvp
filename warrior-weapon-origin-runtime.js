@@ -5,7 +5,7 @@ function replaceOnce(source, needle, replacement, status, key) {
 }
 
 export function patchWarriorWeaponOriginRuntime(html) {
-  if (html.includes('ac-warrior-visual-fire-v0411')) return html;
+  if (html.includes('ac-warrior-visual-fire-v0413')) return html;
   let patched = html;
   const status = {helpers:false,aimPose:false,releasePose:false,switchReliability:false};
 
@@ -19,11 +19,13 @@ function acWarriorSignatureSfx(w){
  diag('WARRIOR SIGNATURE SFX',key+' layered=Y')
 }
 function acWarriorPoseAim(w,stageTarget,fire=false){
- const rig=acWarriorCutawayRig(w),muzzle=rig?.userData?.muzzle,parent=muzzle?.parent;if(!rig||!muzzle||!parent||!stageTarget)return;
+ const rig=acWarriorCutawayRig(w),muzzle=rig?.userData?.muzzle,body=rig?.userData?.rig,weapon=body?.weapon||muzzle?.parent;if(!rig||!muzzle||!weapon||!stageTarget)return;
  const origin=worldToStage(muzzle.getWorldPosition(new THREE.Vector3())),dx=stageTarget.x-origin.x,dy=stageTarget.y-origin.y;if(Math.hypot(dx,dy)<3)return;
- if(parent.userData.acWeaponBaseZ==null)parent.userData.acWeaponBaseZ=parent.rotation.z;const base=parent.userData.acWeaponBaseZ,screenAngle=Math.atan2(dy,dx),raw=-screenAngle-Math.PI/2,target=Math.max(base-1.28,Math.min(base+1.28,raw));parent.rotation.z=THREE.MathUtils.lerp(parent.rotation.z,target,fire?.90:.48);
- const body=rig.userData?.rig,arm=body?.armRoots?.[1]||body?.armRoots?.[0];if(arm){if(arm.userData.acWeaponBaseZ==null)arm.userData.acWeaponBaseZ=arm.rotation.z;const armBase=arm.userData.acWeaponBaseZ,armTarget=Math.max(armBase-.88,Math.min(armBase+.88,armBase+(target-base)*.72));arm.rotation.z=THREE.MathUtils.lerp(arm.rotation.z,armTarget,fire?.82:.42)}
- if(!fire)return;const flashPos=muzzle.getWorldPosition(new THREE.Vector3()),flash=glowSphere(.42,WEAPONS[w.weaponKey]?.color||0xffd66b,12);flash.position.copy(flashPos);flash.material.transparent=true;flash.material.opacity=1;scene.add(flash);effects.push({objects:[flash],life:.24,max:.24});const kick=parent.position.clone();parent.position.y-=.13;setTimeout(()=>{if(parent?.parent)parent.position.copy(kick)},155);diag('WARRIOR MUZZLE FIRE',w.weaponKey+' visualOnly=Y physicsOrigin=UNCHANGED')
+ if(weapon.userData.acWeaponBaseZ==null)weapon.userData.acWeaponBaseZ=weapon.rotation.z;const base=weapon.userData.acWeaponBaseZ,screenAngle=Math.atan2(dy,dx),raw=-screenAngle-Math.PI/2,target=Math.max(base-1.28,Math.min(base+1.28,raw));weapon.rotation.z=THREE.MathUtils.lerp(weapon.rotation.z,target,fire?.94:.58);
+ const rightArm=body?.armRoots?.[1]||body?.armRoots?.[0],rightElbow=body?.elbowRoots?.[1];if(rightArm){if(rightArm.userData.acWeaponBaseZ==null)rightArm.userData.acWeaponBaseZ=rightArm.rotation.z;const armBase=rightArm.userData.acWeaponBaseZ,armTarget=Math.max(armBase-.94,Math.min(armBase+.94,armBase+(target-base)*.82));rightArm.rotation.z=THREE.MathUtils.lerp(rightArm.rotation.z,armTarget,fire?.88:.52)}if(rightElbow){if(rightElbow.userData.acWeaponBaseZ==null)rightElbow.userData.acWeaponBaseZ=rightElbow.rotation.z;rightElbow.rotation.z=THREE.MathUtils.lerp(rightElbow.rotation.z,rightElbow.userData.acWeaponBaseZ+(target-base)*.30,fire?.86:.46)}
+ if(w.weaponKey==='sun_disk_gunner'){const leftArm=body?.armRoots?.[0],leftElbow=body?.elbowRoots?.[0],secondary=body?.secondaryWeapon;if(leftArm){if(leftArm.userData.acWeaponBaseZ==null)leftArm.userData.acWeaponBaseZ=leftArm.rotation.z;leftArm.rotation.z=THREE.MathUtils.lerp(leftArm.rotation.z,leftArm.userData.acWeaponBaseZ+(target-base)*.68,fire?.86:.48)}if(leftElbow){if(leftElbow.userData.acWeaponBaseZ==null)leftElbow.userData.acWeaponBaseZ=leftElbow.rotation.z;leftElbow.rotation.z=THREE.MathUtils.lerp(leftElbow.rotation.z,leftElbow.userData.acWeaponBaseZ+(target-base)*.24,fire?.84:.44)}if(secondary){if(secondary.userData.acWeaponBaseZ==null)secondary.userData.acWeaponBaseZ=secondary.rotation.z;secondary.rotation.z=THREE.MathUtils.lerp(secondary.rotation.z,secondary.userData.acWeaponBaseZ+(target-base)*.72,fire?.88:.50)}}
+ const poseStage=Math.round((target-base)/.28);if(rig.userData.acAimPoseStage!==poseStage){rig.userData.acAimPoseStage=poseStage;diag('WARRIOR AIM POSE',w.weaponKey+' weaponRoot='+String(weapon.name||'UNNAMED')+' arm='+(rightArm?'Y':'N')+' angle='+THREE.MathUtils.radToDeg(target-base).toFixed(0)+'deg physicsOrigin=UNCHANGED')}
+ if(!fire)return;const flashPos=muzzle.getWorldPosition(new THREE.Vector3()),flash=glowSphere(.42,WEAPONS[w.weaponKey]?.color||0xffd66b,12);flash.position.copy(flashPos);flash.material.transparent=true;flash.material.opacity=1;scene.add(flash);effects.push({objects:[flash],life:.24,max:.24});const kick=weapon.position.clone();weapon.position.y-=.13;setTimeout(()=>{if(weapon?.parent)weapon.position.copy(kick)},155);diag('WARRIOR MUZZLE FIRE',w.weaponKey+' weaponRoot='+String(weapon.name||'UNNAMED')+' visualOnly=Y physicsOrigin=UNCHANGED')
 }
 function acPrepareCrewSwitchHitTest(){if(!xrayOpen||aiming||!xrayConfirmedShooter)return;restoreFullCutawayStage();xrayConfirmedShooter=null;xraySelectedCrew=null;refreshPrivateXrayVisuals();diag('CREW SWITCH READY','full 3D crew hit-test restored')}
 `;
@@ -38,5 +40,5 @@ function acPrepareCrewSwitchHitTest(){if(!xrayOpen||aiming||!xrayConfirmedShoote
   patched=replaceOnce(patched,"if(aiming)return;const pt=eventStagePoint(e);\n  if(xrayOpen){","if(aiming)return;const pt=eventStagePoint(e);\n  if(xrayOpen){acPrepareCrewSwitchHitTest();",status,'switchReliability');
 
   const summary=Object.entries(status).map(([k,v])=>k+':'+(v?'OK':'MISS')).join(' ');
-  return patched.replace('</head>','<meta id="ac-warrior-visual-fire-v0411" name="ac-warrior-visual-fire" content="'+summary+' physicsOrigin:BASE camera:NONE retry:NONE">\n</head>')
+  return patched.replace('</head>','<meta id="ac-warrior-visual-fire-v0413" name="ac-warrior-visual-fire" content="'+summary+' aimPose:WEAPON_ROOT+SHOULDER+ELBOW poseDiagnostic:WARRIOR_AIM_POSE physicsOrigin:BASE camera:NONE retry:NONE">\n</head>')
 }
