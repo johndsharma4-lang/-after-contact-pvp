@@ -5,7 +5,7 @@ function replaceOnce(source, needle, replacement, status, key) {
 }
 
 export function patchWarriorWeaponOriginRuntime(html) {
-  if (html.includes('ac-warrior-visual-fire-v0400')) return html;
+  if (html.includes('ac-warrior-visual-fire-v0411')) return html;
   let patched = html;
   const status = {helpers:false,aimPose:false,releasePose:false,switchReliability:false};
 
@@ -30,9 +30,13 @@ function acPrepareCrewSwitchHitTest(){if(!xrayOpen||aiming||!xrayConfirmedShoote
 
   if (!patched.includes('function acWarriorPoseAim(')) {const next=patched.replace('function setAimVisual(a,b){',helpers+'\nfunction setAimVisual(a,b){');status.helpers=next!==patched;patched=next}else status.helpers=true;
   patched=replaceOnce(patched,"function setAimVisual(a,b){\n  if(!selected)return;","function setAimVisual(a,b){\n  if(!selected)return;\n  acWarriorPoseAim(selected,b,false);",status,'aimPose');
-  patched=replaceOnce(patched,"diag('AIM RELEASE',`distance=${Math.round(dist)} power=${Math.round(power)} control=${control}`);fireSelectedFromStage(pt,power)","diag('AIM RELEASE',`distance=${Math.round(dist)} power=${Math.round(power)} control=${control}`);const acReleaseWarrior=selected;acWarriorPoseAim(acReleaseWarrior,pt,true);acWarriorSignatureSfx(acReleaseWarrior);fireSelectedFromStage(pt,power)",status,'releasePose');
+  const releasePrefix="diag('AIM RELEASE',`distance=${Math.round(dist)} power=${Math.round(power)} control=${control}`);";
+  const releaseStage='if(selected)acDirectorForceFiringStage(selected);';
+  if(patched.includes(releasePrefix+releaseStage+'fireSelectedFromStage(releasePt,power)'))patched=replaceOnce(patched,releasePrefix+releaseStage+'fireSelectedFromStage(releasePt,power)',releasePrefix+'const acReleaseWarrior=selected;acWarriorPoseAim(acReleaseWarrior,releasePt,true);acWarriorSignatureSfx(acReleaseWarrior);'+releaseStage+'fireSelectedFromStage(releasePt,power)',status,'releasePose');
+  else if(patched.includes(releasePrefix+releaseStage+'fireSelectedFromStage(pt,power)'))patched=replaceOnce(patched,releasePrefix+releaseStage+'fireSelectedFromStage(pt,power)',releasePrefix+'const acReleaseWarrior=selected;acWarriorPoseAim(acReleaseWarrior,pt,true);acWarriorSignatureSfx(acReleaseWarrior);'+releaseStage+'fireSelectedFromStage(pt,power)',status,'releasePose');
+  else patched=replaceOnce(patched,releasePrefix+'fireSelectedFromStage(pt,power)',releasePrefix+'const acReleaseWarrior=selected;acWarriorPoseAim(acReleaseWarrior,pt,true);acWarriorSignatureSfx(acReleaseWarrior);fireSelectedFromStage(pt,power)',status,'releasePose');
   patched=replaceOnce(patched,"if(aiming)return;const pt=eventStagePoint(e);\n  if(xrayOpen){","if(aiming)return;const pt=eventStagePoint(e);\n  if(xrayOpen){acPrepareCrewSwitchHitTest();",status,'switchReliability');
 
   const summary=Object.entries(status).map(([k,v])=>k+':'+(v?'OK':'MISS')).join(' ');
-  return patched.replace('</head>','<meta id="ac-warrior-visual-fire-v0400" name="ac-warrior-visual-fire" content="'+summary+' physicsOrigin:BASE camera:NONE retry:NONE">\n</head>')
+  return patched.replace('</head>','<meta id="ac-warrior-visual-fire-v0411" name="ac-warrior-visual-fire" content="'+summary+' physicsOrigin:BASE camera:NONE retry:NONE">\n</head>')
 }

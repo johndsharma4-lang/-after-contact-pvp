@@ -5,9 +5,9 @@ function replaceOnce(source, needle, replacement, status, key) {
 }
 
 export function patchAimLifecycleBridgeRuntime(html) {
-  if (html.includes('ac-aim-lifecycle-bridge-v0408')) return html;
+  if (html.includes('ac-aim-lifecycle-bridge-v0411')) return html;
   let patched = html;
-  const status = { liveStep:false, originDiag:false, cutawayEntry:false, shellOwnership:false, aimHook:false, cameraChoreo:false, stableAimEntry:false };
+  const status = { liveStep:false, originDiag:false, cutawayEntry:false, shellOwnership:false, aimHook:false, stableAimEntry:false };
 
   patched = replaceOnce(patched,"function acDirectorUpdateAimTarget(attacker,pt){acDirector.aimTargetProgress=acDirectorAimTarget(attacker,pt)}","function acDirectorUpdateAimTarget(attacker,pt){acDirector.aimTargetProgress=acDirectorAimTarget(attacker,pt);acDirectorStepAimPresentation(performance.now())}",status,'liveStep');
 
@@ -33,25 +33,11 @@ function acDirectorBeginAim(attacker){`;
   // Re-project the physical muzzle every time the aim visual updates. The previous
   // implementation froze startPx once, while the camera continued moving, so the line,
   // distance/power calculation and visible shooter could diverge from one another.
-  if(!patched.includes("acDirectorBeginAim(selected);acDirectorUpdateAimTarget(selected,b);")){
-    const hookNext=patched.replace(/function setAimVisual\(a,b\)\{\n\s*if\(!selected\)return;/,"function setAimVisual(a,b){\n  if(!selected)return;\n  if(aiming&&aimOriginWorld){aimOriginStage=worldToStage(aimOriginWorld);startPx={x:aimOriginStage.x,y:aimOriginStage.y};a=startPx}\n  acDirectorBeginAim(selected);acDirectorUpdateAimTarget(selected,b);");status.aimHook=hookNext!==patched;patched=hookNext;
-  }else{
-    const reprojectNext=patched.replace("function setAimVisual(a,b){\n  if(!selected)return;\n  acDirectorBeginAim(selected);acDirectorUpdateAimTarget(selected,b);","function setAimVisual(a,b){\n  if(!selected)return;\n  if(aiming&&aimOriginWorld){aimOriginStage=worldToStage(aimOriginWorld);startPx={x:aimOriginStage.x,y:aimOriginStage.y};a=startPx}\n  acDirectorBeginAim(selected);acDirectorUpdateAimTarget(selected,b);");
-    status.aimHook=reprojectNext!==patched;patched=reprojectNext;
-  }
-
-  // Aim owns a close physical-shooter composition. The camera is presentation only;
-  // it must not widen toward the enemy while the pointer is down.
-  const oldCamera=/if\(xrayOpen&&aiming&&selected\)\{[\s\S]*?camera\.lookAt\(targetLook\);(?:\n\s*if\(acDirector\.cameraStage[\s\S]*?\})?\n\s*return\n\s*\}/;
-  const newCamera=String.raw`if(xrayOpen&&aiming&&selected){
-    const progress=acDirectorStepAimPresentation(performance.now()),visual=xrayRoomVisuals?.find?.(v=>v.warrior===selected),shooter=visual?.rig3D?.getWorldPosition?.(new THREE.Vector3())||warriorWorld(selected),localWide=THREE.MathUtils.smoothstep(progress,.35,1);
-    const targetLook=shooter.clone();targetLook.y+=1.1;
-    const targetPos=new THREE.Vector3(shooter.x-2.5,shooter.y+4.2,THREE.MathUtils.lerp(62,69,localWide)),alpha=snap?1:.10;
-    camera.position.lerp(targetPos,alpha);camera.zoom=THREE.MathUtils.lerp(camera.zoom,THREE.MathUtils.lerp(1.18,1.10,localWide),alpha);camera.updateProjectionMatrix();camera.lookAt(targetLook);
-    if(acDirector.cameraStage!==Math.floor(progress*4)){acDirector.cameraStage=Math.floor(progress*4);diag('AIM CAMERA STAGE','progress='+Math.round(progress*100)+'% localWide='+Math.round(localWide*100)+'% shooterOnly=Y enemyFraming=N')}
-    return
-  }`;
-  const cameraNext=patched.replace(oldCamera,newCamera);status.cameraChoreo=cameraNext!==patched;patched=cameraNext;
+  if(!patched.includes("if(aiming&&aimOriginWorld){aimOriginStage=worldToStage(aimOriginWorld);")){
+    const hookNeedle='acDirectorBeginAim(selected);acDirectorUpdateAimTarget(selected,b);';
+    const hookReplacement="if(aiming&&aimOriginWorld){aimOriginStage=worldToStage(aimOriginWorld);startPx={x:aimOriginStage.x,y:aimOriginStage.y};a=startPx}\n  "+hookNeedle;
+    patched=replaceOnce(patched,hookNeedle,hookReplacement,status,'aimHook');
+  }else status.aimHook=true;
 
   // The old entry path changed camera state before aiming=true, so updateBattleCamera()
   // executed the normal/tactical branch first and moved the camera before the physical
@@ -63,5 +49,5 @@ function acDirectorBeginAim(attacker){`;
   patched=replaceOnce(patched,"if(aiming)return;const pt=eventStagePoint(e);\n  if(xrayOpen){","if(aiming)return;const pt=eventStagePoint(e);\n  if(!xrayOpen&&localWorldSide()==='aurelian'){openPrivateXray('authoritative warrior firing entry');diag('AIM ENTRY ROUTE','EXTERIOR->CUTAWAY noFire=Y');return}\n  if(xrayOpen){",status,'cutawayEntry');
 
   const summary=Object.entries(status).map(([k,v])=>k+':' +(v?'OK':'MISS')).join(' ');
-  return patched.replace('</head>','<meta id="ac-aim-lifecycle-bridge-v0408" name="ac-aim-lifecycle-bridge" content="'+summary+' aimAuthority:PHYSICAL_MUZZLE_REPROJECTED camera:SHOOTER_ONLY_DURING_AIM hullSeal:CURRENT_XRAY_SHELL aurelianFireEntry:CUTAWAY_ONLY">\n</head>');
+  return patched.replace('</head>','<meta id="ac-aim-lifecycle-bridge-v0411" name="ac-aim-lifecycle-bridge" content="'+summary+' aimAuthority:PHYSICAL_MUZZLE_REPROJECTED cameraOwner:PRESENTATION_DIRECTOR hullSeal:CURRENT_XRAY_SHELL aurelianFireEntry:CUTAWAY_ONLY">\n</head>');
 }
