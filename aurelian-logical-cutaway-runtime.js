@@ -1,20 +1,32 @@
 export function patchAurelianLogicalCutawayRuntime(html){
-  if(html.includes('ac-aurelian-logical-cutaway-v0408'))return html;
+  if(html.includes('ac-aurelian-logical-cutaway-v0409'))return html;
   const helper=String.raw`
 function acSeparateAurelianLogicalCutaway(){
   if(!xrayOpen||localXraySide()!=='aurelian'||!xrayGroup)return;
-  const warriorKeep=new Set();
-  for(const v of xrayRoomVisuals||[]){let o=v?.rig3D;while(o&&o!==xrayGroup){warriorKeep.add(o);o=o.parent}}
-  let hidden=0;
+  const nativeRooms=new Set(),nativeKeep=new Set();
+  for(const v of xrayRoomVisuals||[]){
+    if(v?.nativeRoom){nativeRooms.add(v.nativeRoom);v.nativeRoom.userData.acVisibleInterior=true;v.nativeRoom.traverse?.(o=>nativeKeep.add(o))}
+    if(v?.rig3D)v.rig3D.traverse?.(o=>nativeKeep.add(o));
+    if(v?.standAnchor)v.standAnchor.traverse?.(o=>nativeKeep.add(o));
+  }
+  let hiddenLegacy=0,visibleInterior=0,logicalHidden=0;
   xrayGroup.traverse(o=>{
-    if(!o||o===xrayGroup||warriorKeep.has(o))return;
+    if(!o||o===xrayGroup)return;
     const n=String(o.name||'').toLowerCase();
     const logical=n.includes('hitplane')||n.includes('standanchor')||o.userData?.hitPlane||o.userData?.acLogicalRoom;
-    if(logical){if(o.material){const mats=Array.isArray(o.material)?o.material:[o.material];for(const m of mats){if(m){m.transparent=true;m.opacity=0;m.depthWrite=false}}}return}
-    if(o.isMesh&&o.geometry){o.visible=false;o.userData.acLogicalCutawayHidden=true;hidden++}
+    if(logical&&o.isMesh&&o.material){const mats=Array.isArray(o.material)?o.material:[o.material];for(const m of mats){if(m){m.transparent=true;m.opacity=0;m.depthWrite=false}}logicalHidden++;return}
+    if(nativeKeep.has(o)){
+      if(o.isMesh){visibleInterior++;if(!n.includes('front_shutter'))o.visible=true}
+      return;
+    }
+    if(o.isMesh&&o.geometry){o.visible=false;o.userData.acLegacyCutawayVisual=true;hiddenLegacy++}
   });
-  for(const v of xrayRoomVisuals||[]){if(v?.rig3D){v.rig3D.visible=true;v.rig3D.traverse?.(o=>{if(o.userData?.acLogicalCutawayHidden){delete o.userData.acLogicalCutawayHidden;o.visible=true}})}}
-  diag('AURELIAN CUTAWAY PRESENTATION','logicalRooms=Y oldCageHidden='+hidden+' warriorRigs=VISIBLE');
+  for(const v of xrayRoomVisuals||[]){
+    if(v?.nativeRoom)v.nativeRoom.visible=true;
+    if(v?.rig3D){v.rig3D.visible=true;v.rig3D.traverse?.(o=>{if(o.isMesh)o.visible=true})}
+    if(v?.frontShutter&&!v.frontShutter.userData?.firingStage)v.frontShutter.visible=false;
+  }
+  diag('AURELIAN CUTAWAY PRESENTATION','nativeInterior=VISIBLE interiorMeshes='+visibleInterior+' legacyCageHidden='+hiddenLegacy+' logicalHitMeshes='+logicalHidden+' warriorRigs=VISIBLE');
 }
 `;
   let patched=html;
@@ -22,6 +34,9 @@ function acSeparateAurelianLogicalCutaway(){
   if(!patched.includes('function acSeparateAurelianLogicalCutaway()'))patched=patched.replace(insertion,helper+'\n'+insertion);
   const needle='applyXrayShell();buildPrivateXray();acCleanAurelianInterior();for(const w of localXrayWarriors())';
   const replacement='applyXrayShell();buildPrivateXray();acCleanAurelianInterior();acSeparateAurelianLogicalCutaway();for(const w of localXrayWarriors())';
-  const next=patched.replace(needle,replacement),ok=next!==patched;patched=next;
-  return patched.replace('</head>','<meta id="ac-aurelian-logical-cutaway-v0408" name="ac-aurelian-logical-cutaway" content="route:'+(ok?'OK':'MISS')+' combatGeometry:PRESERVED visibleLegacyCage:HIDDEN warriorRigs:VISIBLE">\n</head>');
+  const next=patched.replace(needle,replacement),openRoute=next!==patched;patched=next;
+  const refreshNeedle='function refreshPrivateXrayVisuals(){\n  if(!xrayOpen||!xrayGroup)return;';
+  const refreshReplacement='function refreshPrivateXrayVisuals(){\n  if(!xrayOpen||!xrayGroup)return;\n  if(localXraySide()===\'aurelian\'&&typeof acSeparateAurelianLogicalCutaway===\'function\')queueMicrotask(()=>{if(xrayOpen&&xrayGroup)acSeparateAurelianLogicalCutaway()});';
+  const refreshed=patched.replace(refreshNeedle,refreshReplacement),refreshGuard=refreshed!==patched;patched=refreshed;
+  return patched.replace('</head>','<meta id="ac-aurelian-logical-cutaway-v0409" name="ac-aurelian-logical-cutaway" content="openRoute:'+(openRoute?'OK':'MISS')+' refreshGuard:'+(refreshGuard?'OK':'MISS')+' nativeInterior:VISIBLE legacyCage:HIDDEN combatGeometry:PRESERVED warriorRigs:VISIBLE">\n</head>');
 }
