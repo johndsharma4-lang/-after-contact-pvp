@@ -1,7 +1,8 @@
 name: Audit Aurelian Hull
 on:
   push:
-    branches: [art/aurelian-fitted-hull]
+    branches: [main, art/aurelian-fitted-hull]
+  pull_request:
   workflow_dispatch:
 permissions:
   contents: read
@@ -16,33 +17,28 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Prepare exact renderer dependency and source snapshot
+      - name: Install pinned test dependencies
         run: |
-          mkdir -p /tmp/ac-hull-audit/source /tmp/ac-hull-audit/vendor
-          python3 - <<'PY'
-          import pathlib, re, shutil
-          root = pathlib.Path('.')
-          out = pathlib.Path('/tmp/ac-hull-audit/source')
-          for p in root.iterdir():
-              if p.is_file() and p.suffix in ('.js', '.html', '.md', '.jsonc'):
-                  shutil.copy2(p, out / p.name)
-          shutil.copytree('scripts', out / 'scripts', dirs_exist_ok=True)
-          html = pathlib.Path('index.html').read_text()
-          versions = sorted(set(re.findall(r'three@([0-9]+\.[0-9]+\.[0-9]+)', html)))
-          print('THREE_VERSIONS', versions)
-          print('SCRIPT_URLS', re.findall(r'<script[^>]+src=[\"\x27]([^\"\x27]+)', html))
-          if len(versions) != 1:
-              raise SystemExit('Expected one pinned Three.js version')
-          pathlib.Path('/tmp/ac-three-version').write_text(versions[0])
-          PY
-          npm install --prefix /tmp/ac-hull-audit/vendor --no-audit --no-fund --ignore-scripts "three@$(cat /tmp/ac-three-version)" acorn@8.15.0
+          mkdir -p /tmp/ac-hull-audit/vendor /tmp/ac-hull-audit/test-output
+          npm install --prefix /tmp/ac-hull-audit/vendor --no-audit --no-fund --ignore-scripts three@0.179.1 acorn@8.15.0
+          python3 -m pip install playwright==1.55.0 Pillow==11.3.0
+      - name: Production patch chain and real geometry regression
+        env:
+          AC_HULL_VENDOR: /tmp/ac-hull-audit/vendor/node_modules
+          AC_HULL_OUTPUT: /tmp/ac-hull-audit/test-output
+        run: |
+          node --check aurelian-canon-exterior-runtime.js
+          node --check router-worker.js
           python3 scripts/audit-presentation.py
-          if [ -f scripts/test-aurelian-hull.mjs ]; then
-            AC_HULL_VENDOR=/tmp/ac-hull-audit/vendor/node_modules node scripts/test-aurelian-hull.mjs
-          fi
+          node scripts/test-aurelian-hull.mjs
+      - name: Render exterior and cutaway in Chrome
+        env:
+          AC_HULL_ROOT: /tmp/ac-hull-audit
+          AC_HULL_SOURCE: ${{ github.workspace }}
+        run: python3 scripts/browser-aurelian-hull.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: aurelian-hull-audit
-          path: /tmp/ac-hull-audit
+          path: /tmp/ac-hull-audit/test-output
           retention-days: 3
