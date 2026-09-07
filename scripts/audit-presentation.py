@@ -43,11 +43,12 @@ checks = {
     'six physical bays preserved for all factions': 'bayLocals=[]' in base and 'for(let row=1;row>=0;row--)for(let col=0;col<3;col++)' in base and 'physicalInterior=6/6 logicalRooms=9' in base,
     'aurelian uses player sketch layout': 'buildAurelianDirectorHull' in base and "layout=${sketchLayout?.length===6?'PLAYER_SKETCH_STACKED':'2x3'}" in base and 'acCutawayBayLayout=specs.map' in base and 'points:s.points.map' in base,
     'aurelian is one continuous pressure hull': 'acAurelianHullFrameGeometry(specs)' in base and "frame.name='AURELIAN_CONTINUOUS_PRESSURE_HULL'" in base and 'hull.holes.push(hole)' in base and 'acContinuousPressureHull=true' in base,
+    'rear hull follows angular pressure contour': 'function acAurelianOuterHullShape' in base and 'acAurelianRearHullGeometry()' in base and "new THREE.SphereGeometry(8.1,40,22)" not in base,
     'obsolete exposed brace scaffold removed': "AURELIAN_CENTRAL_WAIST" not in base and "const brace=box(9.0,.64,4.4" not in base,
     'six modules have deep exact exterior skins': 'acAurelianModuleGeometry(spec.points,2.72)' in base and 'AURELIAN_CURVED_ARMOR_CROWN_' in base and 'acCutawayBayPanel=true' in base,
     'pilot cockpit and solar cannon modules exist': 'AURELIAN_PILOT_OVAL_WINDOW' in base and 'AURELIAN_PILOT_SILHOUETTE_BODY' in base and 'AURELIAN_PILOT_WINDOW_FRAME' in base and 'AURELIAN_SOLAR_CANNON_BREECH' in base and 'AURELIAN_SOLAR_CANNON_BARREL' in base and 'AURELIAN_SOLAR_CANNON_MUZZLE' in base and 'AURELIAN_SOLAR_CANNON_CRADLE' in base,
     'nine logical combat rooms preserved': 'const logicalGroups=[[0,6],[1,7],[2,8],[3],[4],[5]]' in base and 'combatGrid=UNCHANGED' in base and 'logicalCombatRooms:NINE_UNCHANGED' in director,
-    'three empty physical bays preserved': 'xrayRoomVisuals.length-crew.length' in base and 'physicalInterior:ALL_6_SHAPED_ROLE_DRESSED' in cutaway,
+    'three empty physical bays preserved': 'xrayRoomVisuals.length-crew.length' in base and 'physicalInterior:ALL_6_POLYGONAL_ROLE_DRESSED' in cutaway,
     'room cage edge geometry removed': 'const rim=null;' in base and 'new THREE.EdgesGeometry(new THREE.BoxGeometry(roomW,roomH,roomD))' not in base,
     'presentation director owns five-step bay seal': 'visuals.length!==6' in director and 'setCutawayBayOpen(visual,!shouldClose)' in director and "closed='+closeCount+'/'+order.length" in director,
     'lifecycle bridge does not replace seal authority': 'const oldSeal=' not in bridge and 'status.shellOwnership=patched.includes' in bridge,
@@ -57,6 +58,7 @@ checks = {
     'obsolete box closure decoration removed': 'CUTAWAY_FRONT_SHUTTER_SOLAR_RAIL_' not in base and 'CUTAWAY_FRONT_SHUTTER_SOLAR_NODE_' not in base,
     'six bays have faction-specific readable interiors': 'const bayPalette=' in base and 'CUTAWAY_BAY_INTERIOR_' in base and 'CUTAWAY_BAY_CONDUIT_' in base and 'CUTAWAY_BAY_CONSOLE_' in base and 'CUTAWAY_BAY_BACKLIGHT_' in base,
     'aurelian interiors follow exterior shapes': 'acAurelianBayBackGeometry(layoutSpec.points' in base and 'aurelianBay?Math.max(5.3,layoutSpec.w*.84)' in base and 'cell.userData.acModuleRole' in base,
+    'aurelian interior walls follow aperture polygons': 'CUTAWAY_BAY_SHAPED_WALL_' in base and 'edgePoints=layoutSpec.points.map' in base and 'edge.rotation.z=Math.atan2(dy,dx)' in base and 'SIX_POLYGONAL_PRESSURE_INTERIORS' in director,
     'six aurelian interiors have distinct roles': 'acDressAurelianBay(interiorRoot,layoutSpec.role' in base and all(name in base for name in ['CUTAWAY_PILOT_COMMAND_CONSOLE','CUTAWAY_SOLAR_REACTOR','CUTAWAY_ARMORY_RACK','CUTAWAY_TARGETING_TABLE','CUTAWAY_SOLAR_CANNON_CORE']),
     'cabinet door back panels removed': 'CUTAWAY_BAY_RECESSED_WALL_' not in base,
     'closed bay hides complete interior root': 'function setCutawayBayOpen(visual,open)' in base and 'interior.visible=!!open' in base and 'shutter.visible=!open' in base and 'closedBayInterior:HIDDEN' in director,
@@ -84,7 +86,7 @@ checks = {
     'aurelian model artwork upgraded': 'ac-aurelian-rebuilt-models-v0419' in rebuilt_models and 'curvedBreastplate' in rebuilt_models and 'helmetSolarCrest' in rebuilt_models and 'chestSunRay' in rebuilt_models and 'solarBackWing' in rebuilt_models and 'diskScale=sx>0?1.20:.84' in rebuilt_models and 'SphereGeometry(.64,22,16)' in rebuilt_models,
     'aurelian rigs composed, enlarged and relit': 'ac-aurelian-cutaway-composition-v0419' in cutaway_composition and 'multiplyScalar(.92)' in cutaway_composition and 'multiplyScalar(aurelianBay?1.16:1.04)' in base and 'SIX_BAY_ARTICULATED_HIGH_DETAIL_SILHOUETTES' in cutaway_composition and 'restPose:CAPTURED' in cutaway_composition,
     'natural idle animation is connected': 'function acAnimateAurelianWarriorIdle' in rebuilt_models and "typeof acAnimateAurelianWarriorIdle==='function'" in base and 'acAimActiveUntil' in weapon_origin,
-    'v0419 build marker': 'MATCH RECORDER v0.41.9' in director and '2026-09-07_UNIFIED_SIX_BAY_HULL_NATURAL_CREW' in director,
+    'v0420 build marker': 'MATCH RECORDER v0.42.0' in director and '2026-09-07_ANGULAR_PRESSURE_HULL_SHAPED_INTERIORS' in director,
 }
 impact_start = director.find('function spawnImpactCompartmentReveal(attacker,hit,duration=1450)')
 impact_end = director.find('const impactRegex=', impact_start)

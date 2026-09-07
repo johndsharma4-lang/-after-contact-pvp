@@ -2864,13 +2864,23 @@ function addL1ArtPolish(g,faction,cy=0){
 }
 function acAurelianShape(points,scale=1){const shape=new THREE.Shape();shape.moveTo(points[0][0]*scale,points[0][1]*scale);for(let i=1;i<points.length;i++)shape.lineTo(points[i][0]*scale,points[i][1]*scale);shape.closePath();return shape}
 function acAurelianModuleGeometry(points,depth=2.65,scale=1){const geo=new THREE.ExtrudeGeometry(acAurelianShape(points,scale),{depth,steps:1,bevelEnabled:true,bevelSegments:5,bevelSize:.28,bevelThickness:.24,curveSegments:18});geo.computeVertexNormals();return geo}
+function acAurelianOuterHullShape(scale=1){
+  // A deliberate armored silhouette that follows the six-module stack. Keeping the
+  // pressure hull close to the apertures removes the old oval/potato-shaped backing.
+  const p=(x,y)=>[x*scale,y*scale],hull=new THREE.Shape(),start=p(-18.6,-6.1);hull.moveTo(start[0],start[1]);
+  let q=p(-19.2,-1.0);hull.lineTo(q[0],q[1]);q=p(-18.4,6.8);hull.quadraticCurveTo(q[0],q[1],...p(-13.6,10.5));
+  q=p(-5.4,11.5);hull.lineTo(q[0],q[1]);q=p(-.7,8.9);hull.lineTo(q[0],q[1]);q=p(12.7,8.3);hull.lineTo(q[0],q[1]);
+  q=p(15.0,7.1);hull.quadraticCurveTo(q[0],q[1],...p(16.5,3.0));q=p(16.0,-3.5);hull.lineTo(q[0],q[1]);
+  q=p(15.6,-6.9);hull.quadraticCurveTo(q[0],q[1],...p(13.1,-9.2));q=p(5.0,-10.3);hull.lineTo(q[0],q[1]);q=p(-1.8,-9.4);hull.lineTo(q[0],q[1]);q=p(-13.7,-9.4);hull.lineTo(q[0],q[1]);q=p(-17.4,-8.6);hull.quadraticCurveTo(q[0],q[1],start[0],start[1]);hull.closePath();return hull
+}
 function acAurelianHullFrameGeometry(specs){
   // One pressure-hull silhouette with six true apertures. The exterior modules plug
   // these same holes, so opening and closing never swaps to unrelated box geometry.
-  const hull=new THREE.Shape();hull.moveTo(-18.8,-5.8);hull.bezierCurveTo(-19.4,-.8,-18.7,5.8,-14.7,9.4);hull.bezierCurveTo(-11.5,12.2,-6.7,12.4,-2.4,10.4);hull.bezierCurveTo(1.2,8.7,4.1,8.6,8.4,8.7);hull.bezierCurveTo(13.2,8.8,17.2,6.5,18.6,2.9);hull.bezierCurveTo(19.4,-1.5,18.3,-6.7,14.7,-8.9);hull.bezierCurveTo(9.0,-11.0,3.6,-10.4,-1.4,-9.4);hull.bezierCurveTo(-7.2,-10.2,-14.7,-9.7,-18.8,-5.8);hull.closePath();
+  const hull=acAurelianOuterHullShape();
   for(const spec of specs){const pts=spec.points.map(([x,y])=>[spec.x+x*1.045,spec.y+y*1.045]),hole=new THREE.Path();for(let n=pts.length-1;n>=0;n--){const [x,y]=pts[n];if(n===pts.length-1)hole.moveTo(x,y);else hole.lineTo(x,y)}hole.closePath();hull.holes.push(hole)}
   const geo=new THREE.ExtrudeGeometry(hull,{depth:3.15,steps:1,bevelEnabled:true,bevelSegments:6,bevelSize:.34,bevelThickness:.28,curveSegments:28});geo.computeVertexNormals();return geo
 }
+function acAurelianRearHullGeometry(){const geo=new THREE.ExtrudeGeometry(acAurelianOuterHullShape(.965),{depth:1.05,steps:1,bevelEnabled:true,bevelSegments:4,bevelSize:.22,bevelThickness:.18,curveSegments:20});geo.computeVertexNormals();return geo}
 function buildAurelianDirectorHull(skin,cy,mat){
   // This is the exterior authority: one deep spacecraft hull, six tactical module
   // doors, an inhabited cockpit and a hull-integrated solar cannon.
@@ -2880,13 +2890,13 @@ function buildAurelianDirectorHull(skin,cy,mat){
     {name:'PILOT_COCKPIT',x:-8.8,y:7.25,w:7.8,h:5.4,points:[[-3.9,-2.20],[3.85,-2.20],[3.25,2.10],[-2.60,2.62],[-3.95,1.20]]},
     {name:'PORT_UPPER',x:-9.35,y:1.65,w:11.0,h:5.6,points:[[-5.45,-2.50],[4.55,-2.50],[5.45,-1.15],[4.58,2.58],[-4.80,2.48],[-5.60,.55]]},
     {name:'PORT_LOWER',x:-9.00,y:-4.25,w:10.9,h:5.6,points:[[-5.40,-2.42],[4.45,-2.42],[5.45,-1.20],[4.68,2.52],[-5.25,2.52],[-5.78,.66]]},
-    {name:'STARBOARD_UPPER',x:7.05,y:4.55,w:11.8,h:5.8,points:[[-5.86,-2.58],[5.86,-2.58],[5.48,2.58],[-4.75,2.52],[-6.04,.38]]},
-    {name:'STARBOARD_LOWER',x:7.15,y:-1.20,w:11.6,h:5.5,points:[[-5.78,-2.42],[5.18,-2.28],[5.80,-.72],[5.58,2.48],[-4.58,2.40],[-6.00,.72]]},
+    {name:'STARBOARD_UPPER',x:7.25,y:4.55,w:13.4,h:5.8,points:[[-6.06,-2.58],[6.60,-2.58],[6.25,2.58],[-4.75,2.52],[-6.20,.38]]},
+    {name:'STARBOARD_LOWER',x:7.35,y:-1.20,w:13.2,h:5.5,points:[[-6.00,-2.42],[5.90,-2.28],[6.45,-.72],[6.20,2.48],[-4.80,2.40],[-6.20,.72]]},
     {name:'SOLAR_CANNON_BAY',x:8.30,y:-6.55,w:9.8,h:4.7,points:[[-4.88,-1.92],[4.92,-1.48],[4.24,2.08],[-4.30,2.30]]}
   ];
   const structure=new THREE.Group();structure.name='AURELIAN_DIRECTOR_HULL_STRUCTURE';structure.userData.acHullRadii=new THREE.Vector3(20.0,11.2,8.8);structure.userData.acSketchSilhouette=true;structure.userData.acContinuousPressureHull=true;skin.add(structure);
   const frame=new THREE.Mesh(acAurelianHullFrameGeometry(specs),deepGold.clone());frame.name='AURELIAN_CONTINUOUS_PRESSURE_HULL';frame.position.set(0,cy,4.62);frame.castShadow=true;frame.receiveShadow=true;structure.add(frame);
-  const rearShell=new THREE.Mesh(new THREE.SphereGeometry(8.1,40,22),deepGold.clone());rearShell.name='AURELIAN_REAR_HULL_DEPTH';rearShell.scale.set(2.28,.92,.22);rearShell.position.set(-.4,cy-.25,-.72);rearShell.castShadow=true;structure.add(rearShell);
+  const rearShell=new THREE.Mesh(acAurelianRearHullGeometry(),deepGold.clone());rearShell.name='AURELIAN_REAR_HULL_DEPTH';rearShell.position.set(0,cy,.72);rearShell.castShadow=true;rearShell.receiveShadow=true;structure.add(rearShell);
   const dorsal=new THREE.Mesh(acAurelianModuleGeometry([[-8.8,-.65],[8.3,-.65],[5.6,1.15],[-3.8,1.82]],1.25),bright.clone());dorsal.name='AURELIAN_DORSAL_CROWN';dorsal.position.set(-.4,cy+9.7,3.42);structure.add(dorsal);
   const ventral=new THREE.Mesh(acAurelianModuleGeometry([[-8.2,-.72],[8.6,-.72],[5.2,1.12],[-5.8,1.30]],1.22),gold.clone());ventral.name='AURELIAN_VENTRAL_KEEL';ventral.position.set(.2,cy-10.15,3.55);structure.add(ventral);
   for(const y of[-4.7,1.0,6.2]){const reactor=new THREE.Mesh(new THREE.TorusGeometry(.72,.18,12,36),sun.clone());reactor.name='AURELIAN_REAR_SOLAR_THRUSTER';reactor.scale.y=.72;reactor.position.set(-17.15,cy+y,8.15);structure.add(reactor);const core=new THREE.Mesh(new THREE.CircleGeometry(.49,28),new THREE.MeshBasicMaterial({color:0xffefaa}));core.position.set(-17.15,cy+y,8.18);structure.add(core)}
@@ -4610,10 +4620,22 @@ function buildPrivateXray(){
     const console=markXray(new THREE.Mesh(new THREE.BoxGeometry(bayW*.52,.38,.38),wallMat.clone()),74);console.name=`CUTAWAY_BAY_CONSOLE_${i+1}`;console.position.set(0,floorY+.62,-roomD*.5+.32);interiorRoot.add(console);
     for(const sx of[-1,0,1]){const indicator=markXray(new THREE.Mesh(new THREE.SphereGeometry(.065,12,8),new THREE.MeshBasicMaterial({color:sx===0?bayPalette.light:trimColor})),76);indicator.name=`CUTAWAY_BAY_INDICATOR_${i+1}_${sx}`;indicator.position.set(sx*bayW*.12,floorY+.65,-roomD*.5+.54);interiorRoot.add(indicator)}
     const backLight=markXray(new THREE.Mesh(new THREE.BoxGeometry(bayW*.50,.07,.10),new THREE.MeshBasicMaterial({color:bayPalette.light,transparent:true,opacity:.82,depthWrite:false})),77);backLight.name=`CUTAWAY_BAY_BACKLIGHT_${i+1}`;backLight.position.set(0,bayH*.35,-roomD*.5+.24);interiorRoot.add(backLight);
-    const floor=markXray(new THREE.Mesh(new THREE.BoxGeometry(bayW,.28,roomD),wallMat.clone()),72);floor.name=`CUTAWAY_BAY_FLOOR_${i+1}`;floor.position.y=floorY;interiorRoot.add(floor);
-    const ceiling=markXray(new THREE.Mesh(new THREE.BoxGeometry(bayW,.20,roomD),wallMat.clone()),72);ceiling.name=`CUTAWAY_BAY_CEILING_${i+1}`;ceiling.position.y=bayH*.5;interiorRoot.add(ceiling);
-    for(const sx of[-1,1]){const wall=markXray(new THREE.Mesh(new THREE.BoxGeometry(.18,bayH,roomD),wallMat.clone()),72);wall.name=`CUTAWAY_BAY_SIDEWALL_${i+1}_${sx}`;wall.position.x=sx*bayW*.5;interiorRoot.add(wall)}
-    for(const sx of[-1,1]){const rail=markXray(new THREE.Mesh(new THREE.BoxGeometry(.08,bayH*.82,.08),trimMat.clone()),78);rail.position.set(sx*(bayW*.5-.22),0,roomD*.47);interiorRoot.add(rail)}
+    const floor=markXray(new THREE.Mesh(new THREE.BoxGeometry(bayW*(aurelianBay ? 0.74 : 1),.28,roomD),wallMat.clone()),72);floor.name=`CUTAWAY_BAY_FLOOR_${i+1}`;floor.position.y=floorY;interiorRoot.add(floor);
+    if(aurelianBay){
+      // The visible pressure-room boundary follows the same polygon as its exterior
+      // module. This removes the rectangular display-cabinet frame while preserving
+      // real floor depth, physical side structure and the shaped rear bulkhead.
+      const edgePoints=layoutSpec.points.map(([x,y])=>new THREE.Vector2(x*.91,y*.91));
+      for(let edgeIndex=0;edgeIndex<edgePoints.length;edgeIndex++){
+        const a=edgePoints[edgeIndex],b=edgePoints[(edgeIndex+1)%edgePoints.length],dx=b.x-a.x,dy=b.y-a.y,length=Math.hypot(dx,dy),edge=markXray(new THREE.Mesh(new THREE.BoxGeometry(length,.15,roomD),wallMat.clone()),72);
+        edge.name=`CUTAWAY_BAY_SHAPED_WALL_${i+1}_${edgeIndex}`;edge.position.set((a.x+b.x)*.5,(a.y+b.y)*.5,0);edge.rotation.z=Math.atan2(dy,dx);interiorRoot.add(edge);
+        const lip=markXray(new THREE.Mesh(new THREE.BoxGeometry(length*.94,.055,.10),trimMat.clone()),79);lip.name=`CUTAWAY_BAY_SHAPED_LIGHT_LIP_${i+1}_${edgeIndex}`;lip.position.set((a.x+b.x)*.5,(a.y+b.y)*.5,roomD*.47);lip.rotation.z=edge.rotation.z;interiorRoot.add(lip)
+      }
+    }else{
+      const ceiling=markXray(new THREE.Mesh(new THREE.BoxGeometry(bayW,.20,roomD),wallMat.clone()),72);ceiling.name=`CUTAWAY_BAY_CEILING_${i+1}`;ceiling.position.y=bayH*.5;interiorRoot.add(ceiling);
+      for(const sx of[-1,1]){const wall=markXray(new THREE.Mesh(new THREE.BoxGeometry(.18,bayH,roomD),wallMat.clone()),72);wall.name=`CUTAWAY_BAY_SIDEWALL_${i+1}_${sx}`;wall.position.x=sx*bayW*.5;interiorRoot.add(wall)}
+      for(const sx of[-1,1]){const rail=markXray(new THREE.Mesh(new THREE.BoxGeometry(.08,bayH*.82,.08),trimMat.clone()),78);rail.position.set(sx*(bayW*.5-.22),0,roomD*.47);interiorRoot.add(rail)}
+    }
     for(const z of[-.30,0,.30]){const floorStrip=markXray(new THREE.Mesh(new THREE.BoxGeometry(bayW*.76,.055,.08),trimMat.clone()),79);floorStrip.position.set(0,floorY+.17,z*roomD);interiorRoot.add(floorStrip)}
     if(aurelianBay)acDressAurelianBay(interiorRoot,layoutSpec.role,i+1,bayW,bayH,roomD,bayPalette,wallMat);
     const frontShutter=markXray(new THREE.Group(),96);frontShutter.name=`CUTAWAY_FRONT_SHUTTER_${i+1}`;frontShutter.position.set(0,0,faction==='aurelian'?0:roomD*.51);frontShutter.visible=false;frontShutter.userData.acAimClosed=false;frontShutter.userData.acExteriorClosure=true;
