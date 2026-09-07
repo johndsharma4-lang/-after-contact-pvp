@@ -2862,33 +2862,63 @@ function addL1ArtPolish(g,faction,cy=0){
     for(const [x,y,r] of [[-10.5,7.5,-.08],[9.5,6.9,.11],[-2.5,-5.8,.05]]){const scrap=box(5.0,.48,1.3,0x24292b,.72,.78);scrap.position.set(x,y,-.15);scrap.rotation.z=r;g.add(scrap)}
   }
 }
-function acAurelianModuleGeometry(points,depth=1.18){const shape=new THREE.Shape();shape.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)shape.lineTo(points[i][0],points[i][1]);shape.closePath();const geo=new THREE.ExtrudeGeometry(shape,{depth,steps:1,bevelEnabled:true,bevelSegments:3,bevelSize:.22,bevelThickness:.18,curveSegments:10});geo.computeVertexNormals();return geo}
+function acAurelianShape(points,scale=1){const shape=new THREE.Shape();shape.moveTo(points[0][0]*scale,points[0][1]*scale);for(let i=1;i<points.length;i++)shape.lineTo(points[i][0]*scale,points[i][1]*scale);shape.closePath();return shape}
+function acAurelianModuleGeometry(points,depth=2.65,scale=1){const geo=new THREE.ExtrudeGeometry(acAurelianShape(points,scale),{depth,steps:1,bevelEnabled:true,bevelSegments:5,bevelSize:.28,bevelThickness:.24,curveSegments:18});geo.computeVertexNormals();return geo}
+function acAurelianHullFrameGeometry(specs){
+  // One pressure-hull silhouette with six true apertures. The exterior modules plug
+  // these same holes, so opening and closing never swaps to unrelated box geometry.
+  const hull=new THREE.Shape();hull.moveTo(-18.8,-5.8);hull.bezierCurveTo(-19.4,-.8,-18.7,5.8,-14.7,9.4);hull.bezierCurveTo(-11.5,12.2,-6.7,12.4,-2.4,10.4);hull.bezierCurveTo(1.2,8.7,4.1,8.6,8.4,8.7);hull.bezierCurveTo(13.2,8.8,17.2,6.5,18.6,2.9);hull.bezierCurveTo(19.4,-1.5,18.3,-6.7,14.7,-8.9);hull.bezierCurveTo(9.0,-11.0,3.6,-10.4,-1.4,-9.4);hull.bezierCurveTo(-7.2,-10.2,-14.7,-9.7,-18.8,-5.8);hull.closePath();
+  for(const spec of specs){const pts=spec.points.map(([x,y])=>[spec.x+x*1.045,spec.y+y*1.045]),hole=new THREE.Path();for(let n=pts.length-1;n>=0;n--){const [x,y]=pts[n];if(n===pts.length-1)hole.moveTo(x,y);else hole.lineTo(x,y)}hole.closePath();hull.holes.push(hole)}
+  const geo=new THREE.ExtrudeGeometry(hull,{depth:3.15,steps:1,bevelEnabled:true,bevelSegments:6,bevelSize:.34,bevelThickness:.28,curveSegments:28});geo.computeVertexNormals();return geo
+}
 function buildAurelianDirectorHull(skin,cy,mat){
-  // Six real exterior modules follow the player's silhouette sketch. These same
-  // groups are hidden to open the cutaway and restored one by one during aim.
+  // This is the exterior authority: one deep spacecraft hull, six tactical module
+  // doors, an inhabited cockpit and a hull-integrated solar cannon.
   for(const child of [...skin.children]){child.visible=false;child.userData.acLegacyAurelianHull=true}
-  const gold=mat(0x8b651f,.90,.25,0x392100),bright=mat(0xd6a43d,.88,.20,0x5d3100),dark=mat(0x241608,.72,.48),glass=new THREE.MeshStandardMaterial({color:0x74cfff,emissive:0x174f82,emissiveIntensity:1.05,metalness:.34,roughness:.16,transparent:true,opacity:.78,side:THREE.DoubleSide});
+  const gold=mat(0xa87520,.91,.22,0x3d2100),bright=mat(0xe0ad3e,.88,.16,0x6b3700),deepGold=mat(0x5c3a10,.92,.30,0x241200),dark=mat(0x17100a,.78,.40),ivory=mat(0xe9d9ad,.66,.24,0x38250c),sun=new THREE.MeshStandardMaterial({color:0xffd45f,emissive:0xff8a16,emissiveIntensity:2.7,metalness:.48,roughness:.13}),glass=new THREE.MeshPhysicalMaterial({color:0x4fc7ff,emissive:0x0b65a4,emissiveIntensity:1.65,metalness:.18,roughness:.08,transmission:.12,transparent:true,opacity:.82,depthWrite:false,side:THREE.DoubleSide});
   const specs=[
-    {name:'PILOT_COCKPIT',x:-8.6,y:7.1,w:7.4,h:5.2,points:[[-3.7,-2.15],[3.7,-2.15],[3.15,2.15],[-2.8,2.55],[-3.75,1.15]]},
-    {name:'PORT_UPPER',x:-9.4,y:1.65,w:10.8,h:5.6,points:[[-5.4,-2.55],[4.55,-2.55],[5.4,-1.25],[4.55,2.65],[-4.9,2.45],[-5.65,.55]]},
-    {name:'PORT_LOWER',x:-9.0,y:-4.35,w:10.7,h:5.6,points:[[-5.35,-2.45],[4.45,-2.45],[5.35,-1.25],[4.65,2.55],[-5.35,2.55],[-5.85,.7]]},
-    {name:'STARBOARD_UPPER',x:7.15,y:4.55,w:11.7,h:5.8,points:[[-5.85,-2.65],[5.85,-2.65],[5.45,2.65],[-4.85,2.55],[-6.05,.35]]},
-    {name:'STARBOARD_LOWER',x:7.25,y:-1.45,w:11.4,h:5.7,points:[[-5.7,-2.55],[5.15,-2.35],[5.7,-.75],[5.55,2.55],[-4.65,2.45],[-5.95,.75]]},
-    {name:'SOLAR_CANNON_BAY',x:8.9,y:-6.35,w:8.6,h:4.5,points:[[-4.3,-1.95],[4.3,-1.55],[3.65,2.05],[-3.75,2.25]]}
+    {name:'PILOT_COCKPIT',x:-8.8,y:7.25,w:7.8,h:5.4,points:[[-3.9,-2.20],[3.85,-2.20],[3.25,2.10],[-2.60,2.62],[-3.95,1.20]]},
+    {name:'PORT_UPPER',x:-9.35,y:1.65,w:11.0,h:5.6,points:[[-5.45,-2.50],[4.55,-2.50],[5.45,-1.15],[4.58,2.58],[-4.80,2.48],[-5.60,.55]]},
+    {name:'PORT_LOWER',x:-9.00,y:-4.25,w:10.9,h:5.6,points:[[-5.40,-2.42],[4.45,-2.42],[5.45,-1.20],[4.68,2.52],[-5.25,2.52],[-5.78,.66]]},
+    {name:'STARBOARD_UPPER',x:7.05,y:4.55,w:11.8,h:5.8,points:[[-5.86,-2.58],[5.86,-2.58],[5.48,2.58],[-4.75,2.52],[-6.04,.38]]},
+    {name:'STARBOARD_LOWER',x:7.15,y:-1.20,w:11.6,h:5.5,points:[[-5.78,-2.42],[5.18,-2.28],[5.80,-.72],[5.58,2.48],[-4.58,2.40],[-6.00,.72]]},
+    {name:'SOLAR_CANNON_BAY',x:8.30,y:-6.55,w:9.8,h:4.7,points:[[-4.88,-1.92],[4.92,-1.48],[4.24,2.08],[-4.30,2.30]]}
   ];
-  const structure=new THREE.Group();structure.name='AURELIAN_DIRECTOR_HULL_STRUCTURE';structure.userData.acHullRadii=new THREE.Vector3(20.5,9.6,9.3);structure.userData.acSketchSilhouette=true;skin.add(structure);
-  const spine=box(11.5,3.15,5.8,0x39230d,.82,.42);spine.name='AURELIAN_CENTRAL_WAIST';spine.position.set(-.6,cy-.1,1.8);structure.add(spine);
-  for(const [x,y,rz] of [[-4.6,4.7,-.48],[-4.8,-3.1,.45],[3.8,2.1,.22],[4.6,-4.0,-.30]]){const brace=box(9.0,.64,4.4,0x5b3a12,.86,.34);brace.position.set(x,cy+y,1.35);brace.rotation.z=rz;structure.add(brace)}
+  const structure=new THREE.Group();structure.name='AURELIAN_DIRECTOR_HULL_STRUCTURE';structure.userData.acHullRadii=new THREE.Vector3(20.0,11.2,8.8);structure.userData.acSketchSilhouette=true;structure.userData.acContinuousPressureHull=true;skin.add(structure);
+  const frame=new THREE.Mesh(acAurelianHullFrameGeometry(specs),deepGold.clone());frame.name='AURELIAN_CONTINUOUS_PRESSURE_HULL';frame.position.set(0,cy,4.62);frame.castShadow=true;frame.receiveShadow=true;structure.add(frame);
+  const rearShell=new THREE.Mesh(new THREE.SphereGeometry(8.1,40,22),deepGold.clone());rearShell.name='AURELIAN_REAR_HULL_DEPTH';rearShell.scale.set(2.28,.92,.22);rearShell.position.set(-.4,cy-.25,-.72);rearShell.castShadow=true;structure.add(rearShell);
+  const dorsal=new THREE.Mesh(acAurelianModuleGeometry([[-8.8,-.65],[8.3,-.65],[5.6,1.15],[-3.8,1.82]],1.25),bright.clone());dorsal.name='AURELIAN_DORSAL_CROWN';dorsal.position.set(-.4,cy+9.7,3.42);structure.add(dorsal);
+  const ventral=new THREE.Mesh(acAurelianModuleGeometry([[-8.2,-.72],[8.6,-.72],[5.2,1.12],[-5.8,1.30]],1.22),gold.clone());ventral.name='AURELIAN_VENTRAL_KEEL';ventral.position.set(.2,cy-10.15,3.55);structure.add(ventral);
+  for(const y of[-4.7,1.0,6.2]){const reactor=new THREE.Mesh(new THREE.TorusGeometry(.72,.18,12,36),sun.clone());reactor.name='AURELIAN_REAR_SOLAR_THRUSTER';reactor.scale.y=.72;reactor.position.set(-17.15,cy+y,8.15);structure.add(reactor);const core=new THREE.Mesh(new THREE.CircleGeometry(.49,28),new THREE.MeshBasicMaterial({color:0xffefaa}));core.position.set(-17.15,cy+y,8.18);structure.add(core)}
+  for(const sy of[-1,1]){const fin=new THREE.Mesh(acAurelianModuleGeometry([[-3.7,-.35],[3.8,-.35],[1.15,.55],[-2.0,.72]],.72),sy>0?bright.clone():gold.clone());fin.name=sy>0?'AURELIAN_DORSAL_SOLAR_FIN':'AURELIAN_VENTRAL_SOLAR_FIN';fin.position.set(1.6,cy+sy*9.65,2.68);fin.rotation.z=sy*.05;structure.add(fin)}
+  const nexus=new THREE.Mesh(new THREE.SphereGeometry(1,32,20),bright.clone());nexus.name='AURELIAN_ARMORED_SOLAR_NEXUS';nexus.scale.set(2.10,3.12,.38);nexus.position.set(-.85,cy-.05,7.86);structure.add(nexus);const nexusRing=new THREE.Mesh(new THREE.TorusGeometry(1.18,.12,12,44),sun.clone());nexusRing.name='AURELIAN_SOLAR_NEXUS_RING';nexusRing.scale.y=1.34;nexusRing.position.set(-.85,cy-.05,8.24);structure.add(nexusRing);const nexusCore=new THREE.Mesh(new THREE.SphereGeometry(.48,22,14),sun.clone());nexusCore.name='AURELIAN_SOLAR_NEXUS_CORE';nexusCore.position.set(-.85,cy-.05,8.28);structure.add(nexusCore);
+  for(const y of[-3.65,3.42]){const bridge=box(3.55,.72,.44,0x9f6a1d,.90,.22);bridge.name='AURELIAN_ARMORED_MODULE_BRIDGE';bridge.position.set(-.85,cy+y,8.02);bridge.rotation.z=y>0?.09:-.09;structure.add(bridge)}
+  for(const [x,y,rz] of [[-15.8,8.5,-.40],[-16.5,-7.7,.42],[15.3,6.6,.48],[15.2,-7.2,-.42]]){const feather=new THREE.Mesh(new THREE.ConeGeometry(.30,3.05,5),ivory.clone());feather.name='AURELIAN_OUTER_HULL_FEATHER';feather.position.set(x,cy+y,6.90);feather.rotation.z=rz;structure.add(feather);const featherCore=new THREE.Mesh(new THREE.ConeGeometry(.11,2.72,5),sun.clone());featherCore.position.copy(feather.position);featherCore.position.z+=.18;featherCore.rotation.copy(feather.rotation);structure.add(featherCore)}
   const panels=[];
   for(let i=0;i<specs.length;i++){
-    const spec=specs[i],panel=new THREE.Group();panel.name=`AURELIAN_HULL_MODULE_${i+1}_${spec.name}`;panel.position.set(spec.x,cy+spec.y,7.95);panel.userData.acCutawayBayPanel=true;panel.userData.acCutawayBayIndex=i;panel.userData.acModuleRole=spec.name;
-    const armor=new THREE.Mesh(acAurelianModuleGeometry(spec.points,1.18),i===0?bright.clone():gold.clone());armor.name=`AURELIAN_HULL_ARMOR_${i+1}`;armor.castShadow=true;armor.receiveShadow=true;panel.add(armor);
-    const faceMat=mat(i===0?0xc49332:0xa87620,.88,.24,0x3a2100),inset=new THREE.Mesh(acAurelianModuleGeometry(spec.points.map(([x,y])=>[x*.94,y*.90]),.10),faceMat);inset.name=`AURELIAN_HULL_FACE_${i+1}`;inset.position.z=1.25;panel.add(inset);
-    if(i===0){const pilotBody=box(.62,1.10,.12,0x17130e,.28,.72);pilotBody.name='AURELIAN_PILOT_SILHOUETTE_BODY';pilotBody.position.set(-.08,-.22,1.37);const pilotHead=new THREE.Mesh(new THREE.SphereGeometry(.31,16,12),dark.clone());pilotHead.name='AURELIAN_PILOT_SILHOUETTE_HEAD';pilotHead.position.set(-.08,.54,1.37);const visor=new THREE.Mesh(new THREE.BoxGeometry(.40,.11,.06),new THREE.MeshBasicMaterial({color:0xffdc68}));visor.position.set(-.08,.56,1.69);panel.add(pilotBody,pilotHead,visor);const canopy=new THREE.Mesh(new THREE.CircleGeometry(1,40),glass.clone());canopy.name='AURELIAN_PILOT_OVAL_WINDOW';canopy.scale.set(2.35,1.18,1);canopy.position.set(-.05,.20,1.43);canopy.renderOrder=4;panel.add(canopy);for(const sx of[-1,1]){const mullion=box(.13,2.05,.12,0xdcc06a,.76,.24);mullion.position.set(sx*.78,.20,1.49);mullion.rotation.z=sx*.18;panel.add(mullion)}}
-    if(i===5){const cannonRoot=new THREE.Group();cannonRoot.name='AURELIAN_SOLAR_CANNON';cannonRoot.position.set(.55,.08,1.44);const breech=new THREE.Mesh(new THREE.CylinderGeometry(1.14,1.34,2.25,16),bright.clone());breech.name='AURELIAN_SOLAR_CANNON_BREECH';breech.rotation.z=-Math.PI/2;const chamber=new THREE.Mesh(new THREE.SphereGeometry(.72,22,14),new THREE.MeshStandardMaterial({color:0xffed91,emissive:0xff9d20,emissiveIntensity:2.4,metalness:.35,roughness:.16}));chamber.name='AURELIAN_SOLAR_CANNON_CHAMBER';const barrel=new THREE.Mesh(new THREE.CylinderGeometry(.40,.66,4.8,16),dark.clone());barrel.name='AURELIAN_SOLAR_CANNON_BARREL';barrel.rotation.z=-Math.PI/2;barrel.position.x=2.65;const muzzle=new THREE.Mesh(new THREE.TorusGeometry(.68,.18,10,36),bright.clone());muzzle.name='AURELIAN_SOLAR_CANNON_MUZZLE';muzzle.rotation.y=Math.PI/2;muzzle.position.x=5.02;cannonRoot.add(breech,chamber,barrel,muzzle);panel.add(cannonRoot)}
+    const spec=specs[i],panel=new THREE.Group();panel.name=`AURELIAN_HULL_MODULE_${i+1}_${spec.name}`;panel.position.set(spec.x,cy+spec.y,4.78);panel.userData.acCutawayBayPanel=true;panel.userData.acCutawayBayIndex=i;panel.userData.acModuleRole=spec.name;
+    const armor=new THREE.Mesh(acAurelianModuleGeometry(spec.points,2.72),i===0?bright.clone():gold.clone());armor.name=`AURELIAN_HULL_ARMOR_${i+1}`;armor.castShadow=true;armor.receiveShadow=true;panel.add(armor);
+    const faceMat=mat(i===0?0xd59f32:0xb47a20,.90,.19,0x4a2700),inset=new THREE.Mesh(acAurelianModuleGeometry(spec.points,0.12,.925),faceMat);inset.name=`AURELIAN_HULL_FACE_${i+1}`;inset.position.z=2.80;panel.add(inset);
+    const crown=new THREE.Mesh(new THREE.SphereGeometry(1,28,16),i%2?deepGold.clone():bright.clone());crown.name=`AURELIAN_CURVED_ARMOR_CROWN_${i+1}`;crown.scale.set(spec.w*.29,spec.h*.15,.22);crown.position.set(i<3?-.18:.12,.02,3.02);panel.add(crown);
+    if(i!==0){for(const sx of[-1,1]){const rib=box(.13,spec.h*.52,.12,0xe4bd61,.78,.20);rib.name=`AURELIAN_MODULE_RIB_${i+1}_${sx}`;rib.position.set(sx*spec.w*.27,.02,3.23);rib.rotation.z=sx*(i<3?.18:-.18);panel.add(rib)}const core=new THREE.Mesh(new THREE.TorusGeometry(.34,.075,10,30),sun.clone());core.name=`AURELIAN_MODULE_SOLAR_SEAL_${i+1}`;core.position.set(0,0,3.24);panel.add(core)}
+    for(const [bx,by] of [[-.34,-.30],[.34,-.30],[-.34,.30],[.34,.30]]){const bolt=new THREE.Mesh(new THREE.SphereGeometry(.075,10,7),ivory.clone());bolt.position.set(bx*spec.w,by*spec.h,3.25);bolt.scale.z=.55;panel.add(bolt)}
+    if(i===0){
+      const recess=new THREE.Mesh(new THREE.CircleGeometry(1,48),dark.clone());recess.name='AURELIAN_COCKPIT_RECESS';recess.scale.set(2.78,1.58,1);recess.position.set(-.08,.14,3.18);panel.add(recess);
+      const pilotRoot=new THREE.Group();pilotRoot.name='AURELIAN_PILOT_SILHOUETTE';pilotRoot.position.set(-.12,-.02,3.22);const pilotBody=box(.82,1.28,.10,0x100d09,.24,.70);pilotBody.name='AURELIAN_PILOT_SILHOUETTE_BODY';pilotBody.position.y=-.28;pilotRoot.add(pilotBody);const pilotHead=new THREE.Mesh(new THREE.SphereGeometry(.39,20,14),dark.clone());pilotHead.name='AURELIAN_PILOT_SILHOUETTE_HEAD';pilotHead.position.y=.66;pilotRoot.add(pilotHead);const pilotVisor=box(.51,.13,.06,0xffdc68,.22,.18);pilotVisor.name='AURELIAN_PILOT_VISOR';pilotVisor.position.set(0,.69,.13);pilotRoot.add(pilotVisor);panel.add(pilotRoot);
+      const canopy=new THREE.Mesh(new THREE.CircleGeometry(1,56),glass.clone());canopy.name='AURELIAN_PILOT_OVAL_WINDOW';canopy.scale.set(2.70,1.50,1);canopy.position.set(-.08,.14,3.31);canopy.renderOrder=18;panel.add(canopy);const canopyRing=new THREE.Mesh(new THREE.TorusGeometry(1,.055,12,64),ivory.clone());canopyRing.name='AURELIAN_PILOT_WINDOW_FRAME';canopyRing.scale.set(2.76,1.56,1);canopyRing.position.set(-.08,.14,3.34);panel.add(canopyRing);for(const sx of[-1,1]){const mullion=box(.11,2.38,.11,0xe8c768,.80,.20);mullion.position.set(sx*.88,.14,3.36);mullion.rotation.z=sx*.14;panel.add(mullion)}
+    }
+    if(i===5){
+      const cannonRoot=new THREE.Group();cannonRoot.name='AURELIAN_SOLAR_CANNON';cannonRoot.position.set(.10,.08,3.24);
+      const cradle=box(6.9,1.34,.72,0x3a2410,.88,.28);cradle.name='AURELIAN_SOLAR_CANNON_CRADLE';cradle.position.x=.65;cannonRoot.add(cradle);
+      const breech=new THREE.Mesh(new THREE.CylinderGeometry(1.18,1.42,2.65,24),bright.clone());breech.name='AURELIAN_SOLAR_CANNON_BREECH';breech.rotation.z=-Math.PI/2;breech.position.x=-1.25;cannonRoot.add(breech);
+      const chamber=new THREE.Mesh(new THREE.SphereGeometry(.88,28,20),sun.clone());chamber.name='AURELIAN_SOLAR_CANNON_CHAMBER';chamber.position.x=-.55;cannonRoot.add(chamber);
+      const barrel=new THREE.Mesh(new THREE.CylinderGeometry(.42,.78,6.5,24),dark.clone());barrel.name='AURELIAN_SOLAR_CANNON_BARREL';barrel.rotation.z=-Math.PI/2;barrel.position.x=2.80;cannonRoot.add(barrel);
+      for(const x of[.35,1.65,3.05,4.35]){const collar=new THREE.Mesh(new THREE.CylinderGeometry(.72,.72,.26,18),gold.clone());collar.rotation.z=-Math.PI/2;collar.position.x=x;cannonRoot.add(collar)}
+      const muzzle=new THREE.Mesh(new THREE.CylinderGeometry(.86,.62,.88,24),bright.clone());muzzle.name='AURELIAN_SOLAR_CANNON_MUZZLE';muzzle.rotation.z=-Math.PI/2;muzzle.position.x=6.05;cannonRoot.add(muzzle);const muzzleCore=new THREE.Mesh(new THREE.CircleGeometry(.54,32),new THREE.MeshBasicMaterial({color:0xffffcf}));muzzleCore.position.set(6.51,0,.02);muzzleCore.rotation.y=Math.PI/2;cannonRoot.add(muzzleCore);panel.add(cannonRoot)
+    }
     panel.traverse(o=>{o.userData=o.userData||{};o.userData.acCutawayBayIndex=i;o.userData.acCutawayBayPanelPart=true});skin.add(panel);panels.push(panel)
   }
-  skin.userData.acSketchHull=true;skin.userData.acPrimaryHull=structure;skin.userData.acCutawayBayPanels=panels;skin.userData.acCutawayBayLayout=specs.map((s,i)=>({index:i,x:s.x,y:cy+s.y,w:s.w,h:s.h,role:s.name}));
+  skin.userData.acSketchHull=true;skin.userData.acPrimaryHull=structure;skin.userData.acCutawayBayPanels=panels;skin.userData.acCutawayBayLayout=specs.map((s,i)=>({index:i,x:s.x,y:cy+s.y,z:4.78,w:s.w,h:s.h,points:s.points.map(p=>p.slice()),role:s.name}));
 }
 function addUnifiedExteriorShell(skin,faction,side){if(!skin)return;const cy=side==='aurelian'?0:5;const mat=(c,m=.7,r=.45,e=0)=>new THREE.MeshStandardMaterial({color:c,metalness:m,roughness:r,emissive:e,emissiveIntensity:e?0.28:0});if(faction==='earth'){const lower=box(31,3.2,15.5,0x252d2e,.72,.66);lower.position.set(0,cy-2.0,-1);skin.add(lower);for(const [x,y,w,h,rz] of [[-8,cy+1.0,13,6,-.11],[6,cy+1.4,16,6.5,.08]]){const slab=box(w,h,7,x<0?0x667064:0x3f4a45,.58,.68);slab.position.set(x,y,1.5);slab.rotation.z=rz;skin.add(slab)}const bunker=box(12,8.2,8.5,0x39433c,.64,.64);bunker.position.set(1,cy+4.4,-1.2);skin.add(bunker);const roof=box(13.5,1.1,9.2,0x252c2d,.72,.58);roof.position.set(1,cy+8.6,-1.2);skin.add(roof);for(const x of[-12.5,12.5]){const skirt=box(5,3.2,12,x<0?0x4b5544:0x30393a,.70,.62);skirt.position.set(x,cy-1.2,-1.2);skin.add(skirt)}for(const [x,z] of [[-10,4.5],[-4,4.9],[4,4.7],[10,4.1]]){const shutter=box(4.2,2.3,.32,x<0?0x737a70:0x343c3a,.66,.56);shutter.position.set(x,cy+2,z);skin.add(shutter)}}else if(faction==='gray'){const grayShellMat=new THREE.MeshStandardMaterial({color:0x453b58,metalness:.86,roughness:.31,emissive:0x4b2468,emissiveIntensity:.42}),upper=new THREE.Mesh(new THREE.SphereGeometry(9.4,48,22),grayShellMat);upper.scale.set(2.35,.35,1.25);upper.position.set(0,cy+1.3,0);skin.add(upper);const lower=upper.clone();lower.material=grayShellMat.clone();lower.scale.y=.22;lower.position.y=cy-.6;skin.add(lower)}else if(faction==='aurelian'){buildAurelianDirectorHull(skin,cy,mat)}else if(faction==='lizard'){const hull=new THREE.Mesh(new THREE.SphereGeometry(7.2,42,22),mat(0x264c43,.58,.62));hull.scale.set(2.15,.72,1.05);hull.position.set(0,cy-.3,0);skin.add(hull)}}
 
@@ -3012,9 +3042,11 @@ function addLevel2FactionArt(skin,faction,side){
   }else if(faction==='aurelian'){
     const solar=standard(0xffd75b,.82,.20,0xff981f,1.35),frame=standard(0x9b6718,.88,.28),cell=standard(0xffed9a,.62,.18,0xffbd42,.72);
     if(skin.userData.acSketchHull){
-      const cannonPanel=skin.userData.acCutawayBayPanels?.[5],halo=new THREE.Mesh(new THREE.TorusGeometry(3.15,.15,10,56),solar);halo.name='L2_AURELIAN_SOLAR_CANNON_FOCUS_RING';halo.scale.y=.56;halo.position.set(.7,.05,1.60);cannonPanel?.add(halo);registerLevel2Part(halo,'spin',0,.16);
-      for(const [x,y] of [[-13.8,4.7],[-13.5,-1.2],[-13.2,-6.0],[12.5,6.2],[12.7,.6],[12.1,-5.3]]){const node=glowSphere(.22,0xffc34a,1.9);node.position.set(x,cy+y,9.46);skin.add(node);registerLevel2Part(node,'pulse',x*.17,2.0)}
-      const keel=box(8.6,.34,2.3,0x9b6718,.88,.28);keel.name='L2_AURELIAN_SOLAR_KEEL';keel.position.set(6.9,cy-8.05,5.8);keel.rotation.z=.10;skin.add(keel)
+      for(const [i,panel] of (skin.userData.acCutawayBayPanels||[]).entries()){
+        if(!panel)continue;const node=glowSphere(i===5?.25:.16,0xffd86a,i===5?2.4:1.55);node.name=`L2_AURELIAN_MODULE_POWER_NODE_${i+1}`;node.position.set(i===5?-1.0:0,(i%2?.18:-.12),i===5?3.48:3.30);panel.add(node);registerLevel2Part(node,'pulse',i*.43,1.7);
+        if(i>0&&i<5){const vane=box(Math.max(1.8,(panel.userData.acModuleRole||'').includes('UPPER')?3.2:2.6),.10,.10,0xffe498,.74,.16);vane.name=`L2_AURELIAN_INTEGRATED_VANE_${i+1}`;vane.position.set(i<3?-.72:.72,i%2?.58:-.52,3.31);vane.rotation.z=(i<3?-.10:.10);panel.add(vane)}
+      }
+      const structure=skin.userData.acPrimaryHull;if(structure){for(const x of[-10.8,-3.6,4.2,11.3]){const keelNode=glowSphere(.14,0xffc34a,1.45);keelNode.position.set(x,cy-9.36,8.04);structure.add(keelNode);registerLevel2Part(keelNode,'pulse',x*.12,1.8)}}
     }else{
       const gyro=new THREE.Mesh(new THREE.TorusGeometry(10.5,.18,10,72),solar);gyro.scale.y=.47;gyro.position.set(0,cy,6.55);gyro.name='L2_AURELIAN_REAR_SOLAR_GYRO';skin.add(gyro);registerLevel2Part(gyro,'spin',0,.10);
       const crown=new THREE.Group();crown.name='L2_AURELIAN_THREE_PANEL_CROWN';
@@ -4439,7 +4471,7 @@ function restoreXrayShell(){for(const item of xrayShellState){if(!item.mesh)cont
 function applyXrayShell(){
   restoreXrayShell();const side=localXraySide(),skin=side==='aurelian'?factionSkinA:factionSkinE,hidden=new Set();
   const hide=mesh=>{if(!mesh||hidden.has(mesh)||mesh.visible===false)return;hidden.add(mesh);xrayShellState.push({mesh,visible:mesh.visible});mesh.visible=false};
-  if(factionForWorldSide(side)==='aurelian'&&skin?.userData?.acCutawayBayPanels?.length===6){for(const panel of skin.userData.acCutawayBayPanels)hide(panel);diag('SIX-MODULE HULL CUTAWAY',`side=${side} physicalBays=6 logicalRooms=9 exteriorModulesHidden=${hidden.size} structuralHull=VISIBLE layout=PLAYER_SKETCH`);return}
+  if(factionForWorldSide(side)==='aurelian'&&skin?.userData?.acCutawayBayPanels?.length===6){for(const panel of skin.userData.acCutawayBayPanels)hide(panel);diag('SIX-MODULE HULL CUTAWAY',`side=${side} physicalBays=6 logicalRooms=9 exteriorModulesHidden=${hidden.size} pressureHull=CONTINUOUS structuralHull=VISIBLE layout=PLAYER_SKETCH`);return}
   skin?.traverse?.(mesh=>{if(!mesh?.isMesh)return;let protectedVisual=false;for(let o=mesh;o&&o!==skin.parent;o=o.parent)if(o.userData?.wreckPersistent||o.userData?.healthVisual){protectedVisual=true;break}if(!protectedVisual)hide(mesh)});
   diag('SIX-BAY HULL CUTAWAY',`side=${side} physicalBays=6 logicalRooms=9 hiddenPanels=${hidden.size}`)
 }
@@ -4521,6 +4553,29 @@ function buildCutawayOnlyWarrior3D(type){
   g.userData.rig={pelvis,torso,headRoot,armRoots,elbowRoots,legRoots,weapon:primaryWeapon,secondaryWeapon};g.userData.animationReady=true;
   g.traverse(o=>{o.visible=true;if(o.isMesh){o.frustumCulled=false;o.renderOrder=Math.max(o.renderOrder||0,110)}});return g
 }
+function acAurelianBayBackGeometry(points,scale=.90){return new THREE.ShapeGeometry(acAurelianShape(points,scale),24)}
+function acAddBayMesh(parent,geo,material,name,x=0,y=0,z=0){const mesh=markXray(new THREE.Mesh(geo,material),76);mesh.name=name;mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh}
+function acDressAurelianBay(root,role,index,bayW,bayH,roomD,palette,wallMat){
+  const gold=new THREE.MeshStandardMaterial({color:0xc98f2d,metalness:.82,roughness:.22,emissive:0x4a2500,emissiveIntensity:.22}),ivory=new THREE.MeshStandardMaterial({color:0xe8d9b0,metalness:.52,roughness:.28}),black=new THREE.MeshStandardMaterial({color:0x0b0805,metalness:.48,roughness:.48}),hot=new THREE.MeshStandardMaterial({color:0xffd75d,emissive:0xff8515,emissiveIntensity:2.5,metalness:.30,roughness:.14}),blue=new THREE.MeshStandardMaterial({color:0x55cfff,emissive:0x0b68a8,emissiveIntensity:1.55,metalness:.18,roughness:.20});
+  const rearZ=-roomD*.5+.34;
+  for(const sx of[-1,1]){const column=acAddBayMesh(root,new THREE.CylinderGeometry(.11,.15,bayH*.62,12),gold.clone(),`CUTAWAY_AURELIAN_COLUMN_${index}_${sx}`,sx*bayW*.35,0,rearZ+.10);column.rotation.z=sx*.045}
+  const ceilingRail=acAddBayMesh(root,new THREE.BoxGeometry(bayW*.66,.12,.18),gold.clone(),`CUTAWAY_AURELIAN_CEILING_RAIL_${index}`,0,bayH*.34,rearZ+.16);for(const x of[-.24,0,.24]){const lamp=acAddBayMesh(root,new THREE.CapsuleGeometry(.075,.30,5,10),hot.clone(),`CUTAWAY_AURELIAN_CEILING_LIGHT_${index}_${x}`,x*bayW,bayH*.28,rearZ+.31);lamp.rotation.z=Math.PI/2}
+  if(role==='PILOT_COCKPIT'){
+    const window=acAddBayMesh(root,new THREE.CircleGeometry(1,44),blue.clone(),'CUTAWAY_PILOT_PANORAMIC_WINDOW',0,.55,rearZ+.22);window.scale.set(bayW*.30,bayH*.17,1);const frame=new THREE.Mesh(new THREE.TorusGeometry(1,.055,10,52),gold.clone());frame.name='CUTAWAY_PILOT_WINDOW_FRAME';frame.scale.set(bayW*.31,bayH*.18,1);frame.position.set(0,.55,rearZ+.25);markXray(frame,79);root.add(frame);
+    const console=acAddBayMesh(root,new THREE.BoxGeometry(bayW*.56,.56,.70),black.clone(),'CUTAWAY_PILOT_COMMAND_CONSOLE',0,-bayH*.29,rearZ+.62);console.rotation.x=-.18;for(const x of[-.18,0,.18]){const screen=acAddBayMesh(root,new THREE.BoxGeometry(bayW*.12,.22,.035),x===0?hot.clone():blue.clone(),`CUTAWAY_PILOT_SCREEN_${x}`,x*bayW,-bayH*.22,rearZ+1.01);screen.rotation.x=-.18}
+    const chair=acAddBayMesh(root,new THREE.CapsuleGeometry(.24,.72,6,12),ivory.clone(),'CUTAWAY_PILOT_CHAIR',-bayW*.29,-bayH*.23,rearZ+.75);chair.rotation.x=Math.PI/2;const pilot=new THREE.Group();pilot.name='CUTAWAY_SEATED_AURELIAN_PILOT';pilot.position.set(-bayW*.29,-bayH*.05,rearZ+1.10);root.add(pilot);acAddBayMesh(pilot,new THREE.CylinderGeometry(.16,.23,.58,10),black.clone(),'CUTAWAY_PILOT_BODY');const head=acAddBayMesh(pilot,new THREE.SphereGeometry(.19,14,10),ivory.clone(),'CUTAWAY_PILOT_HEAD',0,.44,.02);const visor=acAddBayMesh(head,new THREE.BoxGeometry(.25,.06,.05),hot.clone(),'CUTAWAY_PILOT_VISOR',0,.02,.18)
+  }else if(role==='PORT_UPPER'){
+    for(const x of[-.25,0,.25]){const archive=acAddBayMesh(root,new THREE.CylinderGeometry(.31,.36,bayH*.38,14),x===0?hot.clone():gold.clone(),`CUTAWAY_SOLAR_ARCHIVE_${index}_${x}`,x*bayW,-.12,rearZ+.36);const ring=acAddBayMesh(root,new THREE.TorusGeometry(.38,.045,8,28),ivory.clone(),`CUTAWAY_ARCHIVE_RING_${index}_${x}`,x*bayW,.38,rearZ+.43);ring.scale.y=.70}
+  }else if(role==='PORT_LOWER'){
+    const reactor=acAddBayMesh(root,new THREE.SphereGeometry(.72,24,16),hot.clone(),'CUTAWAY_SOLAR_REACTOR',0,-.12,rearZ+.55);for(const r of[.92,1.20]){const ring=acAddBayMesh(root,new THREE.TorusGeometry(r,.07,10,40),r>1?ivory.clone():gold.clone(),`CUTAWAY_REACTOR_RING_${r}`,0,-.12,rearZ+.58);ring.scale.y=.70}for(const sx of[-1,1]){const conduit=acAddBayMesh(root,new THREE.CylinderGeometry(.08,.08,bayW*.30,10),gold.clone(),`CUTAWAY_REACTOR_FEED_${sx}`,sx*bayW*.26,-.20,rearZ+.30);conduit.rotation.z=Math.PI/2}
+  }else if(role==='STARBOARD_UPPER'){
+    for(const x of[-.28,0,.28]){const rack=acAddBayMesh(root,new THREE.BoxGeometry(bayW*.16,bayH*.48,.28),black.clone(),`CUTAWAY_ARMORY_RACK_${index}_${x}`,x*bayW,-.02,rearZ+.28);for(const y of[-.18,.02,.22]){const cell=acAddBayMesh(root,new THREE.CapsuleGeometry(.08,.30,5,10),y>0?hot.clone():gold.clone(),`CUTAWAY_ARMORY_CELL_${x}_${y}`,x*bayW,y*bayH,rearZ+.48);cell.rotation.z=Math.PI/2}}
+  }else if(role==='STARBOARD_LOWER'){
+    const table=acAddBayMesh(root,new THREE.CylinderGeometry(.78,.92,.22,18),gold.clone(),'CUTAWAY_TARGETING_TABLE',0,-bayH*.28,rearZ+1.02);const holo=acAddBayMesh(root,new THREE.SphereGeometry(.46,18,12),blue.clone(),'CUTAWAY_TARGETING_HOLOGRAM',0,-bayH*.03,rearZ+.96);holo.scale.y=.62;for(const sx of[-1,1]){const screen=acAddBayMesh(root,new THREE.BoxGeometry(bayW*.20,bayH*.26,.06),sx<0?hot.clone():blue.clone(),`CUTAWAY_TARGET_SCREEN_${sx}`,sx*bayW*.27,.24,rearZ+.43);screen.rotation.z=-sx*.08}
+  }else if(role==='SOLAR_CANNON_BAY'){
+    const chamber=acAddBayMesh(root,new THREE.SphereGeometry(.82,26,18),hot.clone(),'CUTAWAY_SOLAR_CANNON_CORE',-bayW*.20,-.05,rearZ+.60);for(const r of[1.05,1.32]){const ring=acAddBayMesh(root,new THREE.TorusGeometry(r,.08,10,42),r>1.1?ivory.clone():gold.clone(),`CUTAWAY_CANNON_CORE_RING_${r}`,-bayW*.20,-.05,rearZ+.64);ring.scale.y=.66}const rail=acAddBayMesh(root,new THREE.CylinderGeometry(.28,.46,bayW*.66,18),black.clone(),'CUTAWAY_SOLAR_CANNON_INTERNAL_BARREL',bayW*.16,-.05,rearZ+.50);rail.rotation.z=-Math.PI/2;for(const x of[.02,.20,.38]){const collar=acAddBayMesh(root,new THREE.TorusGeometry(.43,.07,8,28),gold.clone(),`CUTAWAY_CANNON_COLLAR_${x}`,x*bayW,-.05,rearZ+.55);collar.scale.y=.72}
+  }
+}
 function buildPrivateXray(){
   if(xrayGroup){localCommandVessel().remove(xrayGroup);disposeXrayObject(xrayGroup)}
   const rooms=localXrayRooms().userData.rooms,faction=factionForWorldSide(localXraySide()),crew=localXrayWarriors().filter(w=>!w.passive).slice(0,3);xrayRoomVisuals=[];
@@ -4534,51 +4589,53 @@ function buildPrivateXray(){
   const wallMat=new THREE.MeshStandardMaterial({color:hullColor,roughness:.72,metalness:.28,side:THREE.DoubleSide});
   const insideMat=new THREE.MeshStandardMaterial({color:insideColor,roughness:.88,metalness:.08,side:THREE.DoubleSide});
   const trimMat=new THREE.MeshBasicMaterial({color:trimColor,transparent:true,opacity:.24,depthWrite:false,side:THREE.DoubleSide});
-  const roomW=6.45,roomH=5.25,roomD=4.80,floorY=-roomH*.5;
+  const roomW=6.45,roomH=5.25,roomD=5.10;
   // Aurelian bay positions come directly from the six exterior modules in the
   // player's ship sketch. Other factions retain the shared 2x3 presentation.
   const roomLocals=rooms.map(source=>vessel.worldToLocal(source.hitPlane.getWorldPosition(new THREE.Vector3()))),closureCenter=roomLocals.reduce((p,q)=>p.add(q),new THREE.Vector3()).multiplyScalar(1/Math.max(1,roomLocals.length)),cutawaySkin=localXraySide()==='aurelian'?factionSkinA:factionSkinE,sketchLayout=faction==='aurelian'?cutawaySkin?.userData?.acCutawayBayLayout:null,bayLocals=[];
-  if(sketchLayout?.length===6){cutawaySkin.updateWorldMatrix(true,true);for(const spec of sketchLayout)bayLocals.push(vessel.worldToLocal(cutawaySkin.localToWorld(new THREE.Vector3(spec.x,spec.y,7.95))))}
+  if(sketchLayout?.length===6){cutawaySkin.updateWorldMatrix(true,true);for(const spec of sketchLayout)bayLocals.push(vessel.worldToLocal(cutawaySkin.localToWorld(new THREE.Vector3(spec.x,spec.y,spec.z??4.78))))}
   else{const logicalSpanX=Math.max(...roomLocals.map(p=>p.x))-Math.min(...roomLocals.map(p=>p.x)),bayStepX=Math.max(roomW*1.02,logicalSpanX*.82),closureCols=[closureCenter.x-bayStepX,closureCenter.x,closureCenter.x+bayStepX],closureRows=[closureCenter.y-roomH*.51,closureCenter.y+roomH*.51];for(let row=1;row>=0;row--)for(let col=0;col<3;col++)bayLocals.push(new THREE.Vector3(closureCols[col],closureRows[row],closureCenter.z))}
   const logicalGroups=[[0,6],[1,7],[2,8],[3],[4],[5]],bayWarriors=Array(6).fill(null);
   for(const w of crew){let slot=logicalGroups.findIndex(indices=>indices.includes(w.roomIndex));if(slot<0||bayWarriors[slot]){const col=((w.roomIndex%3)+3)%3,candidates=[col+3,col,...bayWarriors.map((_,i)=>i)];slot=candidates.find(i=>i>=0&&i<6&&!bayWarriors[i])??0}const prior=logicalGroups.findIndex(indices=>indices.includes(w.roomIndex));if(prior>=0&&prior!==slot)logicalGroups[prior]=logicalGroups[prior].filter(i=>i!==w.roomIndex);if(!logicalGroups[slot].includes(w.roomIndex))logicalGroups[slot].push(w.roomIndex);bayWarriors[slot]=w}
   for(let i=0;i<bayLocals.length;i++){
-    const logicalRoomIndices=logicalGroups[i],source=rooms[logicalRoomIndices[0]]||rooms[0],local=bayLocals[i].clone(),cell=new THREE.Group();
-    cell.name=`NATIVE_3D_BAY_${i+1}`;cell.userData.xrayVisual=true;cell.userData.logicalRoomIndices=logicalRoomIndices.slice();cell.position.set(local.x,local.y,local.z-.15);g.add(cell);
+    const logicalRoomIndices=logicalGroups[i],source=rooms[logicalRoomIndices[0]]||rooms[0],local=bayLocals[i].clone(),layoutSpec=sketchLayout?.[i]||null,aurelianBay=faction==='aurelian'&&Array.isArray(layoutSpec?.points),bayW=aurelianBay?Math.max(5.3,layoutSpec.w*.84):roomW,bayH=aurelianBay?Math.max(5.05,layoutSpec.h*.88):roomH,floorY=-bayH*.5,cell=new THREE.Group();
+    cell.name=`NATIVE_3D_BAY_${i+1}`;cell.userData.xrayVisual=true;cell.userData.logicalRoomIndices=logicalRoomIndices.slice();cell.userData.acModuleRole=layoutSpec?.role||'STANDARD';cell.position.set(local.x,local.y,local.z-.06);g.add(cell);
     // Interior and exterior are separate scene branches. A closing bay can now remove
     // its complete room box before revealing the hull sector, so no cabinet frame is
     // left drawn through the reconstructed exterior.
-    const interiorRoot=markXray(new THREE.Group(),70);interiorRoot.name=`CUTAWAY_BAY_INTERIOR_${i+1}`;interiorRoot.userData.acBayInterior=true;cell.add(interiorRoot);
-    const back=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW,roomH,.18),insideMat.clone()),70);back.name=`CUTAWAY_BAY_BACK_${i+1}`;back.position.z=-roomD*.5;interiorRoot.add(back);
-    for(const sx of[-1,1]){const conduit=markXray(new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,roomH*.52,10),trimMat.clone()),73);conduit.name=`CUTAWAY_BAY_CONDUIT_${i+1}_${sx}`;conduit.position.set(sx*roomW*.31,-.12,-roomD*.5+.20);interiorRoot.add(conduit)}
-    const console=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.48,.34,.32),wallMat.clone()),74);console.name=`CUTAWAY_BAY_CONSOLE_${i+1}`;console.position.set(0,floorY+.62,-roomD*.5+.30);interiorRoot.add(console);
-    for(const sx of[-1,0,1]){const indicator=markXray(new THREE.Mesh(new THREE.SphereGeometry(.055,10,7),new THREE.MeshBasicMaterial({color:sx===0?bayPalette.light:trimColor})),76);indicator.name=`CUTAWAY_BAY_INDICATOR_${i+1}_${sx}`;indicator.position.set(sx*roomW*.11,floorY+.64,-roomD*.5+.49);interiorRoot.add(indicator)}
-    const backLight=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.48,.055,.08),new THREE.MeshBasicMaterial({color:bayPalette.light,transparent:true,opacity:.72,depthWrite:false})),77);backLight.name=`CUTAWAY_BAY_BACKLIGHT_${i+1}`;backLight.position.set(0,roomH*.35,-roomD*.5+.22);interiorRoot.add(backLight);
-    const floor=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW,.24,roomD),wallMat.clone()),72);floor.position.y=floorY;interiorRoot.add(floor);
-    const ceiling=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW,.16,roomD),wallMat.clone()),72);ceiling.position.y=roomH*.5;interiorRoot.add(ceiling);
-    for(const sx of[-1,1]){const wall=markXray(new THREE.Mesh(new THREE.BoxGeometry(.14,roomH,roomD),wallMat.clone()),72);wall.position.x=sx*roomW*.5;interiorRoot.add(wall)}
-    for(const sx of[-1,1]){const rail=markXray(new THREE.Mesh(new THREE.BoxGeometry(.065,roomH*.84,.065),trimMat.clone()),78);rail.position.set(sx*(roomW*.5-.18),0,roomD*.48);interiorRoot.add(rail)}
-    for(const z of[-.28,.05,.38]){const floorStrip=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.76,.045,.07),trimMat.clone()),79);floorStrip.position.set(0,floorY+.15,z*roomD);interiorRoot.add(floorStrip)}
+    const interiorRoot=markXray(new THREE.Group(),70);interiorRoot.name=`CUTAWAY_BAY_INTERIOR_${i+1}`;interiorRoot.userData.acBayInterior=true;interiorRoot.userData.acModuleRole=layoutSpec?.role||'STANDARD';cell.add(interiorRoot);
+    const backGeo=aurelianBay?acAurelianBayBackGeometry(layoutSpec.points,.91):new THREE.BoxGeometry(bayW,bayH,.18),back=markXray(new THREE.Mesh(backGeo,insideMat.clone()),70);back.name=`CUTAWAY_BAY_BACK_${i+1}`;back.position.z=-roomD*.5;interiorRoot.add(back);
+    if(aurelianBay){const insetBack=markXray(new THREE.Mesh(acAurelianBayBackGeometry(layoutSpec.points,.82),new THREE.MeshStandardMaterial({color:0x120b05,metalness:.40,roughness:.66,emissive:0x351900,emissiveIntensity:.20,side:THREE.DoubleSide})),71);insetBack.name=`CUTAWAY_AURELIAN_INSET_BACK_${i+1}`;insetBack.position.z=-roomD*.5+.09;interiorRoot.add(insetBack)}
+    for(const sx of[-1,1]){const conduit=markXray(new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,bayH*.54,12),trimMat.clone()),73);conduit.name=`CUTAWAY_BAY_CONDUIT_${i+1}_${sx}`;conduit.position.set(sx*bayW*.37,-.10,-roomD*.5+.20);interiorRoot.add(conduit)}
+    const console=markXray(new THREE.Mesh(new THREE.BoxGeometry(bayW*.52,.38,.38),wallMat.clone()),74);console.name=`CUTAWAY_BAY_CONSOLE_${i+1}`;console.position.set(0,floorY+.62,-roomD*.5+.32);interiorRoot.add(console);
+    for(const sx of[-1,0,1]){const indicator=markXray(new THREE.Mesh(new THREE.SphereGeometry(.065,12,8),new THREE.MeshBasicMaterial({color:sx===0?bayPalette.light:trimColor})),76);indicator.name=`CUTAWAY_BAY_INDICATOR_${i+1}_${sx}`;indicator.position.set(sx*bayW*.12,floorY+.65,-roomD*.5+.54);interiorRoot.add(indicator)}
+    const backLight=markXray(new THREE.Mesh(new THREE.BoxGeometry(bayW*.50,.07,.10),new THREE.MeshBasicMaterial({color:bayPalette.light,transparent:true,opacity:.82,depthWrite:false})),77);backLight.name=`CUTAWAY_BAY_BACKLIGHT_${i+1}`;backLight.position.set(0,bayH*.35,-roomD*.5+.24);interiorRoot.add(backLight);
+    const floor=markXray(new THREE.Mesh(new THREE.BoxGeometry(bayW,.28,roomD),wallMat.clone()),72);floor.name=`CUTAWAY_BAY_FLOOR_${i+1}`;floor.position.y=floorY;interiorRoot.add(floor);
+    const ceiling=markXray(new THREE.Mesh(new THREE.BoxGeometry(bayW,.20,roomD),wallMat.clone()),72);ceiling.name=`CUTAWAY_BAY_CEILING_${i+1}`;ceiling.position.y=bayH*.5;interiorRoot.add(ceiling);
+    for(const sx of[-1,1]){const wall=markXray(new THREE.Mesh(new THREE.BoxGeometry(.18,bayH,roomD),wallMat.clone()),72);wall.name=`CUTAWAY_BAY_SIDEWALL_${i+1}_${sx}`;wall.position.x=sx*bayW*.5;interiorRoot.add(wall)}
+    for(const sx of[-1,1]){const rail=markXray(new THREE.Mesh(new THREE.BoxGeometry(.08,bayH*.82,.08),trimMat.clone()),78);rail.position.set(sx*(bayW*.5-.22),0,roomD*.47);interiorRoot.add(rail)}
+    for(const z of[-.30,0,.30]){const floorStrip=markXray(new THREE.Mesh(new THREE.BoxGeometry(bayW*.76,.055,.08),trimMat.clone()),79);floorStrip.position.set(0,floorY+.17,z*roomD);interiorRoot.add(floorStrip)}
+    if(aurelianBay)acDressAurelianBay(interiorRoot,layoutSpec.role,i+1,bayW,bayH,roomD,bayPalette,wallMat);
     const frontShutter=markXray(new THREE.Group(),96);frontShutter.name=`CUTAWAY_FRONT_SHUTTER_${i+1}`;frontShutter.position.set(0,0,faction==='aurelian'?0:roomD*.51);frontShutter.visible=false;frontShutter.userData.acAimClosed=false;frontShutter.userData.acExteriorClosure=true;
     if(faction==='aurelian'){
       frontShutter.userData.acRevealOriginalExterior=true;frontShutter.userData.acExteriorModuleIndex=i;
     }else{
-      const armor=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.94,roomH*.92,.16),wallMat.clone()),96);armor.name=`CUTAWAY_FRONT_SHUTTER_ARMOR_${i+1}`;frontShutter.add(armor)
+      const armor=markXray(new THREE.Mesh(new THREE.BoxGeometry(bayW*.94,bayH*.92,.16),wallMat.clone()),96);armor.name=`CUTAWAY_FRONT_SHUTTER_ARMOR_${i+1}`;frontShutter.add(armor)
     }
     cell.add(frontShutter);cell.userData.frontShutter=frontShutter;cell.userData.interiorRoot=interiorRoot;
     // Full box-edge outlines recreated the unwanted tic-tac-toe cage, so the six bays
     // retain real floors, walls, ceilings and depth without a presentation-only rim.
     const rim=null;
     const exteriorPanel=faction==='aurelian'?cutawaySkin?.userData?.acCutawayBayPanels?.[i]||null:null;
-    const visual={warriorMarker:null,statusGroup:null,warrior:null,rig3D:null,aura:null,label:null,hit:null,railHit:null,index:i,logicalRoomIndices,lastHp:0,hitUntil:0,baseRigY:0,baseRigScale:null,rim,roomLight:null,aaBack:null,aaFill:null,aaWidth:0,nativeRoom:cell,interiorRoot,standAnchor:null,frontShutter,exteriorPanel,room:source,empty:true};
+    const visual={warriorMarker:null,statusGroup:null,warrior:null,rig3D:null,aura:null,label:null,hit:null,railHit:null,index:i,logicalRoomIndices,lastHp:0,hitUntil:0,baseRigY:0,baseRigScale:null,rim,roomLight:null,aaBack:null,aaFill:null,aaWidth:0,nativeRoom:cell,interiorRoot,standAnchor:null,frontShutter,exteriorPanel,room:source,bayW,bayH,moduleRole:layoutSpec?.role||'STANDARD',empty:true};
     xrayRoomVisuals.push(visual);
     const w=bayWarriors[i];if(!w)continue;
     // Dedicated standing anchor: feet sit on the new 3D floor. This anchor can later drive idle/hit/fall/death animation.
-    const stand=new THREE.Group();stand.name=`WARRIOR_STAND_ANCHOR_BAY_${i+1}`;stand.userData.xrayVisual=true;stand.userData.xrayWarrior=w;stand.position.set(0,floorY+.90,.42);interiorRoot.add(stand);
-    const rig3D=buildCutawayOnlyWarrior3D(w.weaponKey);rig3D.name=`NATIVE_${w.weaponKey.toUpperCase()}_BAY_${i+1}`;rig3D.position.set(0,0,0);rig3D.scale.setScalar(1.04);rig3D.visible=true;rig3D.traverse(o=>{o.userData=o.userData||{};o.userData.xrayVisual=true;o.visible=true;if(o.isMesh){o.frustumCulled=false;o.renderOrder=110}});stand.add(rig3D);
+    const stand=new THREE.Group();stand.name=`WARRIOR_STAND_ANCHOR_BAY_${i+1}`;stand.userData.xrayVisual=true;stand.userData.xrayWarrior=w;stand.position.set(0,floorY+.94,.58);interiorRoot.add(stand);
+    const rig3D=buildCutawayOnlyWarrior3D(w.weaponKey);rig3D.name=`NATIVE_${w.weaponKey.toUpperCase()}_BAY_${i+1}`;rig3D.position.set(0,0,0);rig3D.scale.multiplyScalar(aurelianBay?1.16:1.04);rig3D.visible=true;rig3D.traverse(o=>{o.userData=o.userData||{};o.userData.xrayVisual=true;o.visible=true;if(o.isMesh){o.frustumCulled=false;o.renderOrder=110}});stand.add(rig3D);
 
     const shadow=markXray(new THREE.Mesh(new THREE.CircleGeometry(.72,24),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.30,depthWrite:false,side:THREE.DoubleSide})),86);shadow.rotation.x=-Math.PI/2;shadow.position.set(0,-.82,.12);stand.add(shadow);
-    const hit=markXray(new THREE.Mesh(new THREE.PlaneGeometry(4.65,4.05),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthTest:false,depthWrite:false,side:THREE.DoubleSide})),115);hit.position.set(0,.55,.70);hit.userData.xrayWarrior=w;stand.add(hit);
+    const hit=markXray(new THREE.Mesh(new THREE.PlaneGeometry(Math.max(4.65,bayW*.66),Math.max(4.05,bayH*.76)),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthTest:false,depthWrite:false,side:THREE.DoubleSide})),115);hit.position.set(0,.55,.70);hit.userData.xrayWarrior=w;stand.add(hit);
     const aura=markXray(new THREE.Mesh(new THREE.RingGeometry(.62,.70,22),xrayBasic(w.assignedColor,.10,true)),88);aura.rotation.x=-Math.PI/2;aura.position.set(0,-.80,.15);stand.add(aura);
     const label=makeXrayCrewLabel(w);label.scale.set(1.72,.43,1);label.position.set(0,floorY+.34,roomD*.50+.06);interiorRoot.add(label);
     const light=new THREE.PointLight(bayPalette.light,.50,7.4,2.0);light.position.set(-.75,1.55,1.70);interiorRoot.add(light);
@@ -4586,14 +4643,14 @@ function buildPrivateXray(){
   }
   xrayScanBand=null;xrayGroup=g;g.updateWorldMatrix(true,true);refreshPrivateXrayVisuals();
   for(const v of xrayRoomVisuals){if(!v.rig3D||!v.standAnchor||!v.warrior)continue;const box=new THREE.Box3().setFromObject(v.rig3D),size=box.getSize(new THREE.Vector3()),wp=v.rig3D.getWorldPosition(new THREE.Vector3()),sp=v.standAnchor.getWorldPosition(new THREE.Vector3()),ndc=wp.clone().project(camera);diag('NATIVE 3D WARRIOR',`${v.warrior.weaponKey} bay=${v.index+1} logicalRoom=${v.warrior.roomIndex+1} size=${size.x.toFixed(2)},${size.y.toFixed(2)},${size.z.toFixed(2)} stand=${sp.x.toFixed(1)},${sp.y.toFixed(1)},${sp.z.toFixed(1)} ndc=${ndc.x.toFixed(2)},${ndc.y.toFixed(2)},${ndc.z.toFixed(2)}`)}
-  diag('NATIVE 3D CUTAWAY',`physicalBays=${xrayRoomVisuals.length} logicalRooms=${rooms.length} layout=${sketchLayout?.length===6?'PLAYER_SKETCH_STACKED':'2x3'} occupied=${crew.length} empty=${xrayRoomVisuals.length-crew.length} cockpit=OVAL pilotBay=1 solarCannonBay=6 crew=${crew.map(w=>w.weaponKey+'@R'+(w.roomIndex+1)).join(',')} combatGrid=UNCHANGED`)
+  diag('NATIVE 3D CUTAWAY',`physicalBays=${xrayRoomVisuals.length} logicalRooms=${rooms.length} layout=${sketchLayout?.length===6?'PLAYER_SKETCH_STACKED':'2x3'} shapedApertures=${sketchLayout?.length===6?6:0} roleDressedInteriors=${faction==='aurelian'?6:0} occupied=${crew.length} empty=${xrayRoomVisuals.length-crew.length} cockpit=OVAL+PILOT solarCannonBay=6 crew=${crew.map(w=>w.weaponKey+'@R'+(w.roomIndex+1)).join(',')} combatGrid=UNCHANGED`)
 }
 function refreshPrivateXrayVisuals(){
   if(!xrayOpen||!xrayGroup)return;const now=performance.now();
   for(const v of xrayRoomVisuals){
     if(v.warriorMarker){
       const w=v.warrior,chosen=w===xraySelectedCrew,dead=w.hp<=0;if(w.hp<v.lastHp)v.hitUntil=now+360;v.lastHp=w.hp;v.warriorMarker.visible=true;
-      if(v.rig3D){const hit=now<v.hitUntil,breath=Math.sin(now*.0026+w.roomIndex*.53),base=v.baseRigScale;v.rig3D.position.y=v.baseRigY+(dead?-.24:breath*.012);v.rig3D.rotation.z=dead?.86:(hit?Math.sin(now*.05)*.10:breath*.003);const m=dead?.94:1+(chosen?.016:.004)*breath;v.rig3D.scale.set(base.x*m,base.y*m,base.z*m)}
+      if(v.rig3D){const hit=now<v.hitUntil,breath=Math.sin(now*.0026+w.roomIndex*.53),base=v.baseRigScale;v.rig3D.position.y=v.baseRigY+(dead?-.24:breath*.018);v.rig3D.rotation.z=dead?.86:(hit?Math.sin(now*.05)*.10:breath*.004);const m=dead?.94:1+(chosen?.014:.004)*breath;v.rig3D.scale.set(base.x*m,base.y*m,base.z*m);if(!dead&&typeof acAnimateAurelianWarriorIdle==='function')acAnimateAurelianWarriorIdle(v.rig3D,w,now,chosen)}
       v.aura.material.opacity=dead?(chosen?.82:.40):(chosen?.86:.20);v.aura.material.color.setHex(dead?0xff4b3e:w.assignedColor);v.aura.scale.setScalar(chosen?1.16:1);if(v.rim?.material)v.rim.material.opacity=chosen?.46:.16;if(v.roomLight)v.roomLight.intensity=chosen?.72:.28;continue
     }
     if(v.nativeRoom){if(v.rim?.material)v.rim.material.opacity=.10;if(v.roomLight)v.roomLight.intensity=.20;continue}
