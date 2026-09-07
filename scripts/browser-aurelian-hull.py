@@ -8,12 +8,14 @@ html=(OUT/'compiled.html').read_text()
 hook=r'''
 window.__hullReview={
   get:()=>({phase:gameFlowPhase,battleStarted,xrayOpen,soloTurn,round:soloRound,rooms:aure.userData?.rooms?.length,crew:aWarriors.filter(w=>w.active).map(w=>({weapon:w.weaponKey,room:w.roomIndex,hp:w.hp})),panels:factionSkinA?.userData?.acCutawayBayPanels?.map(p=>({name:p.name,visible:p.visible})),draws:renderer.info.render.calls,tris:renderer.info.render.triangles,diag:diagLines.slice(-18)}),
-  start:()=>{musicEnabled=false;multiplayer=false;localSide='aurelian';showFactionSelect();chooseFaction('aurelian');showCharacterSelect();continueToDeployment(null);[0,1,2].forEach((room,i)=>placeWarriorInSlot(i,room));startBattle(null);for(const id of ['homeOverlay','titleScreen','ndaOverlay','mpLobby','factionOverlay','characterOverlay','deployOverlay']){const e=document.getElementById(id);if(e){e.classList.remove('show');e.classList.add('hidden');e.style.display='none'}}return gameFlowPhase},
+  start:()=>{musicEnabled=false;saveStorySeen();if(storyActive)endStoryIntro();multiplayer=false;localSide='aurelian';showFactionSelect();chooseFaction('aurelian');showCharacterSelect();continueToDeployment(null);[0,1,2].forEach((room,i)=>placeWarriorInSlot(i,room));startBattle(null);for(const id of ['homeOverlay','titleScreen','ndaOverlay','mpLobby','factionOverlay','characterOverlay','deployOverlay']){const e=document.getElementById(id);if(e){e.classList.remove('show');e.classList.add('hidden');e.style.display='none'}}return gameFlowPhase},
   open:()=>openPrivateXray('browser regression'),close:()=>closePrivateXray('browser regression'),
   cycle:()=>{for(let i=0;i<5;i++){closePrivateXray('browser cycle');openPrivateXray('browser cycle')}return xrayRoomVisuals.length},
   select:(index)=>{const v=xrayRoomVisuals.find(v=>v.warrior?.active&&v.warrior.hp>0&&v.index===index);if(!v)return false;selectXrayCrew(v.warrior);return true},
   seal:(progress)=>{const w=xrayRoomVisuals.find(v=>v.warrior?.active&&v.warrior.hp>0)?.warrior;if(!w)return false;acDirectorApplyAimSeal(w,progress);return {closed:xrayRoomVisuals.filter(v=>v.exteriorPanel?.visible).length,exhaust:factionSkinA.getObjectByName('AURELIAN_CANON_EXHAUST_CLUSTER').visible}},
   inspect:()=>({crew:xrayRoomVisuals.filter(v=>v.warrior).map(v=>({index:v.index,room:v.warrior.roomIndex,visible:v.rig3D?.visible,p:v.standAnchor?.getWorldPosition(new THREE.Vector3()).toArray()})),exhaust:!!factionSkinA.getObjectByName('AURELIAN_CANON_EXHAUST_CLUSTER'),cockpitParent:factionSkinA.getObjectByName('AURELIAN_CANON_COCKPIT')?.parent?.name,cannonParent:factionSkinA.getObjectByName('AURELIAN_CANON_SOLAR_CANNON_ART')?.parent?.name}),
+  aimState:()=>({aiming,shots,soloTurn,round:soloRound,selected:selected?.weaponKey,mode:acDirector.mode,closed:xrayRoomVisuals.filter(v=>v.exteriorPanel?.visible).length,origin:aimOriginWorld?.toArray(),beamOrigin:acDirector.origin?.toArray(),events:diagLines.filter(x=>/AIM RELEASE| FIRE |DIRECTOR BEAM|TURN VFX RELEASE|SOLO HANDOFF/.test(x))}),
+  pressPoint:()=>{const v=xrayRoomVisuals.find(v=>v.warrior?.weaponKey==='solar_lancer');return v?worldToStage(v.standAnchor.getWorldPosition(new THREE.Vector3())):null},
   screenshot:()=>{renderer.render(scene,camera)},
   rigBounds:()=>xrayRoomVisuals.filter(v=>v.warrior).map(v=>({index:v.index,r:objectScreenRect(v.rig3D,0)})),
   canvasRect:()=>{const r=renderer.domElement.getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height}}
@@ -50,12 +52,26 @@ with sync_playwright() as p:
     result['startPhase']=page.evaluate('window.__hullReview.start()');page.wait_for_timeout(1400)
     result['battle']=page.evaluate('window.__hullReview.get()')
     page.evaluate('window.__hullReview.close()');page.wait_for_timeout(900)
+    assert page.locator('#storyIntro').evaluate("e=>!e.classList.contains('show')"), 'Intro still covers render'
     page.locator('#stageShell').screenshot(path=str(OUT/'exterior-render.png'))
     page.evaluate('window.__hullReview.open()');page.wait_for_timeout(1300)
     result['cutaway']=page.evaluate('window.__hullReview.inspect()')
     page.locator('#stageShell').screenshot(path=str(OUT/'cutaway-render.png'))
     result['cycledBays']=page.evaluate('window.__hullReview.cycle()');page.wait_for_timeout(200)
     result['seal']=page.evaluate('window.__hullReview.seal(1)')
+    page.evaluate('window.__hullReview.close()');page.evaluate('window.__hullReview.open()');page.wait_for_timeout(600)
+    point=page.evaluate('window.__hullReview.pressPoint()');rect=page.evaluate('window.__hullReview.canvasRect()')
+    assert point, 'Solar Lancer cannot be selected'
+    x=rect['x']+point['x']*rect['w']/1280;y=rect['y']+point['y']*rect['h']/720
+    page.mouse.move(x,y);page.mouse.down();page.mouse.move(x+18,y-2,steps=2);page.wait_for_timeout(250)
+    page.mouse.move(min(rect['x']+rect['w']-15,x+540),max(rect['y']+20,y-150),steps=12);page.wait_for_timeout(1100)
+    result['aim']=page.evaluate('window.__hullReview.aimState()')
+    page.locator('#stageShell').screenshot(path=str(OUT/'aim-render.png'))
+    page.mouse.up();page.wait_for_timeout(150)
+    result['release']=page.evaluate('window.__hullReview.aimState()')
+    (OUT/'browser-report.json').write_text(json.dumps(result,indent=2))
+    page.wait_for_function("window.__hullReview.aimState().round>=2 && window.__hullReview.aimState().soloTurn==='aurelian'",timeout=60000)
+    result['nextTurn']=page.evaluate('window.__hullReview.aimState()')
     result['placeholderAssets']=placeholder_assets;result['errors']=errors;result['consoleErrors']=console[-10:]
     (OUT/'browser-report.json').write_text(json.dumps(result,indent=2))
     print(json.dumps(result,indent=2))
@@ -64,4 +80,8 @@ with sync_playwright() as p:
     assert len(result['cutaway']['crew'])==3, 'Missing visible crew'
     assert result['cycledBays']==6, 'Cutaway did not rebuild all bays'
     assert result['seal']['closed']==5 and result['seal']['exhaust'], 'Seal/exhaust failure'
+    assert result['aim']['aiming'] and result['aim']['selected']=='solar_lancer', 'Pointer aiming failed'
+    assert result['release']['shots']==result['aim']['shots']+1, 'Release did not fire exactly once'
+    assert result['nextTurn']['round']==2, 'Turn advanced incorrectly'
+    assert all(v['visible'] for v in result['cutaway']['crew']), 'Crew not visible'
     assert not errors, 'JavaScript runtime errors: '+str(errors)
