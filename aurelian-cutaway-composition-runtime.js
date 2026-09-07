@@ -1,5 +1,5 @@
 export function patchAurelianCutawayCompositionRuntime(html){
-  if(html.includes('ac-aurelian-cutaway-composition-v0416'))return html;
+  if(html.includes('ac-aurelian-cutaway-composition-v0417'))return html;
   const helper=String.raw`
 function acComposeAurelianCutaway(rig,type){
   if(!rig||rig.userData?.acCutawayComposed)return rig;
@@ -17,22 +17,25 @@ function acComposeAurelianCutaway(rig,type){
   if(type==='solar_lancer'){
     if(r.armL)r.armL.rotation.z=.22;if(r.armR)r.armR.rotation.z=-.30;
     if(r.elbowL)r.elbowL.rotation.z=-.12;if(r.elbowR)r.elbowR.rotation.z=.18;
-    if(r.weapon){r.weapon.rotation.z=-.30;r.weapon.rotation.y=-.05;r.weapon.position.x=1.02;r.weapon.position.y=.34;r.weapon.position.z=.40;r.weapon.scale.setScalar(.94)}
+    if(r.shoulders)r.shoulders.scale.x=1.08;
+    if(r.weapon){r.weapon.rotation.z=-.30;r.weapon.rotation.y=-.05;r.weapon.position.x=1.02;r.weapon.position.y=.34;r.weapon.position.z=.40;r.weapon.scale.setScalar(.98)}
     const shaft=rig.getObjectByName('lanceShaft');if(shaft)shaft.scale.set(1,1,1);
     const spine=rig.getObjectByName('lanceSpine');if(spine)spine.scale.set(1,1,1);
     if(r.lanceTip&&r.lanceTip.material)r.lanceTip.material.emissiveIntensity=Math.max(r.lanceTip.material.emissiveIntensity||0,3.0);
   }else if(type==='sun_disk_gunner'){
     if(r.armL)r.armL.rotation.z=.24;if(r.armR)r.armR.rotation.z=-.24;
     if(r.elbowL)r.elbowL.rotation.z=-.08;if(r.elbowR)r.elbowR.rotation.z=.08;
-    if(r.gauntlet){r.gauntlet.rotation.set(-.08,-.08,-.04);r.gauntlet.scale.setScalar(.92)}
-    if(r.secondaryGauntlet){r.secondaryGauntlet.rotation.set(-.08,.08,.04);r.secondaryGauntlet.scale.setScalar(.92)}
-    rig.traverse(o=>{const n=String(o.name||'');if(n.startsWith('solarDisk'))o.scale.setScalar(.94);if(n.startsWith('diskEmitter'))o.scale.setScalar(.96)});
+    if(r.shoulders)r.shoulders.scale.x=1.14;
+    if(r.gauntlet){r.gauntlet.rotation.set(-.08,-.08,-.04);r.gauntlet.scale.setScalar(1.08)}
+    if(r.secondaryGauntlet){r.secondaryGauntlet.rotation.set(-.08,.08,.04);r.secondaryGauntlet.scale.setScalar(1.08)}
+    rig.traverse(o=>{const n=String(o.name||'');if(n.startsWith('solarDisk'))o.scale.setScalar(1.04);if(n.startsWith('diskEmitter'))o.scale.setScalar(1.08)});
   }else if(type==='sunadier'){
     if(r.armL)r.armL.rotation.z=.18;if(r.armR)r.armR.rotation.z=-.32;
     if(r.elbowL)r.elbowL.rotation.z=-.10;if(r.elbowR)r.elbowR.rotation.z=.20;
+    if(r.shoulders)r.shoulders.scale.x=1.12;
     if(r.chain){r.chain.rotation.z=-.08;r.chain.rotation.y=-.10;r.chain.position.x=.18}
-    if(r.grenade){r.grenade.position.x=1.36;r.grenade.position.y=.62;r.grenade.position.z=.42;r.grenade.scale.setScalar(.94)}
-    rig.traverse(o=>{const n=String(o.name||'');if(n.startsWith('chainLink'))o.scale.setScalar(.94);if(n==='grenadeCore')o.scale.setScalar(1.0)});
+    if(r.grenade){r.grenade.position.x=1.36;r.grenade.position.y=.62;r.grenade.position.z=.42;r.grenade.scale.setScalar(1.12)}
+    rig.traverse(o=>{const n=String(o.name||'');if(n.startsWith('chainLink'))o.scale.setScalar(1.04);if(n==='grenadeCore')o.scale.setScalar(1.10)});
   }
   rig.traverse(o=>{
     const n=String(o.name||'').toLowerCase();
@@ -41,7 +44,7 @@ function acComposeAurelianCutaway(rig,type){
   });
   const key=new THREE.PointLight(0xffd08a,.58,5.2,2);key.name='AURELIAN_ROOM_KEY';key.position.set(.10,1.70,1.55);rig.add(key);
   const fill=new THREE.PointLight(0xfff0c0,.34,4.0,2);fill.name='AURELIAN_ROOM_FILL';fill.position.set(-.55,1.05,1.05);rig.add(fill);
-  rig.userData.acCutawayComposed=true;rig.userData.acStageRule='SIX_BAY_HIGH_DETAIL_READABLE';rig.userData.acCutawayScale=.76;return rig
+  rig.userData.acCutawayComposed=true;rig.userData.acStageRule='SIX_BAY_MOBILE_READABLE_MAJOR_SILHOUETTES';rig.userData.acCutawayScale=.76;return rig
 }
 `;
   const needle="function buildCutawayOnlyWarrior3D(type){\n  if(type==='solar_lancer')return acBuildSolarLancerRebuilt();\n  if(type==='sun_disk_gunner')return acBuildSunDiskGunnerRebuilt();\n  if(type==='sunadier')return acBuildSunadierRebuilt();";
@@ -49,5 +52,5 @@ function acComposeAurelianCutaway(rig,type){
   let patched=html.replace(needle,replacement);const ok=patched!==html;
   patched=patched.replace(/MATCH RECORDER v0\.3[56]\.[0-9]+/g,'MATCH RECORDER v0.36.8');
   patched=patched.replace(/build=2026-09-04_[A-Z0-9_]+/g,'build=2026-09-05_AURELIAN_UPRIGHT_STAGING');
-  return patched.replace('</head>','<meta id="ac-aurelian-cutaway-composition-v0416" name="ac-aurelian-cutaway-composition" content="stage:'+(ok?'OK':'MISS')+' scale:.76 owner:COMPOSITION identity:HIGH_DETAIL_UPRIGHT_READABLE">\n</head>')
+  return patched.replace('</head>','<meta id="ac-aurelian-cutaway-composition-v0417" name="ac-aurelian-cutaway-composition" content="stage:'+(ok?'OK':'MISS')+' scale:.76 owner:COMPOSITION identity:MOBILE_READABLE_MAJOR_SILHOUETTES">\n</head>')
 }

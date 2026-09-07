@@ -4495,7 +4495,7 @@ function buildPrivateXray(){
   // grid remains authoritative for targeting, shields, damage and multiplayer state;
   // it no longer dictates the size or number of visible interior compartments.
   const vessel=localCommandVessel(),g=new THREE.Group();g.name='NATIVE_3D_CUTAWAY_ROOMS';g.userData.xrayVisual=true;vessel.add(g);vessel.updateWorldMatrix(true,true);
-  const bayPalette=({earth:{hull:0x263a46,trim:0x5eb4d8,inside:0x071119,light:0xd9f4ff},aurelian:{hull:0x4a3019,trim:0xd6a34c,inside:0x18100a,light:0xffe7ad},gray:{hull:0x31263f,trim:0xb675ff,inside:0x0d0815,light:0xd9c2ff},lizard:{hull:0x24493d,trim:0x72ff9a,inside:0x07150f,light:0xb7ffc9}})[faction]||{hull:0x263a46,trim:0x5eb4d8,inside:0x071119,light:0xd9f4ff},hullColor=bayPalette.hull,trimColor=bayPalette.trim,insideColor=bayPalette.inside;
+  const bayPalette=({earth:{hull:0x263a46,trim:0x5eb4d8,inside:0x071119,light:0xd9f4ff},aurelian:{hull:0x4a3019,trim:0xd6a34c,inside:0x050302,light:0xffe7ad},gray:{hull:0x31263f,trim:0xb675ff,inside:0x0d0815,light:0xd9c2ff},lizard:{hull:0x24493d,trim:0x72ff9a,inside:0x07150f,light:0xb7ffc9}})[faction]||{hull:0x263a46,trim:0x5eb4d8,inside:0x071119,light:0xd9f4ff},hullColor=bayPalette.hull,trimColor=bayPalette.trim,insideColor=bayPalette.inside;
   const wallMat=new THREE.MeshStandardMaterial({color:hullColor,roughness:.72,metalness:.28,side:THREE.DoubleSide});
   const insideMat=new THREE.MeshStandardMaterial({color:insideColor,roughness:.88,metalness:.08,side:THREE.DoubleSide});
   const trimMat=new THREE.MeshBasicMaterial({color:trimColor,transparent:true,opacity:.24,depthWrite:false,side:THREE.DoubleSide});
@@ -4520,16 +4520,20 @@ function buildPrivateXray(){
   for(let i=0;i<bayLocals.length;i++){
     const logicalRoomIndices=logicalGroups[i],source=rooms[logicalRoomIndices[0]]||rooms[0],local=bayLocals[i].clone(),cell=new THREE.Group();
     cell.name=`NATIVE_3D_BAY_${i+1}`;cell.userData.xrayVisual=true;cell.userData.logicalRoomIndices=logicalRoomIndices.slice();cell.position.set(local.x,local.y,local.z-.15);g.add(cell);
-
-    const back=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW,roomH,.26),insideMat.clone()),70);back.name=`CUTAWAY_BAY_BACK_${i+1}`;back.position.z=-roomD*.5;cell.add(back);
-    const backInset=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.82,roomH*.68,.10),new THREE.MeshStandardMaterial({color:insideColor,metalness:.34,roughness:.62,emissive:trimColor,emissiveIntensity:.055,side:THREE.DoubleSide})),71);backInset.name=`CUTAWAY_BAY_RECESSED_WALL_${i+1}`;backInset.position.z=-roomD*.5+.18;cell.add(backInset);
-    for(const sx of[-1,1]){const column=markXray(new THREE.Mesh(new THREE.BoxGeometry(.10,roomH*.62,.12),trimMat.clone()),74);column.name=`CUTAWAY_BAY_COLUMN_${i+1}_${sx}`;column.position.set(sx*roomW*.36,0,-roomD*.5+.26);cell.add(column)}
-    const backLight=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.56,.075,.11),new THREE.MeshBasicMaterial({color:bayPalette.light,transparent:true,opacity:.66,depthWrite:false})),77);backLight.name=`CUTAWAY_BAY_BACKLIGHT_${i+1}`;backLight.position.set(0,roomH*.34,-roomD*.5+.28);cell.add(backLight);
-    const floor=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW,.24,roomD),wallMat.clone()),72);floor.position.y=floorY;cell.add(floor);
-    const ceiling=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW,.20,roomD),wallMat.clone()),72);ceiling.position.y=roomH*.5;cell.add(ceiling);
-    for(const sx of[-1,1]){const wall=markXray(new THREE.Mesh(new THREE.BoxGeometry(.20,roomH,roomD),wallMat.clone()),72);wall.position.x=sx*roomW*.5;cell.add(wall)}
-    for(const sx of[-1,1]){const rail=markXray(new THREE.Mesh(new THREE.BoxGeometry(.10,roomH*.88,.10),trimMat.clone()),78);rail.position.set(sx*(roomW*.5-.22),0,roomD*.48);cell.add(rail)}
-    const floorStrip=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.82,.06,.12),trimMat.clone()),79);floorStrip.position.set(0,floorY+.20,roomD*.49);cell.add(floorStrip);
+    // Interior and exterior are separate scene branches. A closing bay can now remove
+    // its complete room box before revealing the hull sector, so no cabinet frame is
+    // left drawn through the reconstructed exterior.
+    const interiorRoot=markXray(new THREE.Group(),70);interiorRoot.name=`CUTAWAY_BAY_INTERIOR_${i+1}`;interiorRoot.userData.acBayInterior=true;cell.add(interiorRoot);
+    const back=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW,roomH,.18),insideMat.clone()),70);back.name=`CUTAWAY_BAY_BACK_${i+1}`;back.position.z=-roomD*.5;interiorRoot.add(back);
+    for(const sx of[-1,1]){const conduit=markXray(new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,roomH*.52,10),trimMat.clone()),73);conduit.name=`CUTAWAY_BAY_CONDUIT_${i+1}_${sx}`;conduit.position.set(sx*roomW*.31,-.12,-roomD*.5+.20);interiorRoot.add(conduit)}
+    const console=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.48,.34,.32),wallMat.clone()),74);console.name=`CUTAWAY_BAY_CONSOLE_${i+1}`;console.position.set(0,floorY+.62,-roomD*.5+.30);interiorRoot.add(console);
+    for(const sx of[-1,0,1]){const indicator=markXray(new THREE.Mesh(new THREE.SphereGeometry(.055,10,7),new THREE.MeshBasicMaterial({color:sx===0?bayPalette.light:trimColor})),76);indicator.name=`CUTAWAY_BAY_INDICATOR_${i+1}_${sx}`;indicator.position.set(sx*roomW*.11,floorY+.64,-roomD*.5+.49);interiorRoot.add(indicator)}
+    const backLight=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.48,.055,.08),new THREE.MeshBasicMaterial({color:bayPalette.light,transparent:true,opacity:.72,depthWrite:false})),77);backLight.name=`CUTAWAY_BAY_BACKLIGHT_${i+1}`;backLight.position.set(0,roomH*.35,-roomD*.5+.22);interiorRoot.add(backLight);
+    const floor=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW,.24,roomD),wallMat.clone()),72);floor.position.y=floorY;interiorRoot.add(floor);
+    const ceiling=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW,.16,roomD),wallMat.clone()),72);ceiling.position.y=roomH*.5;interiorRoot.add(ceiling);
+    for(const sx of[-1,1]){const wall=markXray(new THREE.Mesh(new THREE.BoxGeometry(.14,roomH,roomD),wallMat.clone()),72);wall.position.x=sx*roomW*.5;interiorRoot.add(wall)}
+    for(const sx of[-1,1]){const rail=markXray(new THREE.Mesh(new THREE.BoxGeometry(.065,roomH*.84,.065),trimMat.clone()),78);rail.position.set(sx*(roomW*.5-.18),0,roomD*.48);interiorRoot.add(rail)}
+    for(const z of[-.28,.05,.38]){const floorStrip=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.76,.045,.07),trimMat.clone()),79);floorStrip.position.set(0,floorY+.15,z*roomD);interiorRoot.add(floorStrip)}
     const frontShutter=markXray(new THREE.Group(),96);frontShutter.name=`CUTAWAY_FRONT_SHUTTER_${i+1}`;frontShutter.position.set(0,0,faction==='aurelian'?0:roomD*.51);frontShutter.visible=false;frontShutter.userData.acAimClosed=false;frontShutter.userData.acExteriorClosure=true;
     if(faction==='aurelian'){
       const sector=buildAurelianHullSector(cell.position),armorMat=closureHull?.material?.clone?.()||new THREE.MeshStandardMaterial({color:0x8b651f,metalness:.90,roughness:.25,emissive:0x392100,emissiveIntensity:.28}),armor=markXray(new THREE.Mesh(sector.geo,armorMat),96);armorMat.side=THREE.DoubleSide;armor.name=`CUTAWAY_EXACT_EXTERIOR_HULL_SECTOR_${i+1}`;armor.castShadow=true;armor.receiveShadow=true;frontShutter.add(armor);frontShutter.userData.acHullSectorBounds=[sector.xMin,sector.xMax,sector.yMin,sector.yMax];frontShutter.userData.acExactExterior=true;
@@ -4538,22 +4542,22 @@ function buildPrivateXray(){
     }else{
       const armor=markXray(new THREE.Mesh(new THREE.BoxGeometry(roomW*.94,roomH*.92,.16),wallMat.clone()),96);armor.name=`CUTAWAY_FRONT_SHUTTER_ARMOR_${i+1}`;frontShutter.add(armor)
     }
-    cell.add(frontShutter);cell.userData.frontShutter=frontShutter;
+    cell.add(frontShutter);cell.userData.frontShutter=frontShutter;cell.userData.interiorRoot=interiorRoot;
     // Full box-edge outlines recreated the unwanted tic-tac-toe cage, so the six bays
     // retain real floors, walls, ceilings and depth without a presentation-only rim.
     const rim=null;
-    const visual={warriorMarker:null,statusGroup:null,warrior:null,rig3D:null,aura:null,label:null,hit:null,railHit:null,index:i,logicalRoomIndices,lastHp:0,hitUntil:0,baseRigY:0,baseRigScale:null,rim,roomLight:null,aaBack:null,aaFill:null,aaWidth:0,nativeRoom:cell,standAnchor:null,frontShutter,room:source,empty:true};
+    const visual={warriorMarker:null,statusGroup:null,warrior:null,rig3D:null,aura:null,label:null,hit:null,railHit:null,index:i,logicalRoomIndices,lastHp:0,hitUntil:0,baseRigY:0,baseRigScale:null,rim,roomLight:null,aaBack:null,aaFill:null,aaWidth:0,nativeRoom:cell,interiorRoot,standAnchor:null,frontShutter,room:source,empty:true};
     xrayRoomVisuals.push(visual);
     const w=bayWarriors[i];if(!w)continue;
     // Dedicated standing anchor: feet sit on the new 3D floor. This anchor can later drive idle/hit/fall/death animation.
-    const stand=new THREE.Group();stand.name=`WARRIOR_STAND_ANCHOR_BAY_${i+1}`;stand.userData.xrayVisual=true;stand.userData.xrayWarrior=w;stand.position.set(0,floorY+.90,.42);cell.add(stand);
+    const stand=new THREE.Group();stand.name=`WARRIOR_STAND_ANCHOR_BAY_${i+1}`;stand.userData.xrayVisual=true;stand.userData.xrayWarrior=w;stand.position.set(0,floorY+.90,.42);interiorRoot.add(stand);
     const rig3D=buildCutawayOnlyWarrior3D(w.weaponKey);rig3D.name=`NATIVE_${w.weaponKey.toUpperCase()}_BAY_${i+1}`;rig3D.position.set(0,0,0);rig3D.scale.setScalar(1.04);rig3D.visible=true;rig3D.traverse(o=>{o.userData=o.userData||{};o.userData.xrayVisual=true;o.visible=true;if(o.isMesh){o.frustumCulled=false;o.renderOrder=110}});stand.add(rig3D);
 
     const shadow=markXray(new THREE.Mesh(new THREE.CircleGeometry(.72,24),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.30,depthWrite:false,side:THREE.DoubleSide})),86);shadow.rotation.x=-Math.PI/2;shadow.position.set(0,-.82,.12);stand.add(shadow);
     const hit=markXray(new THREE.Mesh(new THREE.PlaneGeometry(4.65,4.05),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthTest:false,depthWrite:false,side:THREE.DoubleSide})),115);hit.position.set(0,.55,.70);hit.userData.xrayWarrior=w;stand.add(hit);
     const aura=markXray(new THREE.Mesh(new THREE.RingGeometry(.62,.70,22),xrayBasic(w.assignedColor,.10,true)),88);aura.rotation.x=-Math.PI/2;aura.position.set(0,-.80,.15);stand.add(aura);
-    const label=makeXrayCrewLabel(w);label.scale.set(1.72,.43,1);label.position.set(0,floorY+.34,roomD*.50+.06);cell.add(label);
-    const light=new THREE.PointLight(bayPalette.light,.50,7.4,2.0);light.position.set(-.75,1.55,1.70);cell.add(light);
+    const label=makeXrayCrewLabel(w);label.scale.set(1.72,.43,1);label.position.set(0,floorY+.34,roomD*.50+.06);interiorRoot.add(label);
+    const light=new THREE.PointLight(bayPalette.light,.50,7.4,2.0);light.position.set(-.75,1.55,1.70);interiorRoot.add(light);
     Object.assign(visual,{warriorMarker:stand,warrior:w,rig3D,aura,label,hit,lastHp:w.hp,baseRigY:rig3D.position.y,baseRigScale:rig3D.scale.clone(),roomLight:light,standAnchor:stand,empty:false})
   }
   xrayScanBand=null;xrayGroup=g;g.updateWorldMatrix(true,true);refreshPrivateXrayVisuals();
@@ -5456,18 +5460,23 @@ function xrayWarriorAtStagePoint(pt){
   if(best&&bestD<=78){diag('CUTAWAY SELECT FALLBACK',`${best.weaponKey} distance=${Math.round(bestD)}px`);return best}
   return null
 }
+function setCutawayBayOpen(visual,open){
+  if(!visual?.nativeRoom)return;visual.nativeRoom.visible=true;visual.nativeRoom.userData.acAimClosedBay=!open;
+  const interior=visual.interiorRoot||visual.nativeRoom.userData?.interiorRoot;if(interior)interior.visible=!!open;
+  const shutter=visual.frontShutter||visual.nativeRoom.userData?.frontShutter;if(shutter){shutter.userData.acAimClosed=!open;shutter.visible=!open}
+}
 function setCutawayFiringStage(w){
   if(!xrayOpen||!w)return;
   // Firing-stage entry starts with all six physical bay fronts open. The aim
   // director then closes the five non-shooter fronts progressively.
-  for(const cell of xrayGroup?.children||[]){const shutter=cell?.userData?.frontShutter;if(shutter){shutter.userData.acAimClosed=false;shutter.visible=false}if(cell?.userData)cell.userData.firingStage=false}
+  for(const visual of xrayRoomVisuals||[]){setCutawayBayOpen(visual,true);if(visual.nativeRoom?.userData)visual.nativeRoom.userData.firingStage=false}
   for(const entry of xrayShellState||[])if(entry?.mesh)entry.mesh.visible=false;
   const chosen=xrayRoomVisuals.find(v=>v.warrior===w);if(chosen?.nativeRoom){chosen.nativeRoom.visible=true;chosen.nativeRoom.userData.firingStage=true}
   diag('WARRIOR FIRING STAGE',`${w.weaponKey} room=${w.roomIndex+1} shooterBayOpen=Y physicalBays=6 exactExteriorPendingAim=Y roomMoved=N`)
 }
 function restoreFullCutawayStage(){
   for(const entry of xrayShellState||[])if(entry?.mesh)entry.mesh.visible=false;
-  for(const cell of xrayGroup?.children||[]){const shutter=cell?.userData?.frontShutter;if(shutter){shutter.userData.acAimClosed=false;shutter.visible=false}if(cell?.userData)cell.userData.firingStage=false}
+  for(const visual of xrayRoomVisuals||[]){setCutawayBayOpen(visual,true);if(visual.nativeRoom?.userData)visual.nativeRoom.userData.firingStage=false}
 }
 function selectXrayCrew(w){
   if(!xrayOpen||!w||!w.active||w.hp<=0||w.passive)return;

@@ -1,5 +1,5 @@
 export function patchAurelianLogicalCutawayRuntime(html){
-  if(html.includes('ac-aurelian-logical-cutaway-v0416'))return html;
+  if(html.includes('ac-aurelian-logical-cutaway-v0417'))return html;
   const helper=String.raw`
 function acSeparateAurelianLogicalCutaway(){
   if(!xrayOpen||localXraySide()!=='aurelian'||!xrayGroup)return;
@@ -26,8 +26,8 @@ function acSeparateAurelianLogicalCutaway(){
     if(v?.rig3D){v.rig3D.visible=true;v.rig3D.traverse?.(o=>{if(o.isMesh)o.visible=true})}
     if(v?.frontShutter)v.frontShutter.visible=!!v.frontShutter.userData?.acAimClosed;
   }
-  const signature=visibleInterior+'|'+hiddenLegacy+'|'+logicalHidden+'|'+nativeRoomsVisible;
-  if(acSeparateAurelianLogicalCutaway._last!==signature){acSeparateAurelianLogicalCutaway._last=signature;diag('AURELIAN CUTAWAY PRESENTATION','nativeInterior=VISIBLE physicalBays='+nativeRoomsVisible+'/6 logicalRooms=9 interiorMeshes='+visibleInterior+' legacyHidden='+hiddenLegacy+' roomCageRims=REMOVED_AT_SOURCE logicalHitMeshes='+logicalHidden+' warriorRigs=VISIBLE')}
+  const closedBays=(xrayRoomVisuals||[]).filter(v=>v?.nativeRoom?.userData?.acAimClosedBay).length,signature=visibleInterior+'|'+hiddenLegacy+'|'+logicalHidden+'|'+nativeRoomsVisible+'|'+closedBays;
+  if(acSeparateAurelianLogicalCutaway._last!==signature){acSeparateAurelianLogicalCutaway._last=signature;diag('AURELIAN CUTAWAY PRESENTATION','nativeInterior=VISIBLE physicalBays='+nativeRoomsVisible+'/6 logicalRooms=9 interiorMeshes='+visibleInterior+' closedBayInteriorsHidden='+closedBays+' legacyHidden='+hiddenLegacy+' roomCageRims=REMOVED_AT_SOURCE logicalHitMeshes='+logicalHidden+' warriorRigs=VISIBLE')}
 }
 `;
   let patched=html;
@@ -39,5 +39,5 @@ function acSeparateAurelianLogicalCutaway(){
   const refreshNeedle='function refreshPrivateXrayVisuals(){\n  if(!xrayOpen||!xrayGroup)return;';
   const refreshReplacement='function refreshPrivateXrayVisuals(){\n  if(!xrayOpen||!xrayGroup)return;\n  if(localXraySide()===\'aurelian\'&&typeof acSeparateAurelianLogicalCutaway===\'function\')queueMicrotask(()=>{if(xrayOpen&&xrayGroup)acSeparateAurelianLogicalCutaway()});';
   const refreshed=patched.replace(refreshNeedle,refreshReplacement),refreshGuard=refreshed!==patched;patched=refreshed;
-  return patched.replace('</head>','<meta id="ac-aurelian-logical-cutaway-v0416" name="ac-aurelian-logical-cutaway" content="openRoute:'+(openRoute?'OK':'MISS')+' refreshGuard:'+(refreshGuard?'OK':'MISS')+' physicalInterior:ALL_6_VISIBLE logicalCombatRooms:9_UNCHANGED roomCageRims:REMOVED aimPanels:EXACT_EXTERIOR_HULL_SECTORS localizedExteriorDetails:RESTORED combatGeometry:PRESERVED warriorRigs:VISIBLE">\n</head>');
+  return patched.replace('</head>','<meta id="ac-aurelian-logical-cutaway-v0417" name="ac-aurelian-logical-cutaway" content="openRoute:'+(openRoute?'OK':'MISS')+' refreshGuard:'+(refreshGuard?'OK':'MISS')+' physicalInterior:ALL_6_VISIBLE logicalCombatRooms:9_UNCHANGED roomCageRims:REMOVED interiorExteriorOwnership:SEPARATE_ROOTS aimPanels:EXACT_EXTERIOR_HULL_SECTORS localizedExteriorDetails:RESTORED combatGeometry:PRESERVED warriorRigs:VISIBLE">\n</head>');
 }

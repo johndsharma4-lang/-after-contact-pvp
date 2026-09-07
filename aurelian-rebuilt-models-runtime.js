@@ -1,5 +1,5 @@
 export function patchAurelianRebuiltModelsRuntime(html) {
-  if (html.includes('ac-aurelian-rebuilt-models-v0416')) return html;
+  if (html.includes('ac-aurelian-rebuilt-models-v0417')) return html;
 
   const helpers = String.raw`
 function acAurelianMat(color, metalness=.55, roughness=.32, emissive=0x000000, emissiveIntensity=0){
@@ -88,15 +88,15 @@ function acBuildSolarLancerRebuilt(){
   const b=acBaseAurelian('SOLAR_LANCER_3D_RIG','solar',false),{root,mats,torso,l,r,ll,rl}=b;
   l.upper.rotation.z=.26;r.upper.rotation.z=-.38;l.elbow.rotation.z=-.20;r.elbow.rotation.z=.26;
   const weapon=acAurelianGroup('WEAPON_MUZZLE_RIG');weapon.position.set(.63,.76,.40);weapon.rotation.z=-1.02;torso.add(weapon);
-  const shaft=acAurelianMesh(new THREE.CylinderGeometry(.070,.090,3.18,10),mats.black2,'lanceShaft');weapon.add(shaft);
-  const rail=acAurelianMesh(new THREE.BoxGeometry(.15,2.65,.15),mats.gold,'lanceSpine');rail.position.y=.30;weapon.add(rail);
+  const shaft=acAurelianMesh(new THREE.CylinderGeometry(.095,.120,3.18,10),mats.black2,'lanceShaft');weapon.add(shaft);
+  const rail=acAurelianMesh(new THREE.BoxGeometry(.21,2.65,.19),mats.gold,'lanceSpine');rail.position.y=.30;weapon.add(rail);
   for(const y of[-.70,.05,.82,1.48]){const ring=acAurelianMesh(new THREE.TorusGeometry(.18,.040,8,22),mats.sun,'lanceRing'+y);ring.rotation.x=Math.PI/2;ring.position.y=y;weapon.add(ring)}
-  const guard=acAurelianMesh(new THREE.TorusGeometry(.38,.060,8,30,Math.PI*1.50),mats.sun,'lanceGuard');guard.position.y=.48;guard.rotation.z=.74;weapon.add(guard);
-  const bladeBase=acAurelianMesh(new THREE.ConeGeometry(.28,.78,6),mats.white,'lanceBladeBase');bladeBase.position.y=1.86;weapon.add(bladeBase);
-  const tip=acAurelianMesh(new THREE.ConeGeometry(.22,1.28,6),mats.sun,'lanceTip');tip.position.y=2.82;weapon.add(tip);
-  const glow=acAurelianGlow(.23,0xffffb0,'lanceGlow');glow.position.y=3.48;weapon.add(glow);weapon.userData.muzzle=glow;root.userData.muzzle=glow;
-  const wingL=acAurelianMesh(new THREE.ConeGeometry(.12,.72,4),mats.gold,'lanceWingL');wingL.position.set(-.24,1.80,0);wingL.rotation.z=.48;weapon.add(wingL);const wingR=wingL.clone();wingR.name='lanceWingR';wingR.position.x=.24;wingR.rotation.z=-.48;weapon.add(wingR);
-  for(const sx of[-1,1]){const vane=acAurelianMesh(new THREE.ConeGeometry(.14,.92,5),mats.sun,'lancerBackVane'+sx);vane.position.set(sx*.58,1.20,-.38);vane.rotation.z=-sx*.42;torso.add(vane);const vaneRing=acAurelianMesh(new THREE.TorusGeometry(.19,.035,7,20),mats.gold,'lancerVaneRing'+sx);vaneRing.position.set(sx*.58,1.15,-.30);torso.add(vaneRing)}
+  const guard=acAurelianMesh(new THREE.TorusGeometry(.48,.075,8,30,Math.PI*1.50),mats.sun,'lanceGuard');guard.position.y=.48;guard.rotation.z=.74;weapon.add(guard);
+  const bladeBase=acAurelianMesh(new THREE.ConeGeometry(.35,.78,6),mats.white,'lanceBladeBase');bladeBase.position.y=1.86;weapon.add(bladeBase);
+  const tip=acAurelianMesh(new THREE.ConeGeometry(.28,1.28,6),mats.sun,'lanceTip');tip.position.y=2.82;weapon.add(tip);
+  const glow=acAurelianGlow(.28,0xffffb0,'lanceGlow');glow.position.y=3.48;weapon.add(glow);weapon.userData.muzzle=glow;root.userData.muzzle=glow;
+  const wingL=acAurelianMesh(new THREE.ConeGeometry(.18,.88,4),mats.gold,'lanceWingL');wingL.position.set(-.31,1.80,0);wingL.rotation.z=.48;weapon.add(wingL);const wingR=wingL.clone();wingR.name='lanceWingR';wingR.position.x=.31;wingR.rotation.z=-.48;weapon.add(wingR);
+  for(const sx of[-1,1]){const vane=acAurelianMesh(new THREE.ConeGeometry(.20,1.18,5),mats.sun,'lancerBackVane'+sx);vane.position.set(sx*.68,1.20,-.38);vane.rotation.z=-sx*.42;torso.add(vane);const vaneRing=acAurelianMesh(new THREE.TorusGeometry(.27,.055,7,20),mats.gold,'lancerVaneRing'+sx);vaneRing.position.set(sx*.68,1.15,-.30);torso.add(vaneRing)}
   root.userData.rig={pelvis:b.pelvis,torso,headRoot:b.head,head:b.head,shoulders:b.shoulders,armRoots:[l.upper,r.upper],legRoots:[ll.hip,rl.hip],armL:l.upper,armR:r.upper,elbowL:l.elbow,elbowR:r.elbow,hipL:ll.hip,hipR:rl.hip,kneeL:ll.knee,kneeR:rl.knee,weapon,lanceTip:tip,lanceGlow:glow,clothRoot:b.clothRoot};root.userData.modelFidelity='AURELIAN_REBUILT_CANON';root.userData.animationState='idle';return root
 }
 function acBuildSunDiskGunnerRebuilt(){
@@ -104,30 +104,30 @@ function acBuildSunDiskGunnerRebuilt(){
   l.upper.rotation.z=.18;r.upper.rotation.z=-.18;l.elbow.rotation.z=-.10;r.elbow.rotation.z=.10;
   function gauntlet(arm,sx){
     const q=sx<0?'L':'R',g=acAurelianGroup((sx>0?'RIGHT':'LEFT')+'_DISK_GAUNTLET');g.position.set(0,-.08,.26);arm.hand.add(g);
-    const cuff=acAurelianMesh(new THREE.CylinderGeometry(.24,.30,.46,10),mats.gold,'gauntletArmor'+q);cuff.rotation.x=Math.PI/2;g.add(cuff);
-    const barrel=acAurelianMesh(new THREE.CylinderGeometry(.18,.22,.38,10),mats.black2,'diskBarrel'+q);barrel.rotation.x=Math.PI/2;barrel.position.z=.30;g.add(barrel);
-    const outer=acAurelianMesh(new THREE.TorusGeometry(.57,.085,10,42),mats.sun,'solarDisk'+q);outer.position.z=.48;outer.rotation.x=Math.PI/2;g.add(outer);
-    const mid=acAurelianMesh(new THREE.TorusGeometry(.41,.050,8,34),mats.gold,'solarDiskMid'+q);mid.position.z=.49;mid.rotation.x=Math.PI/2;g.add(mid);
-    const inner=acAurelianMesh(new THREE.TorusGeometry(.27,.038,8,30),mats.white,'solarDiskInner'+q);inner.position.z=.50;inner.rotation.x=Math.PI/2;g.add(inner);
-    for(let i=0;i<12;i++){const a=i*Math.PI/6,tooth=acAurelianMesh(new THREE.ConeGeometry(.065,.28,3),mats.gold,'diskTooth'+q+i);tooth.position.set(Math.cos(a)*.70,Math.sin(a)*.70,.50);tooth.rotation.z=a-Math.PI/2;g.add(tooth)}
-    const emitter=acAurelianGlow(.18,0xffffb0,'diskEmitter'+q);emitter.position.z=.66;g.add(emitter);return {g,emitter}
+    const cuff=acAurelianMesh(new THREE.CylinderGeometry(.29,.36,.52,10),mats.gold,'gauntletArmor'+q);cuff.rotation.x=Math.PI/2;g.add(cuff);
+    const barrel=acAurelianMesh(new THREE.CylinderGeometry(.22,.27,.44,10),mats.black2,'diskBarrel'+q);barrel.rotation.x=Math.PI/2;barrel.position.z=.34;g.add(barrel);
+    const outer=acAurelianMesh(new THREE.TorusGeometry(.68,.105,10,42),mats.sun,'solarDisk'+q);outer.position.z=.52;outer.rotation.x=Math.PI/2;g.add(outer);
+    const mid=acAurelianMesh(new THREE.TorusGeometry(.49,.065,8,34),mats.gold,'solarDiskMid'+q);mid.position.z=.53;mid.rotation.x=Math.PI/2;g.add(mid);
+    const inner=acAurelianMesh(new THREE.TorusGeometry(.32,.050,8,30),mats.white,'solarDiskInner'+q);inner.position.z=.54;inner.rotation.x=Math.PI/2;g.add(inner);
+    for(let i=0;i<12;i++){const a=i*Math.PI/6,tooth=acAurelianMesh(new THREE.ConeGeometry(.080,.34,3),mats.gold,'diskTooth'+q+i);tooth.position.set(Math.cos(a)*.83,Math.sin(a)*.83,.54);tooth.rotation.z=a-Math.PI/2;g.add(tooth)}
+    const emitter=acAurelianGlow(.23,0xffffb0,'diskEmitter'+q);emitter.position.z=.74;g.add(emitter);return {g,emitter}
   }
   const L=gauntlet(l,-1),R=gauntlet(r,1);root.userData.muzzle=R.emitter;root.userData.secondaryMuzzle=L.emitter;
-  for(const sx of[-1,1]){const capacitor=acAurelianMesh(new THREE.TorusGeometry(.28,.055,8,26),mats.sun,'diskShoulderCapacitor'+sx);capacitor.position.set(sx*.72,1.43,.18);capacitor.scale.y=.72;b.torso.add(capacitor);const brace=acAurelianMesh(new THREE.BoxGeometry(.15,.72,.16),mats.gold,'diskChestBrace'+sx);brace.position.set(sx*.34,1.02,.55);brace.rotation.z=-sx*.28;b.torso.add(brace)}
+  for(const sx of[-1,1]){const capacitor=acAurelianMesh(new THREE.TorusGeometry(.38,.075,8,26),mats.sun,'diskShoulderCapacitor'+sx);capacitor.position.set(sx*.78,1.43,.18);capacitor.scale.y=.78;b.torso.add(capacitor);const brace=acAurelianMesh(new THREE.BoxGeometry(.20,.80,.19),mats.gold,'diskChestBrace'+sx);brace.position.set(sx*.37,1.02,.55);brace.rotation.z=-sx*.28;b.torso.add(brace)}
   root.userData.rig={pelvis:b.pelvis,torso:b.torso,headRoot:b.head,head:b.head,shoulders:b.shoulders,armRoots:[l.upper,r.upper],legRoots:[ll.hip,rl.hip],armL:l.upper,armR:r.upper,elbowL:l.elbow,elbowR:r.elbow,hipL:ll.hip,hipR:rl.hip,kneeL:ll.knee,kneeR:rl.knee,weapon:R.g,gauntlet:R.g,secondaryWeapon:L.g,secondaryGauntlet:L.g,rightMuzzle:R.emitter,leftMuzzle:L.emitter,clothRoot:b.clothRoot};root.userData.dualGauntletReady=true;root.userData.modelFidelity='AURELIAN_REBUILT_CANON';root.userData.animationState='idle';return root
 }
 function acBuildSunadierRebuilt(){
   const b=acBaseAurelian('SUNADIER_3D_RIG','solar',true),{root,mats,torso,l,r,ll,rl}=b;
   l.upper.rotation.z=.34;r.upper.rotation.z=-.52;l.elbow.rotation.z=-.28;r.elbow.rotation.z=.42;
-  const rack=acAurelianGroup('grenadeRack');rack.position.set(-.55,.96,-.36);torso.add(rack);rack.add(acAurelianMesh(new THREE.BoxGeometry(.90,.60,.20),mats.black,'grenadeRackFrame'));for(let i=0;i<3;i++){const cell=acAurelianGlow(.15,0xff9d00,'solarCell'+i);cell.position.set((i-1)*.28,0,.16);rack.add(cell)}
-  const bandolier=acAurelianMesh(new THREE.BoxGeometry(.16,1.58,.14),mats.gold,'sunadierBandolier');bandolier.position.set(.12,1.02,.57);bandolier.rotation.z=-.48;torso.add(bandolier);for(let i=0;i<4;i++){const charge=acAurelianMesh(new THREE.SphereGeometry(.13,12,8),i%2?mats.sun:mats.gold,'sunadierReserveCharge'+i);charge.position.set(-.42+i*.27,.54+i*.16,.64);torso.add(charge)}
+  const rack=acAurelianGroup('grenadeRack');rack.position.set(-.58,.96,-.36);torso.add(rack);rack.add(acAurelianMesh(new THREE.BoxGeometry(1.02,.72,.24),mats.black,'grenadeRackFrame'));for(let i=0;i<3;i++){const cell=acAurelianGlow(.19,0xff9d00,'solarCell'+i);cell.position.set((i-1)*.32,0,.19);rack.add(cell)}
+  const bandolier=acAurelianMesh(new THREE.BoxGeometry(.21,1.68,.18),mats.gold,'sunadierBandolier');bandolier.position.set(.12,1.02,.57);bandolier.rotation.z=-.48;torso.add(bandolier);for(let i=0;i<4;i++){const charge=acAurelianMesh(new THREE.SphereGeometry(.17,12,8),i%2?mats.sun:mats.gold,'sunadierReserveCharge'+i);charge.position.set(-.42+i*.27,.54+i*.16,.64);torso.add(charge)}
   const chain=acAurelianGroup('sunChain');chain.position.set(.02,-.02,.06);r.hand.add(chain);
-  for(let i=0;i<18;i++){const link=acAurelianMesh(new THREE.TorusGeometry(.10,.030,6,12),i%3?mats.gold:mats.sun,'chainLink'+i);link.position.set(.13*i,.050*i,.020*i);link.rotation.y=i*.42;link.rotation.z=i*.18;chain.add(link)}
+  for(let i=0;i<18;i++){const link=acAurelianMesh(new THREE.TorusGeometry(.13,.040,6,12),i%3?mats.gold:mats.sun,'chainLink'+i);link.position.set(.13*i,.050*i,.020*i);link.rotation.y=i*.42;link.rotation.z=i*.18;chain.add(link)}
   const grenade=acAurelianGroup('solarGrenade');grenade.position.set(2.46,.92,.38);chain.add(grenade);
-  const shell=acAurelianMesh(new THREE.SphereGeometry(.42,16,12),mats.black2,'solarGrenadeShell');grenade.add(shell);
-  for(const axis of[0,Math.PI/2]){const band=acAurelianMesh(new THREE.TorusGeometry(.34,.055,8,28),mats.gold,'grenadeBand'+axis);band.rotation.x=Math.PI/2;band.rotation.z=axis;grenade.add(band)}
-  const grenadeCore=acAurelianGlow(.20,0xffff9a,'grenadeCore');grenadeCore.position.z=.38;grenade.add(grenadeCore);
-  for(let i=0;i<8;i++){const a=i*Math.PI/4,ray=acAurelianMesh(new THREE.ConeGeometry(.060,.28,4),mats.sun,'grenadeRay'+i);ray.position.set(Math.cos(a)*.48,Math.sin(a)*.48,0);ray.rotation.z=a-Math.PI/2;grenade.add(ray)}
+  const shell=acAurelianMesh(new THREE.SphereGeometry(.52,16,12),mats.black2,'solarGrenadeShell');grenade.add(shell);
+  for(const axis of[0,Math.PI/2]){const band=acAurelianMesh(new THREE.TorusGeometry(.43,.070,8,28),mats.gold,'grenadeBand'+axis);band.rotation.x=Math.PI/2;band.rotation.z=axis;grenade.add(band)}
+  const grenadeCore=acAurelianGlow(.25,0xffff9a,'grenadeCore');grenadeCore.position.z=.47;grenade.add(grenadeCore);
+  for(let i=0;i<8;i++){const a=i*Math.PI/4,ray=acAurelianMesh(new THREE.ConeGeometry(.080,.34,4),mats.sun,'grenadeRay'+i);ray.position.set(Math.cos(a)*.60,Math.sin(a)*.60,0);ray.rotation.z=a-Math.PI/2;grenade.add(ray)}
   root.userData.muzzle=grenade;root.userData.rig={pelvis:b.pelvis,torso,headRoot:b.head,head:b.head,shoulders:b.shoulders,armRoots:[l.upper,r.upper],legRoots:[ll.hip,rl.hip],armL:l.upper,armR:r.upper,elbowL:l.elbow,elbowR:r.elbow,hipL:ll.hip,hipR:rl.hip,kneeL:ll.knee,kneeR:rl.knee,weapon:chain,chain,grenade,grenadeCore,clothRoot:b.clothRoot};root.userData.modelFidelity='AURELIAN_REBUILT_CANON';root.userData.animationState='idle';return root
 }
 `;
@@ -140,5 +140,5 @@ function acBuildSunadierRebuilt(){
   else patched = patched.replace('</body>', '<script>'+helpers+'\n'+dispatcher+'<\/script>\n</body>');
   patched = patched.replace(/MATCH RECORDER v0\.3[56]\.[0-9]+/g,'MATCH RECORDER v0.36.2');
   patched = patched.replace(/build=2026-09-04_[A-Z0-9_]+/g,'build=2026-09-04_AURELIAN_FULL_MODEL_REBUILD');
-  return patched.replace('</head>','<meta id="ac-aurelian-rebuilt-models-v0416" name="ac-aurelian-rebuilt-models" content="HIGH_DETAIL_ARMOR_MATERIALS_DISTINCT_SILHOUETTES_GAMEPLAY_HOOKS_PRESERVED">\n</head>');
+  return patched.replace('</head>','<meta id="ac-aurelian-rebuilt-models-v0417" name="ac-aurelian-rebuilt-models" content="HIGH_DETAIL_ARMOR_MATERIALS_MOBILE_READABLE_MAJOR_SILHOUETTES_GAMEPLAY_HOOKS_PRESERVED">\n</head>');
 }
