@@ -1,7 +1,7 @@
 name: Review Reference Finish
 on:
   push:
-    branches: [art/aurelian-reference-finish]
+    branches: [art/aurelian-reference-finish, art/aurelian-silhouette-rebuild]
 permissions:
   contents: read
 jobs:
@@ -36,6 +36,7 @@ jobs:
           AC_HULL_OUTPUT: /tmp/ac-hull-audit/test-output
         run: |
           node --check aurelian-canon-exterior-runtime.js
+          node --check aurelian-reference-polish-runtime.js
           python3 scripts/audit-presentation.py
           node scripts/test-aurelian-hull.mjs
       - name: Browser regression and actual renders
