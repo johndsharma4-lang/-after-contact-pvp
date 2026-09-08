@@ -6,7 +6,7 @@ function replaceFunction(source,startToken,endToken,replacement){
 
 export function patchAurelianReferencePolishRuntime(html){
   if(typeof html!=='string')throw new TypeError('Expected game HTML');
-  if(html.includes('ac-aurelian-reference-polish-v0433'))return html;
+  if(html.includes('ac-aurelian-reference-polish-v0434'))return html;
   if(!html.includes('ac-aurelian-canon-exterior-v0428'))return html;
   let patched=html;
 
@@ -57,38 +57,33 @@ export function patchAurelianReferencePolishRuntime(html){
 
   const silhouette=String.raw`function acHullReferenceSilhouette(kit,m){
   const plates=[
-    {n:'AURELIAN_CANON_DORSAL_FLOW',mat:m.gold,z:7.42,d:.56,p:[[-22.5,6.8],[-18.3,8.6],[-11.8,10.0],[-3.5,10.8],[5.8,9.9],[12.6,7.8],[18.0,5.6],[22.3,4.0],[26.1,2.1],[28.1,.62],[25.0,1.4],[20.7,3.1],[15.9,5.0],[10.5,6.5],[5.0,7.4],[-3.7,8.0],[-12.6,7.7],[-18.6,6.1]]},
-    {n:'AURELIAN_CANON_VENTRAL_FLOW',mat:m.goldDark,z:7.18,d:.62,p:[[-22.1,-6.3],[-17.2,-7.8],[-9.5,-8.8],[-.5,-9.2],[8.2,-8.3],[14.4,-6.6],[19.1,-4.7],[23.2,-3.0],[26.4,-1.2],[28.1,.62],[25.0,-.1],[20.8,-2.0],[15.8,-4.0],[10.3,-5.6],[5.2,-6.1],[-3.7,-6.5],[-12.2,-6.3],[-18.4,-5.6]]},
-    {n:'AURELIAN_CANON_PROW_DARK_UNDERCUT',mat:m.dark,z:7.62,d:.34,p:[[15.3,3.0],[19.7,2.6],[23.9,1.55],[27.4,.62],[24.7,-.2],[20.2,-1.6],[15.3,-2.3],[17.2,-.55],[17.4,1.1]]},
-    {n:'AURELIAN_CANON_PROW_GOLD_SPEAR',mat:m.gold,z:8.00,d:.34,p:[[16.5,3.3],[20.4,2.8],[24.4,1.7],[28.0,.62],[24.9,.22],[20.8,1.0],[17.5,2.1]]},
-    {n:'AURELIAN_CANON_PROW_IVORY_TOP',mat:m.ivory,z:8.18,d:.24,p:[[17.0,5.0],[20.4,4.0],[23.3,2.9],[20.9,3.1],[18.1,4.2]]},
-    {n:'AURELIAN_CANON_PROW_IVORY_LOWER',mat:m.ivory,z:8.16,d:.24,p:[[16.8,-4.9],[20.3,-3.8],[23.2,-2.7],[20.9,-2.85],[17.9,-4.0]]},
-    {n:'AURELIAN_CANON_PROW_GOLD_CHEEK',mat:m.gold,z:8.30,d:.20,p:[[11.6,4.8],[15.1,4.3],[17.7,3.2],[15.5,3.45],[12.4,4.05]]},
-    {n:'AURELIAN_CANON_AFT_TOP',mat:m.gold,z:7.58,d:.48,p:[[-27.0,5.5],[-23.0,7.1],[-18.2,8.0],[-14.0,8.4],[-16.1,6.6],[-21.1,5.2]]},
-    {n:'AURELIAN_CANON_AFT_BOTTOM',mat:m.goldDark,z:7.44,d:.48,p:[[-26.7,-5.3],[-22.8,-6.9],[-18.0,-7.7],[-13.8,-8.0],[-16.0,-6.2],[-21.0,-4.9]]}
+    {n:'AURELIAN_CANON_TOP_CROWN',mat:m.gold,z:7.44,d:.54,p:[[-22.8,6.8],[-18.8,8.55],[-11.8,10.25],[-3.0,11.0],[5.8,10.15],[11.9,8.45],[14.0,7.25],[10.8,7.45],[5.3,8.15],[-3.2,8.55],[-11.8,8.25],[-18.5,6.95]]},
+    {n:'AURELIAN_CANON_BOTTOM_KEEL',mat:m.goldDark,z:7.20,d:.60,p:[[-22.4,-6.15],[-17.4,-7.9],[-9.0,-9.0],[0.0,-9.45],[8.4,-8.5],[13.9,-6.65],[10.5,-6.55],[4.4,-7.15],[-4.0,-7.3],[-12.2,-6.95],[-18.5,-5.75]]},
+    {n:'AURELIAN_CANON_AFT_COWL_TOP',mat:m.gold,z:7.62,d:.48,p:[[-27.2,5.45],[-23.3,7.0],[-18.4,8.0],[-14.6,8.25],[-16.0,6.65],[-21.1,5.25]]},
+    {n:'AURELIAN_CANON_AFT_COWL_BOTTOM',mat:m.goldDark,z:7.46,d:.48,p:[[-27.0,-5.35],[-23.1,-6.9],[-18.1,-7.75],[-14.5,-7.9],[-16.0,-6.2],[-21.0,-4.95]]},
+    {n:'AURELIAN_CANON_PROW_UPPER_MASS',mat:m.gold,z:7.82,d:.46,p:[[14.15,6.9],[17.4,6.0],[21.0,4.8],[24.4,3.3],[27.2,1.8],[29.0,.7],[26.6,1.2],[23.2,2.4],[19.1,4.0],[15.6,5.4]]},
+    {n:'AURELIAN_CANON_PROW_LOWER_MASS',mat:m.goldDark,z:7.56,d:.46,p:[[14.15,-6.1],[17.8,-5.5],[21.4,-4.2],[24.7,-2.7],[27.4,-1.2],[29.0,.7],[26.4,.0],[23.0,-1.5],[19.2,-3.2],[15.5,-4.8]]},
+    {n:'AURELIAN_CANON_PROW_DARK_GAP',mat:m.dark,z:7.92,d:.28,p:[[14.35,2.55],[18.2,2.35],[22.1,1.6],[26.0,.8],[28.3,.55],[25.7,-.1],[22.0,-.85],[18.3,-1.65],[14.35,-2.05],[16.2,-.35],[16.3,.95]]},
+    {n:'AURELIAN_CANON_PROW_GOLD_SPINE',mat:m.edge,z:8.16,d:.20,p:[[15.0,1.6],[19.2,1.95],[23.3,1.4],[28.8,.62],[24.3,.82],[20.0,.65],[16.2,.55]]},
+    {n:'AURELIAN_CANON_PROW_IVORY_TOP',mat:m.ivory,z:8.24,d:.20,p:[[16.0,5.55],[19.0,4.7],[22.0,3.55],[20.0,3.72],[17.1,4.65]]},
+    {n:'AURELIAN_CANON_PROW_IVORY_BOTTOM',mat:m.ivory,z:8.22,d:.20,p:[[16.0,-5.25],[19.2,-4.35],[22.1,-3.2],[20.0,-3.4],[17.0,-4.35]]}
   ];
-  for(const a of plates)acHullMesh(kit,acHullExtrude(acHullShape(a.p),a.d,.13),[a.mat,m.edge],a.n,0,0,a.z);
+  for(const a of plates)acHullMesh(kit,acHullExtrude(acHullShape(a.p),a.d,.12),[a.mat,m.edge],a.n,0,0,a.z);
 
-  const localWraps=[
-    {n:'AURELIAN_CANON_FORE_UPPER_WRAP',mat:m.gold,p:[[8.8,7.2],[12.6,6.4],[15.3,5.1],[13.0,5.4],[10.2,6.1]]},
-    {n:'AURELIAN_CANON_FORE_LOWER_WRAP',mat:m.goldDark,p:[[9.0,-6.2],[12.9,-5.5],[15.6,-4.2],[13.2,-4.5],[10.1,-5.2]]},
-    {n:'AURELIAN_CANON_AFT_MID_WRAP',mat:m.gold,p:[[-18.4,1.15],[-13.4,1.9],[-10.4,2.25],[-12.9,1.05],[-16.2,.55]]}
+  const accents=[
+    {n:'AURELIAN_CANON_DORSAL_IVORY_STRIP',mat:m.ivory,p:[[-8.0,10.15],[-1.5,10.55],[4.4,9.9],[1.0,9.7],[-4.2,9.9]]},
+    {n:'AURELIAN_CANON_FORE_UPPER_COLLAR',mat:m.gold,p:[[11.6,7.55],[14.0,7.15],[15.2,6.35],[13.9,6.55],[12.2,6.9]]},
+    {n:'AURELIAN_CANON_FORE_LOWER_COLLAR',mat:m.goldDark,p:[[11.7,-6.55],[14.0,-6.15],[15.3,-5.35],[13.9,-5.55],[12.2,-5.95]]}
   ];
-  for(const a of localWraps)acHullMesh(kit,acHullExtrude(acHullShape(a.p),.22,.08),[a.mat,m.edge],a.n,0,0,8.08);
-
-  const braces=[
-    {n:'AURELIAN_CANON_TOP_BRACE',p:[[12.4,7.1],[15.8,5.9],[18.0,4.8],[15.9,5.05],[13.4,6.0]]},
-    {n:'AURELIAN_CANON_BOTTOM_BRACE',p:[[12.8,-6.7],[15.9,-5.5],[18.1,-4.4],[16.0,-4.65],[13.7,-5.7]]}
-  ];
-  for(const a of braces)acHullMesh(kit,acHullExtrude(acHullShape(a.p),.20,.07),[m.ivory,m.edge],a.n,0,0,8.28);
+  for(const a of accents)acHullMesh(kit,acHullExtrude(acHullShape(a.p),.20,.07),[a.mat,m.edge],a.n,0,0,8.26);
 }`;
   if(!patched.includes('function acHullReferenceSilhouette(kit,m){'))patched=patched.replace('function acHullMachinery(kit,m){',silhouette+'\nfunction acHullMachinery(kit,m){');
   if(!patched.includes('  acHullReferenceSilhouette(kit,m);'))patched=patched.replace('  acHullMachinery(kit,m);','  acHullMachinery(kit,m);\n  acHullReferenceSilhouette(kit,m);');
   if(!patched.includes('function acHullReferenceSilhouette(kit,m){')||!patched.includes('acHullReferenceSilhouette(kit,m);'))return html;
 
   patched=patched.replace('structure.userData.acHullRadii=new THREE.Vector3(29.2,12.5,9.4)','structure.userData.acHullRadii=new THREE.Vector3(33.5,12.7,9.7)');
-  patched=patched.replace(/MATCH RECORDER v0\.42\.8/g,'MATCH RECORDER v0.43.3');
-  patched=patched.replace(/build=2026-09-07_AURELIAN_REFERENCE_METALWORK/g,'build=2026-09-07_AURELIAN_CANON_WRAPPED_PROW');
-  patched=patched.replace(/build=v0\.42\.8 panels=6 apertures=6/g,'build=v0.43.3 panels=6 apertures=6');
-  return patched.replace('</head>','<meta id="ac-aurelian-reference-polish-v0433" name="ac-aurelian-reference-polish" content="reference:CANON silhouette:WRAPPED_PROW cannon:EXPOSED_DOOR_OWNED longCrossingBlades:REMOVED sixBays:PRESERVED exhausts:PRESERVED combat:UNCHANGED">\n</head>');
+  patched=patched.replace(/MATCH RECORDER v0\.42\.8/g,'MATCH RECORDER v0.43.4');
+  patched=patched.replace(/build=2026-09-07_AURELIAN_REFERENCE_METALWORK/g,'build=2026-09-07_AURELIAN_CANON_SHELL_RECONSTRUCTION');
+  patched=patched.replace(/build=v0\.42\.8 panels=6 apertures=6/g,'build=v0.43.4 panels=6 apertures=6');
+  return patched.replace('</head>','<meta id="ac-aurelian-reference-polish-v0434" name="ac-aurelian-reference-polish" content="reference:CANON shell:TOP_CROWN_BOTTOM_KEEL prow:SEPARATE_MASS cannon:EXPOSED_DOOR_OWNED bayCrossings:REMOVED sixBays:PRESERVED exhausts:PRESERVED combat:UNCHANGED">\n</head>');
 }
