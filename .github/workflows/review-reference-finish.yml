@@ -1,0 +1,51 @@
+name: Review Reference Finish
+on:
+  push:
+    branches: [art/aurelian-reference-finish]
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Snapshot source for local geometry review
+        run: |
+          mkdir -p /tmp/ac-reference-review/source
+          git archive HEAD | tar -x -C /tmp/ac-reference-review/source
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reference-finish-source
+          path: /tmp/ac-reference-review/source
+          include-hidden-files: true
+          retention-days: 3
+      - name: Install pinned test dependencies
+        run: |
+          mkdir -p /tmp/ac-hull-audit/vendor /tmp/ac-hull-audit/test-output
+          npm install --prefix /tmp/ac-hull-audit/vendor --no-audit --no-fund --ignore-scripts three@0.179.1 acorn@8.15.0
+          python3 -m pip install playwright==1.55.0 Pillow==11.3.0
+      - name: Check geometry and production source
+        env:
+          AC_HULL_VENDOR: /tmp/ac-hull-audit/vendor/node_modules
+          AC_HULL_OUTPUT: /tmp/ac-hull-audit/test-output
+        run: |
+          node --check aurelian-canon-exterior-runtime.js
+          python3 scripts/audit-presentation.py
+          node scripts/test-aurelian-hull.mjs
+      - name: Browser regression and actual renders
+        env:
+          AC_HULL_ROOT: /tmp/ac-hull-audit
+          AC_HULL_SOURCE: ${{ github.workspace }}
+        run: python3 scripts/browser-aurelian-hull.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reference-finish-renders
+          path: /tmp/ac-hull-audit/test-output
+          retention-days: 3
