@@ -6,31 +6,31 @@ function replaceFunction(source,startToken,endToken,replacement){
 
 export function patchAurelianReferencePolishRuntime(html){
   if(typeof html!=='string')throw new TypeError('Expected game HTML');
-  if(html.includes('ac-aurelian-reference-polish-v0435'))return html;
+  if(html.includes('ac-aurelian-reference-polish-v0436'))return html;
   if(!html.includes('ac-aurelian-canon-exterior-v0428'))return html;
   let patched=html;
 
   const materials=String.raw`function acHullMaterials(){
   const t=acHullFinishResources();
-  const metal=(color,roughness=.24,metalness=.95)=>new THREE.MeshStandardMaterial({color,metalness,roughness,map:t.map,roughnessMap:t.roughness,envMap:t.env,envMapIntensity:1.10});
-  return {gold:metal(0xd5a548,.18),goldDark:metal(0x71491c,.28),edge:metal(0xf4ce78,.15),bronze:metal(0x3d2818,.31),dark:metal(0x080c12,.35,.82),ivory:metal(0xd7c49d,.23,.77),sun:new THREE.MeshStandardMaterial({color:0xffc347,emissive:0xff9812,emissiveIntensity:2.35,metalness:.54,roughness:.15,envMap:t.env}),hot:new THREE.MeshBasicMaterial({color:0xffefc1}),blue:new THREE.MeshBasicMaterial({color:0x68d2ef}),glass:new THREE.MeshPhysicalMaterial({color:0x456a77,metalness:.10,roughness:.07,clearcoat:1,clearcoatRoughness:.05,envMap:t.env,envMapIntensity:1.0,transparent:true,opacity:.34,depthWrite:false,side:THREE.DoubleSide}),trimLine:new THREE.LineBasicMaterial({color:0xefd7a0}),glassLine:new THREE.LineBasicMaterial({color:0xd7f1f3,transparent:true,opacity:.52}),seamLine:new THREE.LineBasicMaterial({color:0x18110a})};
+  const metal=(color,roughness=.24,metalness=.95)=>new THREE.MeshStandardMaterial({color,metalness,roughness,map:t.map,roughnessMap:t.roughness,envMap:t.env,envMapIntensity:1.12});
+  return {gold:metal(0xd7a74a,.18),goldDark:metal(0x744a1c,.27),edge:metal(0xf5cf79,.15),bronze:metal(0x3e2918,.31),dark:metal(0x090d12,.36,.82),ivory:metal(0xd8c69f,.23,.77),sun:new THREE.MeshStandardMaterial({color:0xffc347,emissive:0xff9812,emissiveIntensity:2.35,metalness:.54,roughness:.15,envMap:t.env}),hot:new THREE.MeshBasicMaterial({color:0xffefc1}),blue:new THREE.MeshBasicMaterial({color:0x68d2ef}),glass:new THREE.MeshPhysicalMaterial({color:0x456a77,metalness:.10,roughness:.07,clearcoat:1,clearcoatRoughness:.05,envMap:t.env,envMapIntensity:1.0,transparent:true,opacity:.34,depthWrite:false,side:THREE.DoubleSide}),trimLine:new THREE.LineBasicMaterial({color:0xefd7a0}),glassLine:new THREE.LineBasicMaterial({color:0xd7f1f3,transparent:true,opacity:.52}),seamLine:new THREE.LineBasicMaterial({color:0x18110a})};
 }`;
   const afterMaterials=replaceFunction(patched,'function acHullMaterials(){','function acHullDetail(',materials);if(afterMaterials===patched)return html;patched=afterMaterials;
 
   const doorArmor=String.raw`function acHullDoorArmor(panel,s,m,index){
   const profile=s.points,w=s.w,h=s.h;
-  const face=profile.map(([x,y])=>[x*.91,y*.86]);
-  const inset=profile.map(([x,y])=>[x*.62,y*.48]);
-  acHullMesh(panel,acHullExtrude(acHullShape(profile),.42,.10),[m.bronze,m.goldDark],'AURELIAN_HULL_ARMOR_'+index,0,0,2.07);
-  acHullMesh(panel,acHullExtrude(acHullShape(face),.26,.11),[m.gold,m.edge],'AURELIAN_HULL_GOLD_FACE_'+index,0,0,2.46);
-  acHullMesh(panel,acHullExtrude(acHullShape(inset),.10,.06),m.dark,'AURELIAN_HULL_SMALL_RECESSED_FIELD_'+index,0,0,2.77);
-  const upper=[[-w*.38,h*.09],[w*.06,h*.13],[w*.31,h*.27],[-w*.27,h*.30]];
-  const lower=[[-w*.34,-h*.28],[w*.24,-h*.26],[w*.34,-h*.08],[-w*.08,-h*.12]];
-  const center=[[-w*.26,-h*.045],[w*.19,-h*.065],[w*.27,h*.055],[-w*.19,h*.09]];
-  acHullMesh(panel,acHullExtrude(acHullShape(upper),.18,.08),[index===0?m.ivory:m.gold,m.edge],'AURELIAN_HULL_UPPER_FACET_'+index,0,0,2.94);
-  acHullMesh(panel,acHullExtrude(acHullShape(lower),.18,.08),[m.goldDark,m.gold],'AURELIAN_HULL_LOWER_FACET_'+index,0,0,2.95);
-  acHullMesh(panel,acHullExtrude(acHullShape(center),.19,.08),[m.gold,m.edge],'AURELIAN_HULL_CENTER_RIDGE_'+index,0,0,3.02);
-  for(const sy of[-1,1])acHullDetail(panel,new THREE.BoxGeometry(w*.28,.045,.055),sy>0?m.hot:m.bronze,'AURELIAN_DOOR_EDGE_GLEAM',-.04*w,sy*h*.20,3.06);
+  const collar=profile.map(([x,y])=>[x*.985,y*.965]);
+  const face=profile.map(([x,y])=>[x*.945,y*.90]);
+  const inset=[[-w*.23,-h*.10],[w*.18,-h*.12],[w*.24,-h*.015],[w*.18,h*.11],[-w*.20,h*.12],[-w*.26,h*.02]];
+  acHullMesh(panel,acHullExtrude(acHullShape(profile),.44,.10),[m.goldDark,m.bronze],'AURELIAN_HULL_OUTER_COLLAR_'+index,0,0,2.10);
+  acHullMesh(panel,acHullExtrude(acHullShape(collar),.30,.10),[m.gold,m.edge],'AURELIAN_HULL_GOLD_COLLAR_'+index,0,0,2.48);
+  acHullMesh(panel,acHullExtrude(acHullShape(face),.20,.09),[m.gold,m.goldDark],'AURELIAN_HULL_CONTINUOUS_FACE_'+index,0,0,2.80);
+  acHullMesh(panel,acHullExtrude(acHullShape(inset),.07,.04),m.dark,'AURELIAN_HULL_TECH_INSET_'+index,0,0,3.03);
+  const upper=[[-w*.41,h*.07],[-w*.05,h*.12],[w*.34,h*.27],[w*.27,h*.34],[-w*.29,h*.30]];
+  const lower=[[-w*.37,-h*.30],[w*.28,-h*.28],[w*.37,-h*.09],[w*.28,-h*.04],[-w*.12,-h*.11]];
+  acHullMesh(panel,acHullExtrude(acHullShape(upper),.15,.07),[index===0?m.ivory:m.gold,m.edge],'AURELIAN_HULL_FLOW_FACET_TOP_'+index,0,0,3.06);
+  acHullMesh(panel,acHullExtrude(acHullShape(lower),.15,.07),[m.goldDark,m.gold],'AURELIAN_HULL_FLOW_FACET_BOTTOM_'+index,0,0,3.07);
+  const ridge=acHullDetail(panel,new THREE.BoxGeometry(w*.48,.050,.050),m.edge,'AURELIAN_HULL_FINE_RIDGE_'+index,-w*.02,h*.18,3.14);ridge.rotation.z=.02;
 }`;
   const afterDoor=replaceFunction(patched,'function acHullDoorArmor(panel,s,m,index){','function acHullMesh(',doorArmor);if(afterDoor===patched)return html;patched=afterDoor;
 
@@ -61,17 +61,21 @@ export function patchAurelianReferencePolishRuntime(html){
     {n:'AURELIAN_CANON_BOTTOM_KEEL',mat:m.goldDark,z:7.20,d:.60,p:[[-22.4,-6.15],[-17.4,-7.9],[-9.0,-9.0],[0.0,-9.45],[8.4,-8.5],[13.9,-6.65],[10.5,-6.55],[4.4,-7.15],[-4.0,-7.3],[-12.2,-6.95],[-18.5,-5.75]]},
     {n:'AURELIAN_CANON_AFT_COWL_TOP',mat:m.gold,z:7.62,d:.48,p:[[-27.2,5.45],[-23.3,7.0],[-18.4,8.0],[-14.6,8.25],[-16.0,6.65],[-21.1,5.25]]},
     {n:'AURELIAN_CANON_AFT_COWL_BOTTOM',mat:m.goldDark,z:7.46,d:.48,p:[[-27.0,-5.35],[-23.1,-6.9],[-18.1,-7.75],[-14.5,-7.9],[-16.0,-6.2],[-21.0,-4.95]]},
-    {n:'AURELIAN_CANON_PROW_UPPER_MASS',mat:m.gold,z:7.82,d:.48,p:[[14.1,6.9],[17.1,6.15],[20.1,5.15],[23.0,3.75],[25.0,2.55],[25.8,1.35],[23.8,1.9],[21.0,3.0],[18.2,4.45],[15.5,5.55]]},
-    {n:'AURELIAN_CANON_PROW_LOWER_MASS',mat:m.goldDark,z:7.56,d:.48,p:[[14.1,-6.1],[17.3,-5.55],[20.4,-4.55],[23.1,-3.15],[25.1,-2.05],[25.8,-.85],[23.7,-1.25],[20.9,-2.45],[18.0,-3.75],[15.4,-4.85]]},
-    {n:'AURELIAN_CANON_PROW_NOSE_CAP',mat:m.gold,z:8.00,d:.46,p:[[23.0,2.65],[25.1,2.0],[26.25,.85],[26.15,-.95],[24.9,-2.05],[22.9,-2.55],[21.9,-.65],[21.95,1.05]]},
-    {n:'AURELIAN_CANON_PROW_DARK_GAP',mat:m.dark,z:8.06,d:.24,p:[[15.0,2.25],[18.2,2.1],[21.3,1.55],[24.7,.82],[25.1,.2],[23.4,-.35],[20.9,-.95],[18.1,-1.45],[15.0,-1.75],[16.3,-.25],[16.4,.85]]},
-    {n:'AURELIAN_CANON_PROW_GOLD_SPINE',mat:m.edge,z:8.24,d:.18,p:[[15.4,1.35],[18.6,1.55],[21.5,1.18],[25.45,.55],[22.0,.72],[19.0,.58],[16.3,.48]]},
-    {n:'AURELIAN_CANON_PROW_IVORY_TOP',mat:m.ivory,z:8.30,d:.18,p:[[16.0,5.45],[18.3,4.78],[20.6,3.88],[19.0,4.02],[17.0,4.68]]},
-    {n:'AURELIAN_CANON_PROW_IVORY_BOTTOM',mat:m.ivory,z:8.28,d:.18,p:[[16.0,-5.15],[18.4,-4.48],[20.7,-3.62],[19.0,-3.76],[17.0,-4.42]]}
+    {n:'AURELIAN_CANON_PROW_UPPER_MASS',mat:m.gold,z:7.82,d:.48,p:[[13.8,6.9],[16.4,6.35],[19.0,5.45],[21.8,4.15],[24.0,2.75],[25.0,1.55],[23.0,2.0],[20.3,3.15],[17.7,4.55],[15.1,5.65]]},
+    {n:'AURELIAN_CANON_PROW_LOWER_MASS',mat:m.goldDark,z:7.56,d:.48,p:[[13.8,-6.1],[16.6,-5.65],[19.3,-4.75],[22.0,-3.35],[24.1,-2.15],[25.0,-1.0],[22.9,-1.35],[20.3,-2.5],[17.6,-3.85],[15.0,-4.95]]},
+    {n:'AURELIAN_CANON_PROW_NOSE_CAP',mat:m.gold,z:8.00,d:.46,p:[[22.0,2.85],[24.1,2.2],[25.45,1.05],[25.35,-1.0],[24.0,-2.15],[21.9,-2.7],[20.9,-.7],[21.0,1.2]]},
+    {n:'AURELIAN_CANON_PROW_DARK_GAP',mat:m.dark,z:8.06,d:.24,p:[[15.0,2.1],[17.8,1.95],[20.2,1.45],[22.7,.85],[23.6,.25],[22.2,-.25],[20.0,-.8],[17.8,-1.25],[15.0,-1.55],[16.1,-.20],[16.2,.75]]},
+    {n:'AURELIAN_CANON_PROW_GOLD_SPINE',mat:m.edge,z:8.24,d:.18,p:[[15.3,1.25],[18.0,1.45],[20.5,1.12],[24.4,.60],[21.4,.78],[18.6,.60],[16.2,.50]]},
+    {n:'AURELIAN_CANON_PROW_IVORY_TOP',mat:m.ivory,z:8.30,d:.18,p:[[16.0,5.35],[18.0,4.78],[20.0,4.0],[18.7,4.1],[17.0,4.65]]},
+    {n:'AURELIAN_CANON_PROW_IVORY_BOTTOM',mat:m.ivory,z:8.28,d:.18,p:[[16.0,-5.05],[18.1,-4.48],[20.1,-3.75],[18.7,-3.85],[17.0,-4.4]]},
+    {n:'AURELIAN_CANON_UPPER_BAY_BRIDGE',mat:m.gold,z:7.88,d:.28,p:[[-18.0,5.0],[-9.0,5.55],[1.0,5.65],[10.8,5.2],[12.6,4.55],[9.7,4.45],[.5,4.75],[-8.8,4.65],[-17.4,4.15]]},
+    {n:'AURELIAN_CANON_MID_BAY_BRIDGE',mat:m.goldDark,z:7.86,d:.26,p:[[-18.6,1.25],[-9.3,1.65],[.4,1.7],[10.9,1.35],[12.7,.75],[9.5,.65],[.2,.95],[-9.1,.90],[-18.0,.45]]},
+    {n:'AURELIAN_CANON_LOWER_BAY_BRIDGE',mat:m.gold,z:7.84,d:.27,p:[[-18.3,-3.0],[-9.0,-2.55],[.4,-2.45],[10.8,-2.75],[12.4,-3.35],[9.5,-3.45],[.2,-3.15],[-8.8,-3.2],[-17.6,-3.75]]}
   ];
   for(const a of plates)acHullMesh(kit,acHullExtrude(acHullShape(a.p),a.d,.12),[a.mat,m.edge],a.n,0,0,a.z);
   const accents=[
     {n:'AURELIAN_CANON_DORSAL_IVORY_STRIP',mat:m.ivory,p:[[-7.5,10.08],[-2.0,10.42],[3.1,9.92],[.5,9.72],[-4.0,9.88]]},
+    {n:'AURELIAN_CANON_COCKPIT_FAIRING',mat:m.gold,p:[[-22.0,8.0],[-18.0,8.85],[-13.5,8.6],[-14.5,7.7],[-18.8,7.3],[-21.5,7.1]]},
     {n:'AURELIAN_CANON_FORE_UPPER_COLLAR',mat:m.gold,p:[[11.6,7.55],[14.0,7.15],[15.2,6.35],[13.9,6.55],[12.2,6.9]]},
     {n:'AURELIAN_CANON_FORE_LOWER_COLLAR',mat:m.goldDark,p:[[11.7,-6.55],[14.0,-6.15],[15.3,-5.35],[13.9,-5.55],[12.2,-5.95]]}
   ];
@@ -81,9 +85,9 @@ export function patchAurelianReferencePolishRuntime(html){
   if(!patched.includes('  acHullReferenceSilhouette(kit,m);'))patched=patched.replace('  acHullMachinery(kit,m);','  acHullMachinery(kit,m);\n  acHullReferenceSilhouette(kit,m);');
   if(!patched.includes('function acHullReferenceSilhouette(kit,m){')||!patched.includes('acHullReferenceSilhouette(kit,m);'))return html;
 
-  patched=patched.replace('structure.userData.acHullRadii=new THREE.Vector3(29.2,12.5,9.4)','structure.userData.acHullRadii=new THREE.Vector3(33.5,12.7,9.7)');
-  patched=patched.replace(/MATCH RECORDER v0\.42\.8/g,'MATCH RECORDER v0.43.5');
-  patched=patched.replace(/build=2026-09-07_AURELIAN_REFERENCE_METALWORK/g,'build=2026-09-07_AURELIAN_CANON_BROAD_NOSE_GOLD_BAYS');
-  patched=patched.replace(/build=v0\.42\.8 panels=6 apertures=6/g,'build=v0.43.5 panels=6 apertures=6');
-  return patched.replace('</head>','<meta id="ac-aurelian-reference-polish-v0435" name="ac-aurelian-reference-polish" content="reference:CANON prow:BROAD_NOSE_CAP closedBays:GOLD_CLAD darkInset:SMALL cannon:EXPOSED_DOOR_OWNED sixBays:PRESERVED exhausts:PRESERVED combat:UNCHANGED">\n</head>');
+  patched=patched.replace('structure.userData.acHullRadii=new THREE.Vector3(29.2,12.5,9.4)','structure.userData.acHullRadii=new THREE.Vector3(33.0,12.7,9.7)');
+  patched=patched.replace(/MATCH RECORDER v0\.42\.8/g,'MATCH RECORDER v0.43.6');
+  patched=patched.replace(/build=2026-09-07_AURELIAN_REFERENCE_METALWORK/g,'build=2026-09-08_AURELIAN_CONTINUOUS_GOLD_HULL');
+  patched=patched.replace(/build=v0\.42\.8 panels=6 apertures=6/g,'build=v0.43.6 panels=6 apertures=6');
+  return patched.replace('</head>','<meta id="ac-aurelian-reference-polish-v0436" name="ac-aurelian-reference-polish" content="reference:CANON hull:CONTINUOUS_GOLD bayFrames:SUPPRESSED cockpit:FAIRED_IN prow:INTEGRATED cannon:EXPOSED_DOOR_OWNED sixBays:PRESERVED exhausts:PRESERVED combat:UNCHANGED">\n</head>');
 }
