@@ -6,7 +6,7 @@ function replaceFunction(source,startToken,endToken,replacement){
 
 export function patchAurelianReferencePolishRuntime(html){
   if(typeof html!=='string')throw new TypeError('Expected game HTML');
-  if(html.includes('ac-aurelian-reference-polish-v0437'))return html;
+  if(html.includes('ac-aurelian-reference-polish-v0438'))return html;
   if(!html.includes('ac-aurelian-canon-exterior-v0428'))return html;
   let patched=html;
 
@@ -19,13 +19,13 @@ export function patchAurelianReferencePolishRuntime(html){
 
   const doorArmor=String.raw`function acHullDoorArmor(panel,s,m,index){
   const profile=s.points,w=s.w,h=s.h;
-  const oversize=profile.map(([x,y])=>[x*1.035,y*1.025]);
-  const face=profile.map(([x,y])=>[x*.955,y*.91]);
-  const inset=[[-w*.20,-h*.085],[w*.15,-h*.10],[w*.20,-h*.01],[w*.15,h*.09],[-w*.17,h*.10],[-w*.22,h*.015]];
-  acHullMesh(panel,acHullExtrude(acHullShape(oversize),.24,.08),[m.goldDark,m.bronze],'AURELIAN_HULL_FRAME_MASK_'+index,0,0,2.16);
-  acHullMesh(panel,acHullExtrude(acHullShape(profile),.36,.10),[m.gold,m.edge],'AURELIAN_HULL_OUTER_COLLAR_'+index,0,0,2.44);
-  acHullMesh(panel,acHullExtrude(acHullShape(face),.22,.09),[m.gold,m.goldDark],'AURELIAN_HULL_CONTINUOUS_FACE_'+index,0,0,2.79);
-  acHullMesh(panel,acHullExtrude(acHullShape(inset),.06,.04),m.dark,'AURELIAN_HULL_TECH_INSET_'+index,0,0,3.03);
+  const oversize=profile.map(([x,y])=>[x*1.045,y*1.035]);
+  const face=profile.map(([x,y])=>[x*.965,y*.925]);
+  const inset=[[-w*.105,-h*.045],[w*.085,-h*.052],[w*.11,-h*.008],[w*.085,h*.046],[-w*.09,h*.050],[-w*.118,h*.008]];
+  acHullMesh(panel,acHullExtrude(acHullShape(oversize),.22,.08),[m.goldDark,m.bronze],'AURELIAN_HULL_FRAME_MASK_'+index,0,0,2.16);
+  acHullMesh(panel,acHullExtrude(acHullShape(profile),.38,.10),[m.gold,m.edge],'AURELIAN_HULL_OUTER_COLLAR_'+index,0,0,2.44);
+  acHullMesh(panel,acHullExtrude(acHullShape(face),.24,.09),[m.gold,m.goldDark],'AURELIAN_HULL_CONTINUOUS_FACE_'+index,0,0,2.80);
+  acHullMesh(panel,acHullExtrude(acHullShape(inset),.045,.03),m.dark,'AURELIAN_HULL_TECH_INSET_'+index,0,0,3.04);
   const upper=[[-w*.40,h*.08],[-w*.04,h*.12],[w*.33,h*.27],[w*.25,h*.33],[-w*.27,h*.29]];
   const lower=[[-w*.36,-h*.29],[w*.27,-h*.27],[w*.36,-h*.09],[w*.27,-h*.04],[-w*.11,-h*.10]];
   acHullMesh(panel,acHullExtrude(acHullShape(upper),.14,.07),[index===0?m.ivory:m.gold,m.edge],'AURELIAN_HULL_FLOW_FACET_TOP_'+index,0,0,3.06);
@@ -57,17 +57,16 @@ export function patchAurelianReferencePolishRuntime(html){
 
   const silhouette=String.raw`function acHullReferenceSilhouette(kit,m){
   const plates=[
-    {n:'AURELIAN_CANON_TOP_CROWN',mat:m.gold,z:7.44,d:.54,p:[[-22.8,6.8],[-18.8,8.55],[-11.8,10.25],[-3.0,11.0],[5.8,10.15],[11.9,8.45],[14.0,7.25],[10.8,7.45],[5.3,8.15],[-3.2,8.55],[-11.8,8.25],[-18.5,6.95]]},
-    {n:'AURELIAN_CANON_BOTTOM_KEEL',mat:m.goldDark,z:7.20,d:.60,p:[[-22.4,-6.15],[-17.4,-7.9],[-9.0,-9.0],[0.0,-9.45],[8.4,-8.5],[13.9,-6.65],[10.5,-6.55],[4.4,-7.15],[-4.0,-7.3],[-12.2,-6.95],[-18.5,-5.75]]},
+    {n:'AURELIAN_CANON_TOP_CROWN',mat:m.gold,z:7.44,d:.54,p:[[-22.8,6.8],[-18.8,8.55],[-11.8,10.25],[-3.0,11.0],[5.8,10.15],[11.9,8.45],[13.8,7.25],[10.8,7.45],[5.3,8.15],[-3.2,8.55],[-11.8,8.25],[-18.5,6.95]]},
+    {n:'AURELIAN_CANON_BOTTOM_KEEL',mat:m.goldDark,z:7.20,d:.60,p:[[-22.4,-6.15],[-17.4,-7.9],[-9.0,-9.0],[0.0,-9.45],[8.4,-8.5],[13.7,-6.65],[10.5,-6.55],[4.4,-7.15],[-4.0,-7.3],[-12.2,-6.95],[-18.5,-5.75]]},
     {n:'AURELIAN_CANON_AFT_COWL_TOP',mat:m.gold,z:7.62,d:.48,p:[[-27.2,5.45],[-23.3,7.0],[-18.4,8.0],[-14.6,8.25],[-16.0,6.65],[-21.1,5.25]]},
     {n:'AURELIAN_CANON_AFT_COWL_BOTTOM',mat:m.goldDark,z:7.46,d:.48,p:[[-27.0,-5.35],[-23.1,-6.9],[-18.1,-7.75],[-14.5,-7.9],[-16.0,-6.2],[-21.0,-4.95]]},
-    {n:'AURELIAN_CANON_PROW_UPPER_MASS',mat:m.gold,z:7.82,d:.48,p:[[13.8,6.9],[16.4,6.35],[19.0,5.45],[21.8,4.15],[24.0,2.75],[25.0,1.55],[23.0,2.0],[20.3,3.15],[17.7,4.55],[15.1,5.65]]},
-    {n:'AURELIAN_CANON_PROW_LOWER_MASS',mat:m.goldDark,z:7.56,d:.48,p:[[13.8,-6.1],[16.6,-5.65],[19.3,-4.75],[22.0,-3.35],[24.1,-2.15],[25.0,-1.0],[22.9,-1.35],[20.3,-2.5],[17.6,-3.85],[15.0,-4.95]]},
-    {n:'AURELIAN_CANON_PROW_NOSE_CAP',mat:m.gold,z:8.00,d:.46,p:[[22.0,2.85],[24.1,2.2],[25.45,1.05],[25.35,-1.0],[24.0,-2.15],[21.9,-2.7],[20.9,-.7],[21.0,1.2]]},
-    {n:'AURELIAN_CANON_PROW_DARK_GAP',mat:m.dark,z:8.06,d:.24,p:[[15.0,2.1],[17.8,1.95],[20.2,1.45],[22.7,.85],[23.6,.25],[22.2,-.25],[20.0,-.8],[17.8,-1.25],[15.0,-1.55],[16.1,-.20],[16.2,.75]]},
-    {n:'AURELIAN_CANON_PROW_GOLD_SPINE',mat:m.edge,z:8.24,d:.18,p:[[15.3,1.25],[18.0,1.45],[20.5,1.12],[24.4,.60],[21.4,.78],[18.6,.60],[16.2,.50]]},
-    {n:'AURELIAN_CANON_PROW_IVORY_TOP',mat:m.ivory,z:8.30,d:.18,p:[[16.0,5.35],[18.0,4.78],[20.0,4.0],[18.7,4.1],[17.0,4.65]]},
-    {n:'AURELIAN_CANON_PROW_IVORY_BOTTOM',mat:m.ivory,z:8.28,d:.18,p:[[16.0,-5.05],[18.1,-4.48],[20.1,-3.75],[18.7,-3.85],[17.0,-4.4]]}
+    {n:'AURELIAN_CANON_PROW_UPPER_MASS',mat:m.gold,z:7.82,d:.50,p:[[13.6,6.8],[16.0,6.2],[18.5,5.35],[20.8,4.15],[22.6,2.95],[23.8,1.55],[21.9,2.0],[19.8,3.0],[17.4,4.3],[15.0,5.45]]},
+    {n:'AURELIAN_CANON_PROW_LOWER_MASS',mat:m.goldDark,z:7.56,d:.50,p:[[13.6,-6.0],[16.2,-5.55],[18.8,-4.7],[21.0,-3.45],[22.8,-2.2],[23.8,-1.0],[21.8,-1.35],[19.8,-2.35],[17.3,-3.7],[14.9,-4.8]]},
+    {n:'AURELIAN_CANON_PROW_NOSE_CAP',mat:m.gold,z:8.02,d:.48,p:[[20.8,3.0],[22.8,2.35],[24.35,1.15],[24.3,-1.1],[22.7,-2.3],[20.7,-2.8],[19.7,-.7],[19.8,1.25]]},
+    {n:'AURELIAN_CANON_PROW_CENTER_PLATE',mat:m.gold,z:8.18,d:.24,p:[[14.8,2.0],[17.7,2.05],[20.4,1.5],[22.8,.78],[23.2,.25],[21.7,-.18],[19.7,-.7],[17.6,-1.2],[14.8,-1.45],[15.9,-.18],[16.0,.78]]},
+    {n:'AURELIAN_CANON_PROW_IVORY_TOP',mat:m.ivory,z:8.30,d:.18,p:[[15.9,5.25],[17.8,4.72],[19.6,4.02],[18.4,4.1],[16.9,4.6]]},
+    {n:'AURELIAN_CANON_PROW_IVORY_BOTTOM',mat:m.ivory,z:8.28,d:.18,p:[[15.9,-4.95],[17.9,-4.42],[19.7,-3.75],[18.4,-3.82],[16.9,-4.35]]}
   ];
   for(const a of plates)acHullMesh(kit,acHullExtrude(acHullShape(a.p),a.d,.12),[a.mat,m.edge],a.n,0,0,a.z);
 
@@ -83,7 +82,7 @@ export function patchAurelianReferencePolishRuntime(html){
 
   const hub=acHullMesh(kit,new THREE.CylinderGeometry(1.55,1.55,.34,32),m.gold,'AURELIAN_CANON_CENTRAL_HUB',0.8,.2,8.32);hub.rotation.x=Math.PI/2;
   const hubRing=acHullMesh(kit,new THREE.TorusGeometry(1.18,.16,10,36),m.edge,'AURELIAN_CANON_CENTRAL_HUB_RING',0.8,.2,8.55);hubRing.rotation.x=Math.PI/2;
-  const hubCore=acHullMesh(kit,new THREE.CylinderGeometry(.50,.50,.08,28),m.dark,'AURELIAN_CANON_CENTRAL_HUB_CORE',0.8,.2,8.72);hubCore.rotation.x=Math.PI/2;
+  const hubCore=acHullMesh(kit,new THREE.CylinderGeometry(.42,.42,.08,28),m.goldDark,'AURELIAN_CANON_CENTRAL_HUB_CORE',0.8,.2,8.72);hubCore.rotation.x=Math.PI/2;
 
   const accents=[
     {n:'AURELIAN_CANON_DORSAL_IVORY_STRIP',mat:m.ivory,p:[[-7.5,10.08],[-2.0,10.42],[3.1,9.92],[.5,9.72],[-4.0,9.88]]},
@@ -97,9 +96,9 @@ export function patchAurelianReferencePolishRuntime(html){
   if(!patched.includes('  acHullReferenceSilhouette(kit,m);'))patched=patched.replace('  acHullMachinery(kit,m);','  acHullMachinery(kit,m);\n  acHullReferenceSilhouette(kit,m);');
   if(!patched.includes('function acHullReferenceSilhouette(kit,m){')||!patched.includes('acHullReferenceSilhouette(kit,m);'))return html;
 
-  patched=patched.replace('structure.userData.acHullRadii=new THREE.Vector3(29.2,12.5,9.4)','structure.userData.acHullRadii=new THREE.Vector3(33.0,12.7,9.7)');
-  patched=patched.replace(/MATCH RECORDER v0\.42\.8/g,'MATCH RECORDER v0.43.7');
-  patched=patched.replace(/build=2026-09-07_AURELIAN_REFERENCE_METALWORK/g,'build=2026-09-08_AURELIAN_LOCAL_GUSSETS_NO_BAY_BARS');
-  patched=patched.replace(/build=v0\.42\.8 panels=6 apertures=6/g,'build=v0.43.7 panels=6 apertures=6');
-  return patched.replace('</head>','<meta id="ac-aurelian-reference-polish-v0437" name="ac-aurelian-reference-polish" content="reference:CANON bayCrossingBars:REMOVED localGussets:ADDED frameMask:GOLD hub:LARGE cockpit:FAIRED_IN prow:INTEGRATED cannon:EXPOSED_DOOR_OWNED sixBays:PRESERVED exhausts:PRESERVED combat:UNCHANGED">\n</head>');
+  patched=patched.replace('structure.userData.acHullRadii=new THREE.Vector3(29.2,12.5,9.4)','structure.userData.acHullRadii=new THREE.Vector3(32.0,12.7,9.7)');
+  patched=patched.replace(/MATCH RECORDER v0\.42\.8/g,'MATCH RECORDER v0.43.8');
+  patched=patched.replace(/build=2026-09-07_AURELIAN_REFERENCE_METALWORK/g,'build=2026-09-08_AURELIAN_SIMPLIFIED_PROW_MINIMAL_DARK_INSETS');
+  patched=patched.replace(/build=v0\.42\.8 panels=6 apertures=6/g,'build=v0.43.8 panels=6 apertures=6');
+  return patched.replace('</head>','<meta id="ac-aurelian-reference-polish-v0438" name="ac-aurelian-reference-polish" content="reference:CANON exteriorDarkInsets:MINIMAL prow:SIMPLIFIED_BROAD_GOLD localGussets:ADDED frameMask:GOLD cockpit:FAIRED_IN cannon:EXPOSED_DOOR_OWNED sixBays:PRESERVED exhausts:PRESERVED combat:UNCHANGED">\n</head>');
 }
