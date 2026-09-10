@@ -1,5 +1,5 @@
 export function patchAurelianLogicalCutawayRuntime(html){
-  if(html.includes('ac-aurelian-logical-cutaway-v0421'))return html;
+  if(html.includes('ac-aurelian-logical-cutaway-v0453'))return html;
   const helper=String.raw`
 function acSeparateAurelianLogicalCutaway(){
   if(!xrayOpen||localXraySide()!=='aurelian'||!xrayGroup)return;
@@ -9,7 +9,7 @@ function acSeparateAurelianLogicalCutaway(){
     if(v?.rig3D)v.rig3D.traverse?.(o=>nativeKeep.add(o));
     if(v?.standAnchor)v.standAnchor.traverse?.(o=>nativeKeep.add(o));
   }
-  let hiddenLegacy=0,visibleInterior=0,logicalHidden=0,nativeRoomsVisible=0;
+  let hiddenLegacy=0,visibleInterior=0,logicalHidden=0,nativeRoomsVisible=0,canonShellHidden=0;
   xrayGroup.traverse(o=>{
     if(!o||o===xrayGroup)return;
     const n=String(o.name||'').toLowerCase();
@@ -21,13 +21,25 @@ function acSeparateAurelianLogicalCutaway(){
     }
     if((o.isMesh||o.isLineSegments)&&o.geometry){o.visible=false;o.userData.acLegacyCutawayVisual=true;hiddenLegacy++}
   });
+
+  // v0.45.3: the reference shell lives on the vessel skin, not xrayGroup. When
+  // cutaway is open it must not sit in front of the rooms/warriors. Hide only
+  // presentation geometry; never touch combat, room hit planes, selection or rigs.
+  const vesselRoot=(typeof localVessel==='function'?localVessel():null)||xrayGroup.parent;
+  if(vesselRoot?.traverse)vesselRoot.traverse(o=>{
+    if(!o||nativeKeep.has(o))return;
+    const n=String(o.name||'');
+    const canon=n.startsWith('AURELIAN_CANON_')||n==='AURELIAN_DIRECTOR_HULL_STRUCTURE'||n==='AURELIAN_REAR_HULL_DEPTH';
+    if(canon&&o.visible!==false){o.visible=false;o.userData.acCutawayShellHidden=true;canonShellHidden++}
+  });
+
   for(const v of xrayRoomVisuals||[]){
     if(v?.nativeRoom){v.nativeRoom.visible=true;nativeRoomsVisible++}
     if(v?.rig3D){v.rig3D.visible=true;v.rig3D.traverse?.(o=>{if(o.isMesh)o.visible=true})}
     if(v?.frontShutter)v.frontShutter.visible=!!v.frontShutter.userData?.acAimClosed;
   }
-  const closedBays=(xrayRoomVisuals||[]).filter(v=>v?.nativeRoom?.userData?.acAimClosedBay).length,signature=visibleInterior+'|'+hiddenLegacy+'|'+logicalHidden+'|'+nativeRoomsVisible+'|'+closedBays;
-  if(acSeparateAurelianLogicalCutaway._last!==signature){acSeparateAurelianLogicalCutaway._last=signature;diag('AURELIAN CUTAWAY PRESENTATION','nativeInterior=VISIBLE physicalBays='+nativeRoomsVisible+'/6 shapedRoleInteriors=6 logicalRooms=9 interiorMeshes='+visibleInterior+' closedBayInteriorsHidden='+closedBays+' legacyHidden='+hiddenLegacy+' roomCageRims=REMOVED_AT_SOURCE logicalHitMeshes='+logicalHidden+' warriorRigs=HIGH_DETAIL_ARTICULATED')}
+  const closedBays=(xrayRoomVisuals||[]).filter(v=>v?.nativeRoom?.userData?.acAimClosedBay).length,signature=visibleInterior+'|'+hiddenLegacy+'|'+logicalHidden+'|'+nativeRoomsVisible+'|'+closedBays+'|'+canonShellHidden;
+  if(acSeparateAurelianLogicalCutaway._last!==signature){acSeparateAurelianLogicalCutaway._last=signature;diag('AURELIAN CUTAWAY PRESENTATION','nativeInterior=VISIBLE physicalBays='+nativeRoomsVisible+'/6 shapedRoleInteriors=6 logicalRooms=9 interiorMeshes='+visibleInterior+' canonShellHidden='+canonShellHidden+' closedBayInteriorsHidden='+closedBays+' legacyHidden='+hiddenLegacy+' logicalHitMeshes='+logicalHidden+' warriorRigs=VISIBLE_SELECTABLE')}
 }
 `;
   let patched=html;
@@ -39,5 +51,5 @@ function acSeparateAurelianLogicalCutaway(){
   const refreshNeedle='function refreshPrivateXrayVisuals(){\n  if(!xrayOpen||!xrayGroup)return;';
   const refreshReplacement='function refreshPrivateXrayVisuals(){\n  if(!xrayOpen||!xrayGroup)return;\n  if(localXraySide()===\'aurelian\'&&typeof acSeparateAurelianLogicalCutaway===\'function\')queueMicrotask(()=>{if(xrayOpen&&xrayGroup)acSeparateAurelianLogicalCutaway()});';
   const refreshed=patched.replace(refreshNeedle,refreshReplacement),refreshGuard=refreshed!==patched;patched=refreshed;
-  return patched.replace('</head>','<meta id="ac-aurelian-logical-cutaway-v0421" name="ac-aurelian-logical-cutaway" content="openRoute:'+(openRoute?'OK':'MISS')+' refreshGuard:'+(refreshGuard?'OK':'MISS')+' physicalInterior:ALL_6_SEGMENTED_DEEP_ROLE_DRESSED logicalCombatRooms:9_UNCHANGED layout:PLAYER_SKETCH_STACKED pressureHull:ANGULAR_REAR_WITH_INDIVIDUAL_COLLARS roomCageRims:REMOVED interiorExteriorOwnership:SEPARATE_ROOTS aimPanels:EXACT_UNIFIED_HULL_MODULES combatGeometry:PRESERVED warriorRigs:VISIBLE">\n</head>');
+  return patched.replace('</head>','<meta id="ac-aurelian-logical-cutaway-v0453" name="ac-aurelian-logical-cutaway" content="openRoute:'+(openRoute?'OK':'MISS')+' refreshGuard:'+(refreshGuard?'OK':'MISS')+' canonShellDuringCutaway:HIDDEN warriorRigs:VISIBLE_SELECTABLE combatGeometry:PRESERVED">\n</head>');
 }
