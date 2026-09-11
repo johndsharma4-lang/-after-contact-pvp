@@ -4708,8 +4708,13 @@ function selectWarrior(w){diag('SELECT WARRIOR',`${w?.weaponKey||'none'} hp=${w?
   if(wd)wd.textContent=w.weaponKey==='acid_brute'?'CORROSIVE FLOOD • hydro-pack acid hose • stacking AOE':w.weaponKey==='spatial_disintegrator'?'MATTER COLLAPSE • Singularity Core • unstable array':w.weaponKey==='bombardier'?'HE-9 ten-missile barrage • explosive siege fire':w.weaponKey==='sniper'?'EXPLOSIVE BREACH ROUND • precise compartment shot • small AOE':w.weaponKey==='combat_controller'?'TAC-LINK LOCATOR • delayed adaptive support • 2-turn cooldown':'5s burn-through • 2 compartments • exposes survivors';
 }
 function warriorShouldBeVisible(w){if(!w||!w.active||w.hp<=0)return false;const room=w.roomGroup?.userData?.rooms?.[w.roomIndex];if(!room)return false;const isMine=!multiplayer?w.side==='aurelian':w.side===localSide;if(xrayOpen&&isMine)return true;const exposed=!!w.exposedBySolar||crewExposureTier(room)>=3;if(exteriorRoomsHidden)return !isMine&&exposed;if(isMine)return true;return exposed}
+function syncExposedWarriorDepth(w,exposed){
+  if(!w?.model3D)return;
+  w.model3D.traverse(o=>{if(!o.isMesh||!o.material)return;const materials=Array.isArray(o.material)?o.material:[o.material];for(const material of materials){if(material.userData.acNativeDepthTest===undefined)material.userData.acNativeDepthTest=material.depthTest;if(material.userData.acNativeDepthWrite===undefined)material.userData.acNativeDepthWrite=material.depthWrite;material.depthTest=exposed?false:material.userData.acNativeDepthTest;material.depthWrite=exposed?false:material.userData.acNativeDepthWrite;material.needsUpdate=true}if(o.userData.acNativeRenderOrder===undefined)o.userData.acNativeRenderOrder=o.renderOrder||0;o.renderOrder=exposed?58:o.userData.acNativeRenderOrder});
+}
 function syncWarriorConcealment(w){
-  if(!w)return;const isMine=!multiplayer?w.side==='aurelian':w.side===localSide,xrayMine=xrayOpen&&isMine,show=warriorShouldBeVisible(w);
+  if(!w)return;const isMine=!multiplayer?w.side==='aurelian':w.side===localSide,xrayMine=xrayOpen&&isMine,room=w.roomGroup?.userData?.rooms?.[w.roomIndex],combatExposed=!isMine&&!xrayMine&&(!!w.exposedBySolar||crewExposureTier(room)>=3),show=warriorShouldBeVisible(w);
+  syncExposedWarriorDepth(w,combatExposed);
   if(w.anchor)w.anchor.visible=show&&!xrayMine;
   if(w.marker)w.marker.visible=show&&!xrayMine;
   if(w.model3D)w.model3D.visible=!!(show&&!xrayMine&&w.active&&w.hp>0);
@@ -4824,7 +4829,7 @@ function syncExteriorBattleScar(room){
   const parent=room.hitPlane.parent;if(!parent)return;
   if(!room.exteriorScar){
     const mat=new THREE.MeshBasicMaterial({color:0x6f2111,transparent:true,opacity:0,depthTest:false,depthWrite:false,side:THREE.DoubleSide,blending:THREE.NormalBlending});
-    const scar=new THREE.Mesh(new THREE.RingGeometry(.42,1.08,22),mat),pit=new THREE.Mesh(new THREE.CircleGeometry(.54,22),new THREE.MeshBasicMaterial({color:0x050304,transparent:true,opacity:0,depthTest:false,depthWrite:false,side:THREE.DoubleSide}));pit.position.z=-.01;pit.renderOrder=34;scar.add(pit);
+    const scar=new THREE.Mesh(new THREE.RingGeometry(.42,1.08,22),mat),pit=new THREE.Mesh(new THREE.CircleGeometry(1.34,22),new THREE.MeshBasicMaterial({color:0x050304,transparent:true,opacity:0,depthTest:false,depthWrite:false,side:THREE.DoubleSide}));pit.scale.set(1.58,1.08,1);pit.position.z=-.01;pit.renderOrder=34;scar.add(pit);
     const crackPts=[];for(let i=0;i<7;i++){const a=i*.91+.2,inner=.62+(i%2)*.12,outer=1.18+(i%3)*.14;crackPts.push(new THREE.Vector3(Math.cos(a)*inner,Math.sin(a)*inner,.02),new THREE.Vector3(Math.cos(a+.10*(i%2?1:-1))*outer,Math.sin(a+.10*(i%2?1:-1))*outer,.02))}const cracks=new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(crackPts),new THREE.LineBasicMaterial({color:0xff9c63,transparent:true,opacity:0,depthTest:false,depthWrite:false}));cracks.renderOrder=36;scar.add(cracks);scar.userData.pit=pit;scar.userData.cracks=cracks;
     const wp=room.hitPlane.getWorldPosition(new THREE.Vector3());parent.add(scar);scar.position.copy(parent.worldToLocal(wp.clone()));scar.position.z+=1.70;scar.rotation.z=(room.hitPlane.userData.roomIndex||0)*.61;scar.renderOrder=35;room.exteriorScar=scar;
   }
