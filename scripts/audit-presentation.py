@@ -9,6 +9,7 @@ cutaway = (root / 'aurelian-logical-cutaway-runtime.js').read_text(encoding='utf
 weapon_origin = (root / 'warrior-weapon-origin-runtime.js').read_text(encoding='utf-8')
 rebuilt_models = (root / 'aurelian-rebuilt-models-runtime.js').read_text(encoding='utf-8')
 cutaway_composition = (root / 'aurelian-cutaway-composition-runtime.js').read_text(encoding='utf-8')
+canon_authority = (root / 'aurelian-canon-authority-runtime.js').read_text(encoding='utf-8')
 base = (root / 'index.html').read_text(encoding='utf-8')
 compact_router = ''.join(router.split())
 
@@ -48,7 +49,9 @@ checks = {
     'six modules have deep exact exterior skins': 'acAurelianModuleGeometry(spec.points,2.72)' in base and 'AURELIAN_CURVED_ARMOR_CROWN_' in base and 'acCutawayBayPanel=true' in base,
     'pilot cockpit and solar cannon modules exist': 'AURELIAN_PILOT_OVAL_WINDOW' in base and 'AURELIAN_PILOT_SILHOUETTE_BODY' in base and 'AURELIAN_PILOT_WINDOW_FRAME' in base and 'AURELIAN_SOLAR_CANNON_BREECH' in base and 'AURELIAN_SOLAR_CANNON_BARREL' in base and 'AURELIAN_SOLAR_CANNON_MUZZLE' in base and 'AURELIAN_SOLAR_CANNON_CRADLE' in base,
     'nine logical combat rooms preserved': 'const logicalGroups=[[0,6],[1,7],[2,8],[3],[4],[5]]' in base and 'combatGrid=UNCHANGED' in base and 'logicalCombatRooms:NINE_UNCHANGED' in director,
-    'three empty physical bays preserved': 'xrayRoomVisuals.length-crew.length' in base and 'physicalInterior:ALL_6_SEGMENTED_DEEP_ROLE_DRESSED' in cutaway,
+    'all six physical bays and three selectable warriors preserved': 'xrayRoomVisuals.length-crew.length' in base and 'warriorRigs:VISIBLE_SELECTABLE' in cutaway and 'physicalBays=\'+nativeRoomsVisible+\'/6' in cutaway,
+    'canon authority exposes modules instead of burying them': "frame('AURELIAN_CANON_COCKPIT_FRAME',0" in canon_authority and "frame('AURELIAN_CANON_SOLAR_CANNON_FRAME',5" in canon_authority and 'AURELIAN_CANON_MAIN_SPINE' not in canon_authority,
+    'canon stepped silhouette has solid jointed prow': 'AURELIAN_CANON_COMMAND_DECK' in canon_authority and 'AURELIAN_CANON_VENTRAL_STEP_RIGHT' in canon_authority and 'AURELIAN_CANON_PROW_CORE' in canon_authority and 'AURELIAN_CANON_PROW_JOINT_CORE' in canon_authority,
     'room cage edge geometry removed': 'const rim=null;' in base and 'new THREE.EdgesGeometry(new THREE.BoxGeometry(roomW,roomH,roomD))' not in base,
     'presentation director owns five-step bay seal': 'visuals.length!==6' in director and 'setCutawayBayOpen(visual,!shouldClose)' in director and "closed='+closeCount+'/'+order.length" in director,
     'lifecycle bridge does not replace seal authority': 'const oldSeal=' not in bridge and 'status.shellOwnership=patched.includes' in bridge,
