@@ -6,7 +6,7 @@ function replaceFunction(source,startToken,endToken,replacement){
 
 export function patchAurelianCanonAuthorityRuntime(html){
   if(typeof html!=='string')throw new TypeError('Expected game HTML');
-  if(html.includes('ac-aurelian-canon-authority-v0460'))return html;
+  if(html.includes('ac-aurelian-canon-authority-v0461'))return html;
   if(!html.includes('ac-aurelian-reference-polish-v0450'))return html;
 
   const authority=String.raw`function acCanonBeam(parent,a,b,width,depth,z,material,m,name,merge=true){
@@ -47,7 +47,7 @@ function acCanonDoorArmor(panel,s,m,index){
 }
 
 function acCanonCockpit(panel,s,m){
-  const cockpit=new THREE.Group();cockpit.name='AURELIAN_CANON_COCKPIT';panel.add(cockpit);
+  const cockpit=new THREE.Group();cockpit.name='AURELIAN_CANON_COCKPIT';cockpit.position.set(-.20,1.05,0);panel.add(cockpit);
   const outer=s.points.map(([x,y])=>[x*.99,y*.99]);
   acHullMesh(cockpit,acHullExtrude(acHullShape(outer),.58,.13),[m.goldDark,m.bronze],'AURELIAN_COCKPIT_DEEP_CRADLE',0,0,1.90);
   const c=new THREE.Shape();c.moveTo(-3.52,-1.58);c.lineTo(2.34,-1.58);c.quadraticCurveTo(3.52,-1.35,3.38,.10);c.quadraticCurveTo(3.05,1.88,1.54,2.05);c.lineTo(-1.98,2.18);c.quadraticCurveTo(-3.72,1.72,-3.52,-1.58);
@@ -84,7 +84,7 @@ function acCanonCannon(panel,s,m){
 
 function acUserCanonShell(kit,m,specs){
   const plate=(name,points,material,z,depth=.48,progressive=false)=>{const mesh=acHullMesh(kit,acHullExtrude(acHullShape(points),depth,.11),[material,m.edge],name,0,0,z);if(progressive)mesh.userData.acProgressiveArmor=true;return mesh};
-  const deepBody=[[-24.8,-6.8],[-25.8,-2.0],[-25.4,5.9],[-19.4,9.8],[-11.2,12.6],[-2.0,12.4],[7.2,10.8],[15.0,7.6],[19.8,4.5],[23.5,.15],[19.2,-3.9],[15.0,-7.8],[9.2,-10.8],[1.4,-11.7],[-8.4,-10.5],[-18.4,-9.2]];
+  const deepBody=[[-25.8,-6.4],[-26.0,5.8],[-22.0,8.2],[-15.0,9.4],[-12.0,12.5],[-5.0,13.2],[2.8,12.0],[12.8,8.6],[15.7,7.0],[15.7,5.5],[20.0,4.2],[22.3,.1],[19.8,-3.1],[15.3,-4.2],[15.3,-7.1],[11.8,-7.2],[11.6,-9.8],[3.3,-11.3],[-2.5,-10.8],[-4.2,-9.7],[-15.7,-9.7],[-20.4,-8.7]];
   plate('AURELIAN_CANON_DEEP_PRESSURE_BODY',deepBody,m.dark,-1.05,2.35);
 
   plate('AURELIAN_CANON_AFT_ENGINE_BLOCK',[[-25.7,-6.4],[-26.0,5.9],[-22.4,8.1],[-15.1,8.2],[-15.1,-7.5],[-21.8,-8.5]],m.bronze,4.35,1.55);
@@ -93,12 +93,22 @@ function acUserCanonShell(kit,m,specs){
   plate('AURELIAN_CANON_AFT_LOWER_COWL',[[-25.7,-5.6],[-22.0,-8.9],[-15.6,-9.1],[-13.9,-7.6],[-15.4,-2.1],[-20.6,-2.0],[-24.2,-3.5]],m.goldDark,6.20,1.08,true);
   plate('AURELIAN_CANON_AFT_LOWER_ARMOR',[[-23.7,-5.5],[-20.3,-7.9],[-15.8,-8.3],[-17.0,-6.9],[-20.5,-5.9]],m.gold,7.28,.54,true);
 
-  plate('AURELIAN_CANON_COMMAND_ROOF',[[-15.0,9.55],[-11.7,12.3],[-6.2,13.15],[1.8,12.65],[8.9,10.7],[14.9,7.65],[13.2,7.25],[6.0,9.05],[-2.0,10.15],[-9.5,10.35],[-13.2,9.85]],m.gold,6.65,1.18);
-  plate('AURELIAN_CANON_ROOF_FACET',[[-10.8,11.0],[-6.0,12.35],[.8,11.95],[7.1,10.25],[10.8,8.55],[6.4,9.55],[.2,10.55],[-5.8,10.72]],m.goldDark,7.72,.48,true);
-  plate('AURELIAN_CANON_ROOF_IVORY_INLAY',[[-8.7,11.25],[-5.4,11.95],[-1.1,11.70],[1.2,11.10],[-3.4,11.20],[-6.7,10.78]],m.ivoryDark||m.ivory,8.18,.16,true);
-  plate('AURELIAN_CANON_VENTRAL_KEEL',[[-24.1,-6.6],[-18.0,-9.45],[-9.3,-10.25],[-2.0,-10.0],[2.7,-11.25],[10.5,-10.65],[15.3,-8.15],[17.6,-5.3],[14.8,-6.9],[10.3,-8.9],[3.2,-9.05],[-3.0,-8.72],[-10.0,-7.3],[-17.2,-7.0]],m.goldDark,6.34,1.02);
-  plate('AURELIAN_CANON_VENTRAL_GOLD_STEP',[[-14.0,-7.35],[-8.5,-8.85],[-2.4,-9.35],[1.1,-10.2],[-4.2,-9.72],[-10.6,-8.75]],m.gold,7.30,.51,true);
-  plate('AURELIAN_CANON_VENTRAL_IVORY_INLAY',[[3.0,-9.35],[8.4,-9.7],[12.9,-8.2],[10.0,-8.7],[5.7,-8.75]],m.ivoryDark||m.ivory,7.92,.16,true);
+  // Separate stepped crowns keep the top line architectural instead of forming
+  // one smooth leaf arc. The aft crown lifts the cockpit above the room stack;
+  // the starboard roof sits one full tier lower, as in IMG_3444.
+  plate('AURELIAN_CANON_COCKPIT_CROWN',[[-15.2,9.35],[-12.3,12.25],[-8.4,13.55],[-4.4,13.25],[-1.0,11.80],[-2.5,10.25],[-9.4,10.05],[-13.7,9.30]],m.gold,6.65,1.18);
+  plate('AURELIAN_CANON_COCKPIT_CROWN_FACET',[[-12.0,11.65],[-8.2,12.85],[-4.7,12.55],[-2.0,11.55],[-5.2,11.62],[-9.0,11.15]],m.goldDark,7.72,.48,true);
+  plate('AURELIAN_CANON_COCKPIT_IVORY_INLAY',[[-10.4,11.92],[-7.8,12.52],[-5.4,12.30],[-3.8,11.82],[-6.7,11.92],[-8.8,11.52]],m.ivoryDark||m.ivory,8.18,.16,true);
+  plate('AURELIAN_CANON_STARBOARD_COMMAND_ROOF',[[-1.9,10.35],[2.7,11.45],[7.6,10.72],[14.9,7.72],[13.25,7.18],[8.3,8.78],[2.0,9.55],[-1.55,9.35]],m.gold,6.65,1.10);
+  plate('AURELIAN_CANON_STARBOARD_ROOF_FACET',[[1.1,10.25],[3.4,10.75],[7.0,10.18],[11.8,8.25],[8.0,9.30],[4.2,9.72]],m.goldDark,7.70,.44,true);
+
+  // The lower-left keel and lower-right cannon cradle are deliberately separate
+  // masses. This is the most important break from the previous oval belly.
+  plate('AURELIAN_CANON_AFT_VENTRAL_KEEL',[[-24.1,-6.55],[-18.4,-9.20],[-10.7,-10.0],[-4.0,-9.35],[-3.0,-8.25],[-9.9,-7.18],[-17.0,-6.82]],m.goldDark,6.34,1.02);
+  plate('AURELIAN_CANON_AFT_VENTRAL_STEP',[[-17.0,-7.20],[-11.0,-8.90],[-5.0,-9.22],[-3.7,-8.55],[-10.0,-7.48]],m.gold,7.30,.51,true);
+  plate('AURELIAN_CANON_CANNON_CRADLE_KEEL',[[1.85,-8.65],[3.10,-11.35],[10.7,-10.85],[15.0,-8.20],[17.25,-5.35],[14.50,-6.38],[11.55,-8.45],[5.0,-8.72]],m.goldDark,6.42,1.06);
+  plate('AURELIAN_CANON_CANNON_CRADLE_ARMOR',[[3.25,-9.20],[4.3,-10.45],[9.8,-10.12],[13.4,-8.08],[10.0,-9.02],[5.7,-9.05]],m.gold,7.30,.50,true);
+  plate('AURELIAN_CANON_CANNON_IVORY_INLAY',[[7.1,-9.62],[10.5,-9.18],[13.5,-7.65],[11.1,-8.35],[8.2,-8.82]],m.ivoryDark||m.ivory,7.92,.16,true);
 
   for(let i=0;i<specs.length;i++)acCanonBayFrame(kit,m,specs[i],i);
 
@@ -111,14 +121,14 @@ function acUserCanonShell(kit,m,specs){
   acHullMesh(kit,new THREE.CircleGeometry(.57,40),m.sun,'AURELIAN_CANON_CENTRAL_HUB_CORE',-.62,.10,8.43);
   for(let i=0;i<12;i++){const a=i*Math.PI/6,tick=acHullDetail(kit,new THREE.BoxGeometry(.16,.42,.11),i%3===0?m.ivory:m.edge,'AURELIAN_HUB_TICK',-.62+Math.cos(a)*1.69,.10+Math.sin(a)*1.69,8.40);tick.rotation.z=a-Math.PI/2}
 
-  plate('AURELIAN_CANON_PROW_UPPER',[[13.75,7.15],[16.7,6.45],[19.3,4.65],[21.1,2.62],[18.4,3.20],[15.2,4.82]],m.goldDark,6.48,1.18);
-  plate('AURELIAN_CANON_PROW_UPPER_FACET',[[14.7,6.35],[17.2,5.60],[19.3,4.05],[20.4,2.80],[18.2,3.60],[15.6,4.65]],m.gold,7.55,.52,true);
-  plate('AURELIAN_CANON_PROW_LOWER',[[13.65,-3.72],[17.0,-3.12],[19.5,-2.05],[22.7,.05],[20.0,-3.25],[16.0,-5.55],[14.0,-6.78]],m.goldDark,6.42,1.15);
-  plate('AURELIAN_CANON_PROW_CORE',[[13.65,1.50],[17.0,2.38],[20.3,1.72],[23.45,.05],[20.25,-1.70],[16.9,-2.42],[13.65,-1.40]],m.gold,7.30,.86);
-  plate('AURELIAN_CANON_PROW_IVORY_CAP',[[19.0,1.45],[21.3,.85],[23.45,.05],[21.0,.18],[18.8,.78]],m.ivoryDark||m.ivory,8.18,.17,true);
-  const prowJoint=acHullMesh(kit,new THREE.CylinderGeometry(1.13,1.13,.38,40),m.goldDark,'AURELIAN_CANON_PROW_JOINT',19.1,.02,8.09);prowJoint.rotation.x=Math.PI/2;
-  acHullMesh(kit,new THREE.TorusGeometry(.79,.14,10,40),m.ivory,'AURELIAN_CANON_PROW_JOINT_RING',19.1,.02,8.31);
-  acHullMesh(kit,new THREE.CircleGeometry(.38,32),m.sun,'AURELIAN_CANON_PROW_JOINT_CORE',19.1,.02,8.38);
+  plate('AURELIAN_CANON_PROW_UPPER',[[13.75,7.15],[16.4,6.38],[18.55,4.62],[19.85,2.78],[17.85,3.35],[15.15,4.82]],m.goldDark,6.48,1.18);
+  plate('AURELIAN_CANON_PROW_UPPER_FACET',[[14.7,6.35],[16.8,5.55],[18.6,4.05],[19.3,2.98],[17.5,3.72],[15.55,4.65]],m.gold,7.55,.52,true);
+  plate('AURELIAN_CANON_PROW_LOWER',[[13.65,-3.72],[16.6,-3.12],[18.65,-2.05],[21.65,.05],[19.0,-3.15],[15.9,-5.45],[14.0,-6.78]],m.goldDark,6.42,1.15);
+  plate('AURELIAN_CANON_PROW_CORE',[[13.65,1.50],[16.7,2.38],[19.35,1.68],[22.05,.05],[19.35,-1.66],[16.65,-2.38],[13.65,-1.40]],m.gold,7.30,.86);
+  plate('AURELIAN_CANON_PROW_IVORY_CAP',[[18.1,1.38],[20.3,.78],[22.05,.05],[19.9,.18],[17.9,.76]],m.ivoryDark||m.ivory,8.18,.17,true);
+  const prowJoint=acHullMesh(kit,new THREE.CylinderGeometry(1.13,1.13,.38,40),m.goldDark,'AURELIAN_CANON_PROW_JOINT',18.45,.02,8.09);prowJoint.rotation.x=Math.PI/2;
+  acHullMesh(kit,new THREE.TorusGeometry(.79,.14,10,40),m.ivory,'AURELIAN_CANON_PROW_JOINT_RING',18.45,.02,8.31);
+  acHullMesh(kit,new THREE.CircleGeometry(.38,32),m.sun,'AURELIAN_CANON_PROW_JOINT_CORE',18.45,.02,8.38);
 
   const exhaustRoot=new THREE.Group();exhaustRoot.name='AURELIAN_CANON_EXHAUST_CLUSTER';exhaustRoot.position.z=7.58;kit.add(exhaustRoot);
   for(const y of[-5.05,0,5.05]){
@@ -154,7 +164,7 @@ function buildAurelianDirectorHull(skin,cy,mat){
   m.ivory.color.setHex(0xd7c8a2);m.ivory.roughness=.27;m.ivory.envMapIntensity=.78;
   if(m.ivoryDark){m.ivoryDark.color.setHex(0xa89269);m.ivoryDark.roughness=.32;m.ivoryDark.envMapIntensity=.70}
   m.glass.opacity=.64;m.glass.color.setHex(0x315d6b);m.glass.envMapIntensity=1.15;
-  const structure=new THREE.Group();structure.name='AURELIAN_DIRECTOR_HULL_STRUCTURE';structure.userData.acHullRadii=new THREE.Vector3(27.3,14.4,10.4);structure.userData.acSketchSilhouette=true;structure.userData.acContinuousPressureHull=true;structure.userData.acReferenceAuthority='USER_CANON_IMG_3444';skin.add(structure);
+  const structure=new THREE.Group();structure.name='AURELIAN_DIRECTOR_HULL_STRUCTURE';structure.userData.acHullRadii=new THREE.Vector3(26.8,14.8,10.4);structure.userData.acSketchSilhouette=true;structure.userData.acContinuousPressureHull=true;structure.userData.acReferenceAuthority='USER_CANON_IMG_3444';skin.add(structure);
   const kit=new THREE.Group();kit.name='AURELIAN_CANON_EXTERIOR_KIT';kit.position.y=cy;structure.add(kit);
   acUserCanonShell(kit,m,specs);
 
@@ -169,13 +179,13 @@ function buildAurelianDirectorHull(skin,cy,mat){
   const damagePieces=[];structure.traverse(o=>{if(o.userData?.acProgressiveArmor){o.userData.acDamageInitialVisible=o.visible;damagePieces.push(o)}});
   skin.userData.acSketchHull=true;skin.userData.acPrimaryHull=structure;skin.userData.acCutawayBayPanels=panels;skin.userData.acDamagePresentationParts=damagePieces;skin.userData.acCutawayBayLayout=specs.map((s,i)=>({index:i,x:s.x,y:cy+s.y,z:4.78,w:s.w,h:s.h,points:s.points.map(p=>p.slice()),role:s.name}));
   structure.userData.acCanonExterior=true;structure.userData.acCanonReference='USER_CANON_IMG_3444';skin.userData.acCanonExteriorApplied=true;
-  diag('AURELIAN CANON SHAPE','build=v0.46.0 reference=IMG_3444 profile=DEEP_STEPPED_ARMORED_CARRIER frames=6 cockpit=RAISED_GLASS hub=CIRCULAR cannon=LOWER_SOLAR_CANNON prow=SHORT_GOLD_POINT exhausts=3 combat=UNCHANGED');
+  diag('AURELIAN CANON SHAPE','build=v0.46.1 reference=IMG_3444 profile=DEEP_STEPPED_ARMORED_CARRIER frames=6 cockpit=RAISED_GLASS hub=CIRCULAR cannon=LOWER_SOLAR_CANNON prow=SHORT_GOLD_POINT exhausts=3 combat=UNCHANGED');
 }`;
 
   const patched=replaceFunction(html,'function buildAurelianDirectorHull(skin,cy,mat){','function addUnifiedExteriorShell(skin,faction,side){',authority);
   if(patched===html)return html;
   return patched
-    .replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.46.0')
-    .replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-11_AURELIAN_REFERENCE_HULL_REBUILD')
-    .replace('</head>','<meta id="ac-aurelian-canon-authority-v0460" name="ac-aurelian-canon-authority" content="authority:USER_CANON_IMG_3444 silhouette:DEEP_STEPPED_ARMORED_CARRIER bayFrames:SIX cockpit:RAISED_GLASS hub:CIRCULAR cannon:LOWER_SOLAR_CANNON prow:SHORT_GOLD_POINT exhausts:THREE oldDrawerStack:REMOVED combat:UNCHANGED">\n</head>');
+    .replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.46.1')
+    .replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-11_AURELIAN_STEPPED_MASSING_PASS')
+    .replace('</head>','<meta id="ac-aurelian-canon-authority-v0461" name="ac-aurelian-canon-authority" content="authority:USER_CANON_IMG_3444 silhouette:DEEP_STEPPED_ARMORED_CARRIER bayFrames:SIX cockpit:HIGH_RAISED_GLASS roof:SPLIT_STEPPED keel:SPLIT_CANNON_CRADLE hub:CIRCULAR prow:SHORT_GOLD_POINT exhausts:THREE oldDrawerStack:REMOVED combat:UNCHANGED">\n</head>');
 }
