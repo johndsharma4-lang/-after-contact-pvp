@@ -185,7 +185,7 @@ function buildAurelianDirectorHull(skin,cy,mat){
   const patched=replaceFunction(html,'function buildAurelianDirectorHull(skin,cy,mat){','function addUnifiedExteriorShell(skin,faction,side){',authority);
   if(patched===html)return html;
   return patched
-    .replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.46.1')
-    .replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-11_AURELIAN_STEPPED_MASSING_PASS')
+    .replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.46.2')
+    .replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-11_DAMAGE_EXPOSURE_AND_MUZZLE_AUTHORITY')
     .replace('</head>','<meta id="ac-aurelian-canon-authority-v0461" name="ac-aurelian-canon-authority" content="authority:USER_CANON_IMG_3444 silhouette:DEEP_STEPPED_ARMORED_CARRIER bayFrames:SIX cockpit:HIGH_RAISED_GLASS roof:SPLIT_STEPPED keel:SPLIT_CANNON_CRADLE hub:CIRCULAR prow:SHORT_GOLD_POINT exhausts:THREE oldDrawerStack:REMOVED combat:UNCHANGED">\n</head>');
 }

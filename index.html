@@ -1251,6 +1251,7 @@ function captainDamageMultiplier(attacker){return 1+Math.max(0,captainDamageBonu
 function boostedAttackDamage(attacker,amount){return Math.max(0,(Number(amount)||0)*captainDamageMultiplier(attacker))}
 function resetCaptainDamageBonuses(){captainDamageBonus={aurelian:0,earth:0}}
 function crewExposureTier(room){const b=Math.max(0,Math.min(100,Number(room?.breach)||0));return b>=EXPOSURE_THRESHOLDS.open?4:b>=EXPOSURE_THRESHOLDS.targetable?3:b>=EXPOSURE_THRESHOLDS.partial?2:b>=EXPOSURE_THRESHOLDS.crack?1:0}
+function crewDirectlyTargetable(w,room){return!!(w&&room&&(w.exposedBySolar||room.structureExposed||crewExposureTier(room)>=3))}
 const leftStructureLabel=document.getElementById('leftStructureLabel'),rightStructureLabel=document.getElementById('rightStructureLabel'),leftStructureFill=document.getElementById('leftStructureFill'),rightStructureFill=document.getElementById('rightStructureFill'),rangeBadge=document.getElementById('rangeBadge');
 function sideVesselName(side){const f=factionForWorldSide(side);return f==='earth'?'FORTRESS':f==='lizard'?'SUBMERSIBLE':'VESSEL'}
 function vesselHealthColor(side){return({earth:0x4ebdff,aurelian:0xffd65a,lizard:0x69e88b,gray:0xa96cff})[factionForWorldSide(side)]||0xffffff}
@@ -4263,7 +4264,7 @@ function directVisibleAimHit(attacker,pt){
   candidates.sort((a,b)=>a.d-b.d);
   if(!candidates.length)return null;
   const c=candidates[0],room=c.room,occ=warriors.find(w=>w.roomIndex===c.i&&w.hp>0)||null;
-  if(occ&&(room.breach>=EXPOSURE_THRESHOLDS.targetable||occ.exposedBySolar)&&occ.marker?.visible&&pointInRect(pt,objectScreenRect(occ.marker,10))){
+  if(occ&&crewDirectlyTargetable(occ,room)&&occ.marker?.visible&&pointInRect(pt,objectScreenRect(occ.marker,10))){
     return{end:warriorWorld(occ),warrior:occ,roomIndex:c.i,room,direct:true,visibleAim:true};
   }
   // A completely open empty breach is genuinely empty space. Otherwise the visible armor under the pointer is the hit.
@@ -4285,7 +4286,7 @@ function laserHitFromStage(attacker,pt){
   }
   // Exposed warriors can be hit directly. Their screen intersection wins only inside their own opened room.
   const warriorHits=[];
-  for(const w of warriors){const room=rooms[w.roomIndex];if(room.erased||(room.breach<EXPOSURE_THRESHOLDS.targetable&&!w.exposedBySolar)||w.hp<=0||!w.marker.visible)continue;const rect=objectScreenRect(w.marker,2),hit=lineRectEntry(startStage,farStage,rect);if(hit)warriorHits.push({w,room,roomIndex:w.roomIndex,hit})}
+  for(const w of warriors){const room=rooms[w.roomIndex];if(room.erased||!crewDirectlyTargetable(w,room)||w.hp<=0||!w.marker.visible)continue;const rect=objectScreenRect(w.marker,2),hit=lineRectEntry(startStage,farStage,rect);if(hit)warriorHits.push({w,room,roomIndex:w.roomIndex,hit})}
   roomHits.sort((a,b)=>a.hit.t-b.hit.t);warriorHits.sort((a,b)=>a.hit.t-b.hit.t);
   if(HIT_DEBUG){for(const r of rooms)r.hitPlane.material.opacity=.08;setTimeout(()=>{for(const r of rooms)r.hitPlane.material.opacity=0},260)}
   let erasedPassThrough=null;
@@ -4441,7 +4442,7 @@ function resetRoom(room){
   if(room.fallenChunk){room.fallenChunk.parent?.remove(room.fallenChunk);room.fallenChunk=null}
   if(room.fallVoids){for(const voidFx of room.fallVoids)voidFx.parent?.remove(voidFx);room.fallVoids=[]}
   if(room.fireFx?.particles)for(const p of room.fireFx.particles)scene.remove(p.mesh);
-  if(room.acidFx){for(const p of room.acidFx.pools||[])scene.remove(p.mesh);for(const p of room.acidFx.drips||[])scene.remove(p.mesh);for(const p of room.acidFx.fumes||[])scene.remove(p.mesh);for(const line of room.acidFx.trails||[])scene.remove(line)}if(room.solarHoleFx){for(const o of room.solarHoleFx.objects||[])room.hitPlane.remove(o)}room.solarHoleFx=null;room.solarHole=false;room.acidFx=null;room.smokeFx=null;room.fireFx=null;room.erased=false;room.fallLevels=0;setRoomVerticalOffset(room,0);room.hitPlane.visible=true;room.armor=100;room.breach=0;room.lastStage=0;room.structuralFireScheduled=false;room.fireIntensity=0;room.collapseDone=false;room.corrosionTurns=0;room.corroded=false;room.acidStacks=0;room.acidStackSeq=(room.acidStackSeq||0)+1;
+  if(room.acidFx){for(const p of room.acidFx.pools||[])scene.remove(p.mesh);for(const p of room.acidFx.drips||[])scene.remove(p.mesh);for(const p of room.acidFx.fumes||[])scene.remove(p.mesh);for(const line of room.acidFx.trails||[])scene.remove(line)}if(room.solarHoleFx){for(const o of room.solarHoleFx.objects||[])room.hitPlane.remove(o)}room.solarHoleFx=null;room.solarHole=false;room.acidFx=null;room.smokeFx=null;room.fireFx=null;room.erased=false;room.structureExposed=false;room.fallLevels=0;setRoomVerticalOffset(room,0);room.hitPlane.visible=true;room.armor=100;room.breach=0;room.lastStage=0;room.structuralFireScheduled=false;room.fireIntensity=0;room.collapseDone=false;room.corrosionTurns=0;room.corroded=false;room.acidStacks=0;room.acidStackSeq=(room.acidStackSeq||0)+1;
   room.solarPenetrated=false;room.frame.visible=true;room.frame.scale.set(1,1,1);room.frame.rotation.set(0,0,0);room.frame.material.roughness=.3;
   room.cavity.visible=true;room.cavity.scale.set(1,1,1);room.cavity.material.color.setHex(0x06101b);
   room.edge.visible=true;room.edge.material.emissiveIntensity=.35;
@@ -4707,7 +4708,7 @@ function selectWarrior(w){diag('SELECT WARRIOR',`${w?.weaponKey||'none'} hp=${w?
   if(wn)wn.textContent=p.name;
   if(wd)wd.textContent=w.weaponKey==='acid_brute'?'CORROSIVE FLOOD • hydro-pack acid hose • stacking AOE':w.weaponKey==='spatial_disintegrator'?'MATTER COLLAPSE • Singularity Core • unstable array':w.weaponKey==='bombardier'?'HE-9 ten-missile barrage • explosive siege fire':w.weaponKey==='sniper'?'EXPLOSIVE BREACH ROUND • precise compartment shot • small AOE':w.weaponKey==='combat_controller'?'TAC-LINK LOCATOR • delayed adaptive support • 2-turn cooldown':'5s burn-through • 2 compartments • exposes survivors';
 }
-function warriorShouldBeVisible(w){if(!w||!w.active||w.hp<=0)return false;const room=w.roomGroup?.userData?.rooms?.[w.roomIndex];if(!room)return false;const isMine=!multiplayer?w.side==='aurelian':w.side===localSide;if(xrayOpen&&isMine)return true;const exposed=!!w.exposedBySolar||crewExposureTier(room)>=3;if(exteriorRoomsHidden)return !isMine&&exposed;if(isMine)return true;return exposed}
+function warriorShouldBeVisible(w){if(!w||!w.active||w.hp<=0)return false;const room=w.roomGroup?.userData?.rooms?.[w.roomIndex];if(!room)return false;const isMine=!multiplayer?w.side==='aurelian':w.side===localSide;if(xrayOpen&&isMine)return true;const exposed=crewDirectlyTargetable(w,room);if(exteriorRoomsHidden)return !isMine&&exposed;if(isMine)return true;return exposed}
 function syncWarriorConcealment(w){
   if(!w)return;const isMine=!multiplayer?w.side==='aurelian':w.side===localSide,xrayMine=xrayOpen&&isMine,show=warriorShouldBeVisible(w);
   if(w.anchor)w.anchor.visible=show&&!xrayMine;
@@ -4799,14 +4800,14 @@ function flashDamage(text){
   flashDamage.t=setTimeout(()=>{damageFlash.style.opacity='0';flashDamage.visibleSince=0},remaining)
 }
 function unitDamageLabel(w,unitDamage=0){if(!w||!unitDamage)return'';const aa=Math.round(w.lastAaDamage||0),hp=Math.round(w.lastHpDamage||0);const bits=[];if(aa)bits.push(`-${aa} AA`);if(hp)bits.push(`-${hp} HP`);return bits.length?bits.join(' / '):`-${Math.round(unitDamage)} UNIT`}
-function updateDamageMonitor(room,index,unitDamage=0,attacker=null){targetRoomEl.textContent=index>=0?`ROOM ${index+1}`:'MISS';if(!room){targetArmorEl.textContent='—';targetBreachEl.textContent='—';targetUnitEl.textContent='NO DAMAGE';return}targetArmorEl.textContent=Math.round(room.armor);targetBreachEl.textContent=`${Math.round(room.breach)}%`;const pool=attacker?opposing(attacker):eCrew;const occ=pool.find(w=>w.roomIndex===index&&w.hp>0);const dmg=unitDamageLabel(occ,unitDamage);if(!occ){targetUnitEl.textContent='EMPTY';targetUnitEl.className='dmgValue'}else if(room.breach>=EXPOSURE_THRESHOLDS.targetable||occ.exposedBySolar){targetUnitEl.textContent=`${occ.exposedBySolar?'EXPOSED • ':''}AA ${occ.aa} • HP ${occ.hp}${dmg?` (${dmg})`:''}`;targetUnitEl.className='dmgValue'}else{targetUnitEl.textContent=dmg?`HIDDEN (${dmg})`:'HIDDEN';targetUnitEl.className='dmgHidden'}}
+function updateDamageMonitor(room,index,unitDamage=0,attacker=null){targetRoomEl.textContent=index>=0?`ROOM ${index+1}`:'MISS';if(!room){targetArmorEl.textContent='—';targetBreachEl.textContent='—';targetUnitEl.textContent='NO DAMAGE';return}targetArmorEl.textContent=Math.round(room.armor);targetBreachEl.textContent=`${Math.round(room.breach)}%`;const pool=attacker?opposing(attacker):eCrew;const occ=pool.find(w=>w.roomIndex===index&&w.hp>0);const dmg=unitDamageLabel(occ,unitDamage);if(!occ){targetUnitEl.textContent='EMPTY';targetUnitEl.className='dmgValue'}else if(crewDirectlyTargetable(occ,room)){targetUnitEl.textContent=`EXPOSED • AA ${occ.aa} • HP ${occ.hp}${dmg?` (${dmg})`:''}`;targetUnitEl.className='dmgValue'}else{targetUnitEl.textContent=dmg?`HIDDEN (${dmg})`:'HIDDEN';targetUnitEl.className='dmgHidden'}}
 function syncRoomStructuralDamage(room){
   if(!room||!Number.isInteger(room.hitPlane?.userData?.roomIndex))return;
   const skin=room.visualSide==='aurelian'?factionSkinA:factionSkinE;
   const module=skin?.userData?.damageModules?.[room.hitPlane.userData.roomIndex];
   if(!module)return;
   const breach=Math.max(0,Math.min(100,room.breach||0)),r=breach/100;
-  module.visible=!room.erased&&breach<100;
+  module.visible=!module.userData.structureHpHidden&&!room.erased&&breach<100;
   if(!module.userData.damageBasePosition)module.userData.damageBasePosition=module.position.clone();module.position.y=module.userData.damageBasePosition.y+(room.fallOffsetY||0);module.position.z=module.userData.damageBasePosition.z;
   module.rotation.z=(room.local.x>=0?1:-1)*r*.075;
   module.scale.set(1,Math.max(.28,1-r*.48),Math.max(.35,1-r*.35));
@@ -4907,18 +4908,26 @@ function makeStructureLossWreck(room){
 function ensureStructureLossVoid(room){if(!room||room.erased)return null;if(!room.structureLossVoid)room.structureLossVoid=makeStructureLossWreck(room);return room.structureLossVoid}
 function syncProgressiveVesselDestruction(side){
   const skin=side==='aurelian'?factionSkinA:factionSkinE,rooms=(side==='aurelian'?aRooms:eRooms)?.userData?.rooms||[];if(!skin||!rooms.length)return;
+  const erasedRatio=rooms.filter(r=>r.erased).length/rooms.length,hpLoss=1-Math.max(0,Math.min(1,(structureHp[side]??STRUCTURE_MAX)/STRUCTURE_MAX)),ratio=Math.max(erasedRatio,hpLoss);
+  // At half structure, half of the removable exterior is gone. From there the
+  // shell strips faster so every bay can be open and its surviving crew can be
+  // directly targeted before structure reaches zero and ends the match.
+  const visualLoss=Math.min(1,ratio<=.50?ratio:.50+(ratio-.50)*2),frontOrder=side==='earth'?[0,3,6,1,4,7,2,5,8]:[2,5,8,1,4,7,0,3,6],roomRemoveCount=Math.min(rooms.length,Math.floor(visualLoss*rooms.length+.0001)),roomOrder=[...rooms.keys()].sort((a,b)=>(rooms[b].breach||0)-(rooms[a].breach||0)||frontOrder.indexOf(a)-frontOrder.indexOf(b));
+  if(!(skin.userData.progressiveRoomRemoval instanceof Set))skin.userData.progressiveRoomRemoval=new Set();const roomRemoval=skin.userData.progressiveRoomRemoval;if(ratio<=0)roomRemoval.clear();for(const roomIndex of roomOrder){if(roomRemoval.size>=roomRemoveCount)break;roomRemoval.add(roomIndex)}
+  for(let i=0;i<rooms.length;i++)rooms[i].structureExposed=roomRemoval.has(i);
   // The canon Aurelian hull has six top-level door controllers plus one fixed
   // structural branch. The old generic counter also included 21 intentionally
   // hidden legacy objects, then removed an entire live door at only five percent
   // hull loss. Damage now consumes only explicitly tagged cosmetic armor. The
   // six doors and fixed pressure frames remain owned by cutaway/aim state.
   if(factionForWorldSide(side)==='aurelian'&&skin.userData.acCanonExteriorApplied){
-    const erasedRatio=rooms.filter(r=>r.erased).length/rooms.length,hpLoss=1-Math.max(0,Math.min(1,(structureHp[side]??STRUCTURE_MAX)/STRUCTURE_MAX)),ratio=Math.max(erasedRatio,hpLoss),parts=skin.userData.acDamagePresentationParts||[];
+    const parts=skin.userData.acDamagePresentationParts||[];
     if(!skin.userData.acCanonDamageBaseline)skin.userData.acCanonDamageBaseline=parts.map((object,index)=>({object,index,visible:object.visible,position:object.position.clone(),rotation:object.rotation.clone(),scale:object.scale.clone()}));
-    const baseline=skin.userData.acCanonDamageBaseline,destructiveRatio=Math.max(0,(ratio-.08)/.92),removeCount=Math.min(baseline.length,Math.floor(destructiveRatio*baseline.length+.0001));
-    for(const p of baseline){const removed=p.index<removeCount,o=p.object;if(!o?.parent)continue;o.visible=p.visible&&!removed;o.position.copy(p.position);o.rotation.copy(p.rotation);o.scale.copy(p.scale);if(!removed){const stress=Math.max(0,Math.min(1,(destructiveRatio*baseline.length-p.index)*.34));o.position.y-=stress*.18;o.rotation.z+=(p.index%2?1:-1)*stress*.035}}
-    for(const panel of skin.userData.acCutawayBayPanels||[])if(panel)panel.userData.structureHpHidden=false;
-    skin.userData.progressiveErasedRooms=Math.round(ratio*rooms.length);diag('PROGRESSIVE HULL',`side=${side} hp=${Math.round(structureHp[side]??STRUCTURE_MAX)}/${STRUCTURE_MAX} loss=${Math.round(ratio*100)}% canonArmor=${baseline.filter(p=>p.object?.visible).length}/${baseline.length} bayDoors=STATE_OWNED fixedFrame=PRESERVED`);return
+    const baseline=skin.userData.acCanonDamageBaseline,removeCount=Math.min(baseline.length,Math.floor(visualLoss*baseline.length+.0001));
+    for(const p of baseline){const removed=p.index<removeCount,o=p.object;if(!o?.parent)continue;o.visible=p.visible&&!removed;o.position.copy(p.position);o.rotation.copy(p.rotation);o.scale.copy(p.scale);if(!removed){const stress=Math.max(0,Math.min(1,(visualLoss*baseline.length-p.index)*.34));o.position.y-=stress*.18;o.rotation.z+=(p.index%2?1:-1)*stress*.035}}
+    const logicalGroups=[[0,6],[1,7],[2,8],[3],[4],[5]],localCutaway=xrayOpen&&localXraySide()===side;
+    for(const [i,panel] of (skin.userData.acCutawayBayPanels||[]).entries()){if(!panel)continue;const removed=(logicalGroups[i]||[]).some(roomIndex=>roomRemoval.has(roomIndex));panel.userData.structureHpHidden=removed;if(removed)panel.visible=false;else if(!localCutaway)panel.visible=true}
+    skin.userData.progressiveErasedRooms=roomRemoval.size;updateUnitVisuals();diag('PROGRESSIVE HULL',`side=${side} hp=${Math.round(structureHp[side]??STRUCTURE_MAX)}/${STRUCTURE_MAX} loss=${Math.round(ratio*100)}% visualStrip=${Math.round(visualLoss*100)}% canonArmor=${baseline.filter(p=>p.object?.visible).length}/${baseline.length} exposedBays=${roomRemoval.size}/${rooms.length} fixedFrame=PRESERVED`);return
   }
   if(!progressiveVesselDamageState.has(skin)){
     const modules=skin.userData.damageModules||[],moduleIndexes=new Map(modules.map((o,i)=>[o,i]));
@@ -4926,17 +4935,15 @@ function syncProgressiveVesselDestruction(side){
     const order=parts.filter(p=>p.moduleIndex<0&&!p.keepAtZero).sort((a,b)=>{const ah=Math.abs(Math.sin((a.index+1)*91.713)),bh=Math.abs(Math.sin((b.index+1)*91.713));return ah-bh||a.index-b.index});
     order.forEach((p,i)=>p.removalOrder=i);progressiveVesselDamageState.set(skin,parts);
   }
-  const parts=progressiveVesselDamageState.get(skin),erasedRatio=rooms.filter(r=>r.erased).length/rooms.length,hpLoss=1-Math.max(0,Math.min(1,(structureHp[side]??STRUCTURE_MAX)/STRUCTURE_MAX)),ratio=Math.max(erasedRatio,hpLoss),exteriorParts=parts.filter(p=>p.moduleIndex<0&&!p.keepAtZero),count=Math.max(1,exteriorParts.length),wreckShellMinimum=Math.max(3,Math.ceil(count*.30)),removeCount=Math.min(count-wreckShellMinimum,Math.floor(ratio*count+.0001));
-  const frontOrder=side==='earth'?[0,3,6,1,4,7,2,5,8]:[2,5,8,1,4,7,0,3,6],moduleRemoveCount=Math.min(Math.max(0,rooms.length-3),Math.floor(ratio*rooms.length+.0001));
-  const moduleRemoval=new Set([...rooms.keys()].sort((a,b)=>(rooms[b].breach||0)-(rooms[a].breach||0)||frontOrder.indexOf(a)-frontOrder.indexOf(b)).slice(0,moduleRemoveCount));
+  const parts=progressiveVesselDamageState.get(skin),exteriorParts=parts.filter(p=>p.moduleIndex<0&&!p.keepAtZero),count=Math.max(1,exteriorParts.length),removeCount=Math.min(count,Math.floor(visualLoss*count+.0001));
   for(const p of parts){
-    const removed=p.moduleIndex>=0?moduleRemoval.has(p.moduleIndex):!p.keepAtZero&&p.removalOrder<removeCount,threshold=p.moduleIndex>=0?(frontOrder.indexOf(p.moduleIndex)+1)/rooms.length:p.keepAtZero?1.2:(p.removalOrder+1)/count,stress=removed?1:Math.max(0,Math.min(1,1-(threshold-ratio)/.10)),o=p.object;
-    if(p.moduleIndex>=0){o.userData.structureHpHidden=removed;const room=rooms[p.moduleIndex];if(room&&!room.erased)clearStructureLossVoid(room);if(room)syncRoomStructuralDamage(room);continue}
+    const removed=p.moduleIndex>=0?roomRemoval.has(p.moduleIndex):!p.keepAtZero&&p.removalOrder<removeCount,threshold=p.moduleIndex>=0?(frontOrder.indexOf(p.moduleIndex)+1)/rooms.length:p.keepAtZero?1.2:(p.removalOrder+1)/count,stress=removed?1:Math.max(0,Math.min(1,1-(threshold-visualLoss)/.10)),o=p.object;
+    if(p.moduleIndex>=0){o.userData.structureHpHidden=removed;const room=rooms[p.moduleIndex];if(room&&!room.erased){if(removed)ensureStructureLossVoid(room);else clearStructureLossVoid(room)}if(room)syncRoomStructuralDamage(room);continue}
     o.visible=p.keepAtZero?true:p.initialVisible&&!removed;if(!o.visible)continue;
     o.position.copy(p.position);o.position.y-=stress*(p.keepAtZero?.12:.34+.18*(p.index%3));o.position.x+=(p.index%2?1:-1)*stress*(p.keepAtZero?.04:.16);
     o.rotation.copy(p.rotation);o.rotation.z+=(p.index%2?1:-1)*stress*(p.keepAtZero?.025:.055+.022*(p.index%4));o.scale.copy(p.scale);o.scale.y*=1-stress*(p.keepAtZero?.035:.16);
   }
-  skin.userData.progressiveErasedRooms=Math.round(ratio*rooms.length);diag('PROGRESSIVE HULL',`side=${side} hp=${Math.round(structureHp[side]??STRUCTURE_MAX)}/${STRUCTURE_MAX} loss=${Math.round(ratio*100)}% visibleParts=${parts.filter(p=>p.object.visible).length}/${parts.length}`)
+  skin.userData.progressiveErasedRooms=roomRemoval.size;updateUnitVisuals();diag('PROGRESSIVE HULL',`side=${side} hp=${Math.round(structureHp[side]??STRUCTURE_MAX)}/${STRUCTURE_MAX} loss=${Math.round(ratio*100)}% visualStrip=${Math.round(visualLoss*100)}% exposedBays=${roomRemoval.size}/${rooms.length} visibleParts=${parts.filter(p=>p.object.visible).length}/${parts.length}`)
 }
 function clearRoomHazards(room){
   if(!room)return;for(let i=effects.length-1;i>=0;i--){const q=effects[i];if(q?.room!==room)continue;removeTransientEffectVisuals(q);effects.splice(i,1)}
@@ -5142,7 +5149,7 @@ function resolveDisintegratorHit(attacker,hit,weapon){
   const room=hit.room,index=hit.roomIndex,before=room.armor;spawnSingularityEffect(hit.end);spawnExplosionVisual(hit.end,0xb56cff,1.28);const shield=absorbShieldHit(attacker,index,weapon.armorDamage||100,'MATTER COLLAPSE',hit.end);if(shield.blocked){updateDamageMonitor(room,index,0,attacker);return{armorDamage:0,unitDamage:0,shieldDamage:shield.absorbed}}
   const penetration=Math.min(before,Math.max(0,shield.passed));room.armor=Math.max(0,before-penetration);room.breach=100-room.armor;damageRoomVisual(room);applyStructureDamage(attacker,penetration,'MATTER COLLAPSE');spawnDebris(hit.end,0x6d5a7e,room.armor<=0?42:18,.08,room.armor<=0?.62:.34);if(matchEnded)return{armorDamage:penetration,unitDamage:0};
   let unitDamage=0;const occ=hit.warrior?{w:hit.warrior}:nearestWarriorInRoom(attacker,index,hit.end);
-  if(occ&&(room.armor<=0||room.breach>=70)){unitDamage=applyWarriorDamage(occ.w,weapon.damage*(penetration/(weapon.armorDamage||100)),'MATTER COLLAPSE',attacker);diag('AA IMPACT',`Matter Collapse AA=${occ.w.lastAaDamage||0} HP=${occ.w.lastHpDamage||0}`)}
+  if(occ&&(hit.direct||crewDirectlyTargetable(occ.w,room)||room.armor<=0)){unitDamage=applyWarriorDamage(occ.w,weapon.damage*(penetration/(weapon.armorDamage||100)),'MATTER COLLAPSE',attacker);diag('AA IMPACT',`Matter Collapse AA=${occ.w.lastAaDamage||0} HP=${occ.w.lastHpDamage||0}`)}
   const erased=room.armor<=0;if(erased)eraseCompartment(attacker,room,index);updateDamageMonitor(room,index,unitDamage,attacker);statusEl.textContent=erased?`MATTER COLLAPSE • ROOM ${index+1} ERASED${unitDamage?` • AA/HP -${unitDamage}`:''}`:`MATTER COLLAPSE • SHIELD BREAK • ROOM ${index+1} -${Math.round(penetration)} ARMOR`;flashDamage(erased?`ROOM ${index+1} ERASED`:`SHIELD BREACH • -${Math.round(penetration)} ARMOR`);kickCamera(erased?.54:.30,erased?.36:.20);checkMatchEnd();return{armorDamage:penetration,unitDamage};
 }
 function applySpatialGraze(attacker,hit){
@@ -5583,7 +5590,7 @@ function setCutawayBayOpen(visual,open){
   if(!visual?.nativeRoom)return;visual.nativeRoom.visible=true;visual.nativeRoom.userData.acAimClosedBay=!open;
   const interior=visual.interiorRoot||visual.nativeRoom.userData?.interiorRoot;if(interior)interior.visible=!!open;
   const shutter=visual.frontShutter||visual.nativeRoom.userData?.frontShutter;if(shutter){shutter.userData.acAimClosed=!open;shutter.visible=!open}
-  if(visual.exteriorPanel)visual.exteriorPanel.visible=!open;
+  if(visual.exteriorPanel)visual.exteriorPanel.visible=!open&&!visual.exteriorPanel.userData?.structureHpHidden;
 }
 function setCutawayFiringStage(w){
   if(!xrayOpen||!w)return;

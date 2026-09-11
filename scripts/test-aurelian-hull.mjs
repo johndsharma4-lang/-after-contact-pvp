@@ -51,6 +51,7 @@ for(let cycle=0;cycle<20;cycle++){
   for(const v of visuals){ctx.setCutawayBayOpen(v,false);assert.deepEqual(v.anchor.position.toArray(),[v.index+1,2,3])}assert.ok(visible(cp)&&visible(cn)&&visible(ex));
 }
 ok('20 open/close cycles and all six shooter bays preserve exact panel ownership, crew anchors and exhaust visibility');
+panels[2].userData.structureHpHidden=true;ctx.setCutawayBayOpen(visuals[2],false);assert.equal(visible(panels[2]),false);panels[2].userData.structureHpHidden=false;ctx.setCutawayBayOpen(visuals[2],false);assert.equal(visible(panels[2]),true);ok('Cutaway closure cannot resurrect a structurally destroyed bay panel');
 // Compile the complete production patch chain rather than just a standalone new module.
 const router=fs.readFileSync(path.join(root,'router-worker.js'),'utf8');
 const imports=new Map([...router.matchAll(/import \{ (\w+) \} from '\.\/([^']+)';/g)].map(m=>[m[1],m[2]]));

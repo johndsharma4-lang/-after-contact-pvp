@@ -15,7 +15,8 @@ window.__hullReview={
   seal:(progress)=>{const w=xrayRoomVisuals.find(v=>v.warrior?.active&&v.warrior.hp>0)?.warrior;if(!w)return false;acDirectorApplyAimSeal(w,progress);return {closed:xrayRoomVisuals.filter(v=>v.exteriorPanel?.visible).length,exhaust:factionSkinA.getObjectByName('AURELIAN_CANON_EXHAUST_CLUSTER').visible}},
   inspect:()=>({crew:xrayRoomVisuals.filter(v=>v.warrior).map(v=>({index:v.index,room:v.warrior.roomIndex,visible:v.rig3D?.visible,p:v.standAnchor?.getWorldPosition(new THREE.Vector3()).toArray()})),exhaust:!!factionSkinA.getObjectByName('AURELIAN_CANON_EXHAUST_CLUSTER'),cockpitParent:factionSkinA.getObjectByName('AURELIAN_CANON_COCKPIT')?.parent?.name,cannonParent:factionSkinA.getObjectByName('AURELIAN_CANON_SOLAR_CANNON_ART')?.parent?.name}),
   damageProbe:()=>{const hp=structureHp.aurelian;structureHp.aurelian=Math.round(STRUCTURE_MAX*.94);syncProgressiveVesselDestruction('aurelian');const parts=factionSkinA.userData.acDamagePresentationParts||[],result={panelsVisible:(factionSkinA.userData.acCutawayBayPanels||[]).filter(p=>p.visible).length,armorVisible:parts.filter(p=>p.visible).length,armorTotal:parts.length};structureHp.aurelian=hp;syncProgressiveVesselDestruction('aurelian');return result},
-  aimState:()=>({aiming,shots,soloTurn,round:soloRound,selected:selected?.weaponKey,mode:acDirector.mode,closed:xrayRoomVisuals.filter(v=>v.exteriorPanel?.visible).length,origin:aimOriginWorld?.toArray(),beamOrigin:acDirector.origin?.toArray(),events:diagLines.filter(x=>/AIM RELEASE| FIRE |DIRECTOR BEAM|TURN VFX RELEASE|SOLO HANDOFF/.test(x))}),
+  aimState:()=>({aiming,shots,soloTurn,round:soloRound,selected:selected?.weaponKey,selectedRoom:selected?.roomIndex,mode:acDirector.mode,closed:xrayRoomVisuals.filter(v=>v.exteriorPanel?.visible).length,origin:aimOriginWorld?.toArray(),beamOrigin:acDirector.origin?.toArray(),committedOrigin:typeof acLastCommittedShotOriginWorld!=='undefined'?acLastCommittedShotOriginWorld?.toArray():null,committedRoom:typeof acLastCommittedShotRoom!=='undefined'?acLastCommittedShotRoom:-1,events:diagLines.filter(x=>/AIM RELEASE|SHOT ORIGIN COMMIT| FIRE |DIRECTOR BEAM|TURN VFX RELEASE|SOLO HANDOFF/.test(x))}),
+  destructionProbe:()=>{const hp=structureHp.earth;structureHp.earth=Math.round(STRUCTURE_MAX*.50);syncProgressiveVesselDestruction('earth');const half=eRooms.userData.rooms.filter(r=>r.structureExposed).length;structureHp.earth=Math.round(STRUCTURE_MAX*.25);syncProgressiveVesselDestruction('earth');const target=eWarriors.find(w=>w.active&&w.hp>0),marker=target?.marker?.getWorldPosition(new THREE.Vector3()),hit=marker?directVisibleAimHit(aWarriors.find(w=>w.active&&w.hp>0),worldToStage(marker)):null,state=progressiveVesselDamageState.get(factionSkinE)||[];return{half,final:{exposed:eRooms.userData.rooms.filter(r=>r.structureExposed).length,modulesHidden:(factionSkinE.userData.damageModules||[]).filter(m=>m.userData.structureHpHidden&&!m.visible).length,removableVisible:state.filter(p=>p.moduleIndex<0&&!p.keepAtZero&&p.object.visible).length,crewVisible:eWarriors.filter(w=>w.active&&w.hp>0).every(w=>warriorShouldBeVisible(w)),direct:!!(hit?.direct&&hit.warrior===target)}}},
   pressPoint:()=>{const v=xrayRoomVisuals.find(v=>v.warrior?.weaponKey==='solar_lancer');return v?worldToStage(v.standAnchor.getWorldPosition(new THREE.Vector3())):null},
   screenshot:()=>{renderer.render(scene,camera)},
   rigBounds:()=>xrayRoomVisuals.filter(v=>v.warrior).map(v=>({index:v.index,r:objectScreenRect(v.rig3D,0)})),
@@ -78,8 +79,12 @@ with sync_playwright() as p:
     (OUT/'browser-report.json').write_text(json.dumps(result,indent=2))
     assert result['aim']['aiming'] and result['aim']['selected']=='solar_lancer', 'Pointer aiming failed'
     assert result['release']['shots']==result['aim']['shots']+1, 'Release did not fire exactly once'
+    assert result['release']['committedOrigin'] and result['release']['beamOrigin'], 'Solar shot origin was not committed into the beam'
+    assert result['release']['committedRoom']==result['aim']['selectedRoom'], 'Solar shot origin came from a different room'
+    assert sum((a-b)**2 for a,b in zip(result['release']['committedOrigin'],result['release']['beamOrigin']))<1e-8, 'Solar beam did not use the committed muzzle origin'
     page.wait_for_function("window.__hullReview.aimState().round>=2 && window.__hullReview.aimState().soloTurn==='aurelian'",timeout=60000)
     result['nextTurn']=page.evaluate('window.__hullReview.aimState()')
+    result['destruction']=page.evaluate('window.__hullReview.destructionProbe()')
     result['placeholderAssets']=placeholder_assets;result['errors']=errors;result['consoleErrors']=console[-10:]
     (OUT/'browser-report.json').write_text(json.dumps(result,indent=2))
     print(json.dumps(result,indent=2))
@@ -91,6 +96,11 @@ with sync_playwright() as p:
     assert result['lowDamage']['panelsVisible']==6 and result['lowDamage']['armorVisible']==result['lowDamage']['armorTotal'], 'Low-damage hull regression'
     assert result['aim']['aiming'] and result['aim']['selected']=='solar_lancer', 'Pointer aiming failed'
     assert result['release']['shots']==result['aim']['shots']+1, 'Release did not fire exactly once'
+    assert result['release']['committedRoom']==result['aim']['selectedRoom'], 'Solar origin room mismatch'
+    assert result['destruction']['half']==4, 'Hull exposure did not progress with accumulated damage'
+    assert result['destruction']['final']['exposed']==9, 'Severe hull damage did not expose all logical compartments'
+    assert result['destruction']['final']['modulesHidden']==9 and result['destruction']['final']['removableVisible']==0, 'Destroyed exterior still covers the enemy'
+    assert result['destruction']['final']['crewVisible'] and result['destruction']['final']['direct'], 'Exposed survivor is not visible and directly targetable'
     assert result['nextTurn']['round']==2, 'Turn advanced incorrectly'
     assert all(v['visible'] for v in result['cutaway']['crew']), 'Crew not visible'
     assert not errors, 'JavaScript runtime errors: '+str(errors)
