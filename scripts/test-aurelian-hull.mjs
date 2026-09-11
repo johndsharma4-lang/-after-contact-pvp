@@ -8,7 +8,10 @@ const vendor=process.env.AC_HULL_VENDOR||path.resolve(root,'../vendor/node_modul
 const THREE=await import(pathToFileURL(path.join(vendor,'three/build/three.module.js')));
 const {parse}=await import(pathToFileURL(path.join(vendor,'acorn/dist/acorn.mjs')));
 const raw=fs.readFileSync(path.join(root,'index.html'),'utf8');
-const {patchAurelianCanonExteriorRuntime:patch}=await import(pathToFileURL(path.join(root,'aurelian-canon-exterior-runtime.js')));
+const {patchAurelianCanonExteriorRuntime:patchExterior}=await import(pathToFileURL(path.join(root,'aurelian-canon-exterior-runtime.js')));
+const {patchAurelianReferencePolishRuntime:patchPolish}=await import(pathToFileURL(path.join(root,'aurelian-reference-polish-runtime.js')));
+const {patchAurelianCanonAuthorityRuntime:patchAuthority}=await import(pathToFileURL(path.join(root,'aurelian-canon-authority-runtime.js')));
+const patch=html=>patchAuthority(patchPolish(patchExterior(html)));
 const checks=[];const ok=s=>{checks.push(s);console.log('PASS '+s)};
 const patched=patch(raw);assert.notEqual(patched,raw);assert.equal(patch(patched),patched);ok('Hull patch applies once and is idempotent');
 assert.equal(patch(raw.replace('function buildAurelianDirectorHull(', 'function unknownHull(')),raw.replace('function buildAurelianDirectorHull(', 'function unknownHull('));
@@ -36,6 +39,9 @@ const ray=new THREE.Raycaster();let samples=0;
 for(const s of a.userData.acCutawayBayLayout)for(let x=-s.w*.40;x<=s.w*.40;x+=.62)for(let y=-s.h*.36;y<=s.h*.36;y+=.53){if(!inside([x,y],s.points.map(p=>[p[0]*.82,p[1]*.82])))continue;ray.set(new THREE.Vector3(s.x+x,s.y+y,30),new THREE.Vector3(0,0,-1));const hits=ray.intersectObject(a.userData.acPrimaryHull,true).filter(h=>h.point.z>2.0);assert.equal(hits.length,0,'Armor blocks bay '+s.index+' at '+[x,y]+' by '+hits.map(h=>h.object.name));samples++}
 ok(samples+' aperture rays clear fixed armor, including the previously blocked corners');
 const cp=a.getObjectByName('AURELIAN_CANON_COCKPIT'),cn=a.getObjectByName('AURELIAN_CANON_SOLAR_CANNON_ART'),ex=a.getObjectByName('AURELIAN_CANON_EXHAUST_CLUSTER');assert.equal(cp.parent,panels[0]);assert.equal(cn.parent,panels[5]);assert.equal(descendants(ex).filter(o=>o.name==='AURELIAN_CANON_EXHAUST_HOUSING').length,3);assert.equal(descendants(ex).filter(o=>o.name==='AURELIAN_CANON_EXHAUST_PIPE').length,2);ok('Cockpit/cannon owned by doors; three exhaust housings and two pipes owned by fixed hull');
+const frames=[1,2,3,4,5,6].map(i=>a.getObjectByName('AURELIAN_CANON_BAY_FRAME_'+i));assert.ok(frames.every(Boolean));
+const bounds=new THREE.Box3().setFromObject(a),size=bounds.getSize(new THREE.Vector3()),aspect=size.x/size.y;assert.ok(aspect>1.65&&aspect<2.15,'Canon silhouette aspect '+aspect);assert.ok(size.y>24,'Canon hull is still vertically compressed');ok('Six deep bay frames and broad '+aspect.toFixed(2)+':1 carrier silhouette match the reference proportions');
+assert.equal(a.userData.acDamagePresentationParts.length>=10,true);assert.equal(panels.every(p=>p.userData.acStructuralControl===true),true);ok('Progressive damage has explicit cosmetic armor and cannot own six cutaway doors');
 const seal=raw.slice(raw.indexOf('function setCutawayBayOpen('),raw.indexOf('function setCutawayFiringStage('));vm.runInContext(seal,ctx);
 const visuals=panels.map((panel,i)=>{const cell=new THREE.Group(),interior=new THREE.Group(),shutter=new THREE.Group(),anchor=new THREE.Object3D();anchor.position.set(i+1,2,3);interior.add(anchor);cell.add(interior,shutter);return{index:i,nativeRoom:cell,interiorRoot:interior,frontShutter:shutter,exteriorPanel:panel,anchor}});
 function visible(o){for(let p=o;p;p=p.parent)if(!p.visible)return false;return true}

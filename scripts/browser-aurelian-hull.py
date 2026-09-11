@@ -14,6 +14,7 @@ window.__hullReview={
   select:(index)=>{const v=xrayRoomVisuals.find(v=>v.warrior?.active&&v.warrior.hp>0&&v.index===index);if(!v)return false;selectXrayCrew(v.warrior);return true},
   seal:(progress)=>{const w=xrayRoomVisuals.find(v=>v.warrior?.active&&v.warrior.hp>0)?.warrior;if(!w)return false;acDirectorApplyAimSeal(w,progress);return {closed:xrayRoomVisuals.filter(v=>v.exteriorPanel?.visible).length,exhaust:factionSkinA.getObjectByName('AURELIAN_CANON_EXHAUST_CLUSTER').visible}},
   inspect:()=>({crew:xrayRoomVisuals.filter(v=>v.warrior).map(v=>({index:v.index,room:v.warrior.roomIndex,visible:v.rig3D?.visible,p:v.standAnchor?.getWorldPosition(new THREE.Vector3()).toArray()})),exhaust:!!factionSkinA.getObjectByName('AURELIAN_CANON_EXHAUST_CLUSTER'),cockpitParent:factionSkinA.getObjectByName('AURELIAN_CANON_COCKPIT')?.parent?.name,cannonParent:factionSkinA.getObjectByName('AURELIAN_CANON_SOLAR_CANNON_ART')?.parent?.name}),
+  damageProbe:()=>{const hp=structureHp.aurelian;structureHp.aurelian=Math.round(STRUCTURE_MAX*.94);syncProgressiveVesselDestruction('aurelian');const parts=factionSkinA.userData.acDamagePresentationParts||[],result={panelsVisible:(factionSkinA.userData.acCutawayBayPanels||[]).filter(p=>p.visible).length,armorVisible:parts.filter(p=>p.visible).length,armorTotal:parts.length};structureHp.aurelian=hp;syncProgressiveVesselDestruction('aurelian');return result},
   aimState:()=>({aiming,shots,soloTurn,round:soloRound,selected:selected?.weaponKey,mode:acDirector.mode,closed:xrayRoomVisuals.filter(v=>v.exteriorPanel?.visible).length,origin:aimOriginWorld?.toArray(),beamOrigin:acDirector.origin?.toArray(),events:diagLines.filter(x=>/AIM RELEASE| FIRE |DIRECTOR BEAM|TURN VFX RELEASE|SOLO HANDOFF/.test(x))}),
   pressPoint:()=>{const v=xrayRoomVisuals.find(v=>v.warrior?.weaponKey==='solar_lancer');return v?worldToStage(v.standAnchor.getWorldPosition(new THREE.Vector3())):null},
   screenshot:()=>{renderer.render(scene,camera)},
@@ -54,6 +55,9 @@ with sync_playwright() as p:
     page.evaluate('window.__hullReview.close()');page.wait_for_timeout(900)
     assert page.locator('#storyIntro').evaluate("e=>!e.classList.contains('show')"), 'Intro still covers render'
     page.locator('#stageShell').screenshot(path=str(OUT/'exterior-render.png'))
+    result['lowDamage']=page.evaluate('window.__hullReview.damageProbe()')
+    assert result['lowDamage']['panelsVisible']==6, 'Low structure damage removed a complete Aurelian bay door'
+    assert result['lowDamage']['armorVisible']==result['lowDamage']['armorTotal'], 'Six percent damage removed canon armor too early'
     page.evaluate('window.__hullReview.open()');page.wait_for_timeout(1300)
     result['cutaway']=page.evaluate('window.__hullReview.inspect()')
     page.locator('#stageShell').screenshot(path=str(OUT/'cutaway-render.png'))
@@ -84,6 +88,7 @@ with sync_playwright() as p:
     assert len(result['cutaway']['crew'])==3, 'Missing visible crew'
     assert result['cycledBays']==6, 'Cutaway did not rebuild all bays'
     assert result['seal']['closed']==5 and result['seal']['exhaust'], 'Seal/exhaust failure'
+    assert result['lowDamage']['panelsVisible']==6 and result['lowDamage']['armorVisible']==result['lowDamage']['armorTotal'], 'Low-damage hull regression'
     assert result['aim']['aiming'] and result['aim']['selected']=='solar_lancer', 'Pointer aiming failed'
     assert result['release']['shots']==result['aim']['shots']+1, 'Release did not fire exactly once'
     assert result['nextTurn']['round']==2, 'Turn advanced incorrectly'
