@@ -248,3 +248,13 @@ The established shield system remains part of faction combat. The intended gener
 4. Compartment, system, or warrior effects.
 
 Detailed shield interactions with Solar Chain, Sun Discs, EMP, A-Bomb, C-130 bombardment, and Solar Wall are **not yet fully locked** and must be resolved before implementation. Shields must remain meaningful without silently nullifying once-per-battle faction identity abilities.
+
+## Mobile Contextual Ability Interface
+
+- Tapping the player's own fortress opens its private physical cutaway.
+- The open cutaway presents a bottom-corner action tray containing the player's three deployed warrior controls and the faction's fortress defense control.
+- Warrior controls select the corresponding physical warrior in the cutaway.
+- The fortress defense control is contextual to the local faction: Earth displays Countermeasure Flares and Aurelian displays Solar Wall.
+- The defense control must clearly communicate unavailable, Morale-locked, ready, armed, and spent states once the underlying ability system is implemented.
+- Cannon attacks remain in a separate dedicated Cannon interface. Opening that interface must never fire automatically.
+- The tray must respect mobile safe areas and use comfortably tappable controls.
