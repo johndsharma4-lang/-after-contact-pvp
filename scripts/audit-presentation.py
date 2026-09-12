@@ -10,6 +10,7 @@ weapon_origin = (root / 'warrior-weapon-origin-runtime.js').read_text(encoding='
 rebuilt_models = (root / 'aurelian-rebuilt-models-runtime.js').read_text(encoding='utf-8')
 cutaway_composition = (root / 'aurelian-cutaway-composition-runtime.js').read_text(encoding='utf-8')
 base = (root / 'index.html').read_text(encoding='utf-8')
+worker = (root / 'after-contact-worker.js').read_text(encoding='utf-8')
 compact_router = ''.join(router.split())
 
 aim_start = director.find('if(xrayOpen&&aiming&&selected){')
@@ -51,8 +52,12 @@ checks = {
     'three empty physical bays preserved': 'xrayRoomVisuals.length-crew.length' in base and 'physicalInterior:ALL_6_SEGMENTED_DEEP_ROLE_DRESSED' in cutaway,
     'cutaway action tray follows private cutaway': 'id="cutawayActionTray"' in base and "const show=!!(xrayOpen&&battleStarted&&!matchEnded)" in base and 'refreshCutawayActionTray();if(!xrayCrewCard)return' in base,
     'cutaway tray exposes real three-warrior team': "localXrayWarriors().filter(w=>!w.passive).slice(0,3)" in base and "button.dataset.crewIndex" in base and "selectXrayCrew(w);refreshCutawayActionTray()" in base,
-    'fortress defense is contextual and non-consuming': "aurelian:Object.freeze({name:'SOLAR WALL'})" in base and "earth:Object.freeze({name:'COUNTERMEASURE FLARES'})" in base and 'state=PENDING useConsumed=N' in base,
+    'fortress defense is contextual and non-consuming': "aurelian:Object.freeze({name:'SOLAR WALL'})" in base and "earth:Object.freeze({name:'COUNTERMEASURE FLARES'})" in base and 'state=MORALE_LOCKED' in base and 'useConsumed=N' in base,
     'cutaway tray is mobile safe-area aware': '#cutawayActionTray' in base and 'env(safe-area-inset-right)' in base and 'env(safe-area-inset-bottom)' in base,
+    'morale starts at twenty five with locked thresholds': 'const MORALE_START=25,MORALE_DEFENSE_THRESHOLD=50,MORALE_CANNON_THRESHOLD=100' in base and 'LOCKED • MORALE ${morale}/${MORALE_DEFENSE_THRESHOLD}' in base,
+    'morale hud separates live and stale intelligence': 'id="ownMoraleValue"' in base and 'LAST KNOWN ENEMY' in base and 'opponentMoraleIntel' in base,
+    'multiplayer morale view is private and authoritative': 'moraleView(side)' in worker and 'broadcastWithMorale' in worker and 'moraleView:this.moraleView(side)' in worker,
+    'morale resets on solo and network battle lifecycle': base.count('resetMoraleState()') >= 3 and 'applyMoraleView(m.moraleView' in base,
     'room cage edge geometry removed': 'const rim=null;' in base and 'new THREE.EdgesGeometry(new THREE.BoxGeometry(roomW,roomH,roomD))' not in base,
     'presentation director owns five-step bay seal': 'visuals.length!==6' in director and 'setCutawayBayOpen(visual,!shouldClose)' in director and "closed='+closeCount+'/'+order.length" in director,
     'lifecycle bridge does not replace seal authority': 'const oldSeal=' not in bridge and 'status.shellOwnership=patched.includes' in bridge,

@@ -91,6 +91,7 @@ The player should be able to understand a collapse by looking at the vessel: **w
 
 Morale controls access to both offensive and defensive faction abilities.
 
+- Both factions begin every battle at **25% Morale**. The opening phase is therefore normal crew combat; neither fortress defense nor cannon special is available immediately.
 - A player sees their own Morale value live and accurately.
 - The opponent sees a **one-turn-delayed** reading labeled as last-known Morale or otherwise clearly presented as delayed intelligence.
 - The displayed opponent value is stale, not fabricated.
@@ -101,6 +102,12 @@ Morale controls access to both offensive and defensive faction abilities.
 - Heavy battle damage lowers Morale. Successful combat, defense, repair, and other recovery rules for rebuilding Morale remain to be tuned.
 - Morale loss must be tuned to avoid an unrecoverable snowball in which the losing player permanently loses access to all defensive play.
 - Individual abilities retain their own once-per-battle, use-count, or cooldown restrictions in addition to Morale requirements.
+
+### Implementation staging
+
+- The first implementation stage establishes the 25% starting state, server-owned multiplayer values, the 50% and 100% readiness gates, and the one-turn-delayed opponent display.
+- Morale gain and loss are intentionally not awarded yet. Their exact values must be tuned as a separate combat-balance pass so multi-projectile attacks cannot farm Morale per projectile.
+- A defense button below 50% must explain that it is Morale-locked and must not consume a use. Reaching a threshold does not activate an unfinished effect.
 
 ### Information-warfare intent
 

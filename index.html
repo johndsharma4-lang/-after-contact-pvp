@@ -26,6 +26,7 @@ body{display:grid;place-items:center;position:fixed;inset:0}
 #damageMonitor{display:none!important}.dmgTitle{font-size:7px;font-weight:1000;letter-spacing:.11em;color:var(--cyan);margin-bottom:4px}.dmgRow{display:flex;justify-content:space-between;gap:6px;font-size:7.4px;padding:2px 0;border-top:1px solid rgba(255,255,255,.055)}.dmgRow:first-of-type{border-top:0}.dmgLabel{opacity:.55}.dmgValue{font-weight:900}.dmgHidden{font-weight:900;color:#ffcb70}
 
 #structureHud{position:absolute;z-index:9;left:16px;right:16px;top:49px;display:flex;justify-content:space-between;gap:18px;pointer-events:none}.structureSide{width:min(25vw,210px);opacity:.74;transition:opacity .18s ease}.structureSide.right{text-align:right}.structureLabel{font-size:clamp(6px,.62vw,8px);font-weight:1000;letter-spacing:.08em;text-shadow:0 2px 8px #000}.structureTrack{display:block;margin-top:2px;height:3px;border:1px solid rgba(198,230,240,.30);border-radius:999px;background:rgba(1,8,14,.72);overflow:hidden;box-shadow:0 2px 9px #0008;opacity:.42;transform:scaleY(.78);transition:opacity .16s ease,transform .16s ease}.structureSide.damageActive{opacity:1}.structureSide.damageActive .structureTrack{opacity:1;transform:scaleY(1)}.structureFill{height:100%;width:100%;background:linear-gradient(90deg,#7695a0,#d7edf3);transition:width .18s ease,background .18s ease}.structureSide.right .structureFill{background:linear-gradient(90deg,#7695a0,#d7edf3)}
+#moraleHud{position:absolute;z-index:10;left:50%;top:76px;transform:translateX(-50%);display:none;grid-template-columns:repeat(2,minmax(112px,158px));gap:6px;width:min(330px,58vw);pointer-events:none}#moraleHud.show{display:grid}.moraleSide{padding:5px 7px;border:1px solid rgba(255,215,115,.30);border-radius:8px;background:rgba(5,12,19,.82);box-shadow:0 4px 14px #0008}.moraleSide.intel{border-style:dashed;border-color:rgba(167,193,207,.28);opacity:.76}.moraleLabel{display:flex;justify-content:space-between;gap:6px;font:900 6px/1 system-ui;letter-spacing:.09em;color:#ffe09a}.moraleSide.intel .moraleLabel{color:#c3d5dd}.moraleTrack{position:relative;height:5px;margin-top:4px;border-radius:999px;background:rgba(0,0,0,.68);overflow:visible}.moraleTrack:before,.moraleTrack:after{content:"";position:absolute;z-index:2;top:-2px;bottom:-2px;width:1px;background:rgba(255,255,255,.72)}.moraleTrack:before{left:50%}.moraleTrack:after{right:0}.moraleFill{height:100%;width:25%;border-radius:999px;background:linear-gradient(90deg,#a86016,#ffd86a);box-shadow:0 0 9px rgba(255,194,68,.35);transition:width .22s ease}.moraleSide.intel .moraleFill{background:linear-gradient(90deg,#536977,#b4d3df);box-shadow:none}.moraleThresholds{display:flex;justify-content:space-between;margin-top:3px;font:800 5px/1 system-ui;letter-spacing:.04em;color:#83939c}.moraleThresholds span:first-child{margin-left:45%}
 #rangeBadge{position:absolute;z-index:9;left:50%;top:47px;transform:translateX(-50%);padding:5px 10px;border-radius:999px;background:rgba(3,13,25,.72);border:1px solid rgba(116,217,255,.18);font-size:clamp(7px,.78vw,10px);font-weight:1000;letter-spacing:.1em;pointer-events:none;opacity:0;transition:opacity .16s}.rangeLive{opacity:.86!important}
 #damageFlash{position:absolute;z-index:11;left:50%;top:23%;transform:translate(-50%,-50%);max-width:46%;padding:3px 8px;border-radius:999px;background:rgba(3,10,18,.58);font-size:clamp(8px,1vw,14px);font-weight:1000;letter-spacing:.035em;text-align:center;color:#fff1b0;text-shadow:0 0 5px #ffb300;pointer-events:none;opacity:0;transition:opacity .08s}
 #unitHpLayer{position:absolute;inset:0;z-index:10;pointer-events:none}.unitHp{position:absolute;width:40px;transform:translate(-50%,-100%);font-size:5px;font-weight:1000;letter-spacing:.03em;text-align:center;text-shadow:0 1px 4px #000;opacity:0;transition:opacity .16s ease}.unitHp.damageActive{opacity:1}.unitAaLabel{margin-bottom:1px;white-space:nowrap;font-size:5px;color:#8feaff;text-shadow:0 0 6px rgba(90,220,255,.65)}.unitAaTrack{height:3px;border-radius:999px;background:#06111a;border:1px solid rgba(118,226,255,.48);overflow:hidden;box-shadow:0 0 7px rgba(80,210,255,.26)}.unitAaFill{height:100%;width:100%;background:linear-gradient(90deg,#4ec7ff,#d8f7ff);transform-origin:left center;transition:width .25s ease}.unitHp.shadowCrew{width:30px}.shadowHpName{margin-bottom:1px;white-space:nowrap}
@@ -615,6 +616,7 @@ html.gameView #stageShell{
 #cutawayActionTray.show{display:flex}#cutawayCrewActions{display:flex;gap:6px;min-width:0}.cutawayCrewBtn{position:relative;width:62px;height:58px;flex:0 0 62px;overflow:hidden;padding:0;border:1px solid rgba(255,255,255,.20);border-radius:10px;background:#0a1622;color:#fff;touch-action:manipulation!important}.cutawayCrewBtn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.64}.cutawayCrewBtn::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 35%,rgba(0,0,0,.88))}.cutawayCrewBtn .crewName,.cutawayCrewBtn .crewRoom{position:absolute;z-index:1;left:4px;right:4px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cutawayCrewBtn .crewName{bottom:13px;font:1000 7px/1 system-ui;letter-spacing:.025em}.cutawayCrewBtn .crewRoom{bottom:4px;font:800 6px/1 system-ui;color:#bdeaff}.cutawayCrewBtn.selected{border-color:#fff2a6;box-shadow:0 0 0 2px rgba(255,218,102,.22),0 0 18px rgba(255,196,70,.28)}.cutawayCrewBtn.confirmed{border-color:#82ffc0;box-shadow:0 0 0 2px rgba(80,255,160,.24),0 0 20px rgba(65,255,150,.28)}.cutawayCrewBtn.dead{filter:grayscale(1);opacity:.46;pointer-events:none}.cutawayCrewBtn.noArt{background:radial-gradient(circle at 50% 28%,rgba(255,221,133,.30),transparent 35%),#0a1622}
 #fortressDefenseBtn{width:116px;min-height:58px;flex:0 0 116px;padding:6px 7px;border:1px solid rgba(255,206,105,.48);border-radius:10px;background:radial-gradient(circle at 50% 0,rgba(255,205,92,.16),transparent 58%),#20180d;color:#fff;text-align:left;touch-action:manipulation!important}#fortressDefenseBtn.earth{border-color:rgba(100,205,255,.50);background:radial-gradient(circle at 50% 0,rgba(87,200,255,.16),transparent 58%),#081a27}#fortressDefenseLabel{display:block;font:900 6px/1 system-ui;letter-spacing:.14em;color:#ffd87c}#fortressDefenseBtn.earth #fortressDefenseLabel{color:#8fdcff}#fortressDefenseName{display:block;margin-top:5px;font:1000 8px/1.05 system-ui;letter-spacing:.035em}#fortressDefenseState{display:block;margin-top:5px;font:900 6px/1 system-ui;color:#aeb9c2;letter-spacing:.08em}
 @media(max-height:430px){#cutawayActionTray{right:max(6px,env(safe-area-inset-right));bottom:calc(5px + env(safe-area-inset-bottom));gap:5px;padding:5px}.cutawayCrewBtn{width:54px;height:50px;flex-basis:54px}#fortressDefenseBtn{width:104px;min-height:50px;flex-basis:104px;padding:5px}.cutawayCrewBtn .crewName{font-size:6.5px}}
+@media(max-height:430px){#moraleHud{top:62px;width:min(300px,55vw);grid-template-columns:repeat(2,minmax(100px,1fr));gap:4px}.moraleSide{padding:4px 6px}.moraleThresholds{display:none}}
 #ndaName{user-select:text!important;-webkit-user-select:text!important;touch-action:manipulation!important;pointer-events:auto!important;-webkit-appearance:none!important;appearance:none!important;font-size:16px!important;line-height:1.2!important}.ndaNameRow{display:grid;grid-template-columns:1fr auto;gap:7px;align-items:center}.ndaTypeFallback{height:42px!important;min-width:92px!important;padding:0 10px!important;border-radius:11px!important;border:1px solid rgba(116,217,255,.3)!important;background:#0a1825!important;color:#dff7ff!important;font:900 9px system-ui!important;letter-spacing:.04em!important;touch-action:manipulation!important}.ndaTyping #ndaName{border-color:#74d9ff!important;box-shadow:0 0 0 2px rgba(116,217,255,.13)!important}@media(max-height:430px){.ndaTypeFallback{height:34px!important}}
 
 #mpOverlay.roomReady{background:#01060c!important}
@@ -852,6 +854,7 @@ radial-gradient(circle at 45% 76%,rgba(255,255,255,.7) 0 1px,transparent 1.4px),
   <div class="hud"><div class="side"><div class="name" id="leftFactionName">AURELIAN ACCORD</div><div class="sub" id="leftFactionSub">SOLAR LANCER • PENETRATION TEST</div></div><div class="side right"><div class="name" id="rightFactionName">EARTH COMMAND</div><div class="sub" id="rightFactionSub">BOMBARDIER • FORTRESS LV.1</div></div></div>
   <div class="lab">3D LAB • MOBILE PVP TEST • v0.33.7</div>
   <div id="structureHud"><div class="structureSide"><div class="structureLabel" id="leftStructureLabel">VESSEL STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="leftStructureFill"></div></div></div><div class="structureSide right"><div class="structureLabel" id="rightStructureLabel">FORTRESS STRUCTURE 1200 / 1200</div><div class="structureTrack"><div class="structureFill" id="rightStructureFill"></div></div></div></div>
+  <div id="moraleHud" aria-label="Faction morale"><div class="moraleSide"><div class="moraleLabel"><span>YOUR MORALE</span><span id="ownMoraleValue">25%</span></div><div class="moraleTrack"><div class="moraleFill" id="ownMoraleFill"></div></div><div class="moraleThresholds"><span>DEF 50</span><span>CANNON 100</span></div></div><div class="moraleSide intel"><div class="moraleLabel"><span>LAST KNOWN ENEMY</span><span id="enemyMoraleValue">25%</span></div><div class="moraleTrack"><div class="moraleFill" id="enemyMoraleFill"></div></div><div class="moraleThresholds"><span>DEF 50</span><span>CANNON 100</span></div></div></div>
   <div id="rangeBadge">RANGE 885m</div>
   <svg id="aimSvg" viewBox="0 0 1280 720" preserveAspectRatio="none"><g id="enemyAimOutlineLayer" pointer-events="none"></g><g id="acidShotLayer" pointer-events="none"></g><path id="aimPath"/><path id="aimDropPath"/><circle id="aimDot" r="4"/><circle id="muzzleDot" r="6"/></svg>
   <div id="unitHpLayer"></div>
@@ -1217,6 +1220,7 @@ const targetRoomEl=document.getElementById('targetRoom'), targetArmorEl=document
 const unitHpLayer=document.getElementById('unitHpLayer'), muzzleDot=document.getElementById('muzzleDot');
 const xrayCrewCard=null,xrayCrewColor=null,xrayCrewName=null,xrayCrewMeta=null,xrayCrewAbility=null,xrayExitBtn=null;
 const cutawayActionTray=document.getElementById('cutawayActionTray'),cutawayCrewActions=document.getElementById('cutawayCrewActions'),fortressDefenseBtn=document.getElementById('fortressDefenseBtn'),fortressDefenseName=document.getElementById('fortressDefenseName'),fortressDefenseState=document.getElementById('fortressDefenseState');
+const moraleHud=document.getElementById('moraleHud'),ownMoraleValue=document.getElementById('ownMoraleValue'),ownMoraleFill=document.getElementById('ownMoraleFill'),enemyMoraleValue=document.getElementById('enemyMoraleValue'),enemyMoraleFill=document.getElementById('enemyMoraleFill');
 let xrayOpen=false,xrayTurnKey='',xrayGroup=null,xrayScanBand=null,xrayShellState=[],xrayRoomVisuals=[],xraySelectedCrew=null,xrayConfirmedShooter=null,xrayInitialSelectionShown=false,xrayPulse=0,exteriorRoomsHidden=true,tacticalAimView=false,structureHudTimers={aurelian:null,earth:null};
 const resultOverlay=document.getElementById('resultOverlay'),resultTitle=document.getElementById('resultTitle'),resultReason=document.getElementById('resultReason'),resultStats=document.getElementById('resultStats'),rematchBtn=document.getElementById('rematchBtn'),redeployBtn=document.getElementById('redeployBtn'),quitBtn=document.getElementById('quitBtn');
 const characterOverlay=document.getElementById('characterOverlay'),solarLancerChoice=document.getElementById('solarLancerChoice'),characterContinue=document.getElementById('characterContinue');
@@ -1249,7 +1253,9 @@ let soloTurn='aurelian',soloRound=1,soloAiTimer=null;
 let solarActionLock=false,barrageActionLock=false,acidActionLock=false;
 const EARTH_GROUND_Y=4.2;
 const STRUCTURE_MAX=1200,SHIELD_MAX=360,SHIELD_SECTION_MAX=80;
+const MORALE_START=25,MORALE_DEFENSE_THRESHOLD=50,MORALE_CANNON_THRESHOLD=100;
 let structureHp={aurelian:STRUCTURE_MAX,earth:STRUCTURE_MAX},shieldHp={aurelian:SHIELD_MAX,earth:SHIELD_MAX},shieldSections={aurelian:Array(9).fill(SHIELD_SECTION_MAX),earth:Array(9).fill(SHIELD_SECTION_MAX)};let rangeBadgeTimer=null;
+let moraleState={aurelian:MORALE_START,earth:MORALE_START},moraleLastKnown={aurelian:MORALE_START,earth:MORALE_START},opponentMoraleIntel=MORALE_START;
 const EXPOSURE_THRESHOLDS=Object.freeze({crack:25,partial:50,targetable:70,open:100});
 const FEATURE_FLAGS=Object.freeze({multiWarriorSwitching:false});
 let captainDamageBonus={aurelian:0,earth:0};
@@ -1261,6 +1267,14 @@ const leftStructureLabel=document.getElementById('leftStructureLabel'),rightStru
 function sideVesselName(side){const f=factionForWorldSide(side);return f==='earth'?'FORTRESS':f==='lizard'?'SUBMERSIBLE':'VESSEL'}
 function vesselHealthColor(side){return({earth:0x4ebdff,aurelian:0xffd65a,lizard:0x69e88b,gray:0xa96cff})[factionForWorldSide(side)]||0xffffff}
 function resetShieldState(){shieldHp={aurelian:SHIELD_MAX,earth:SHIELD_MAX};shieldSections={aurelian:Array(9).fill(SHIELD_SECTION_MAX),earth:Array(9).fill(SHIELD_SECTION_MAX)}}
+function clampMorale(value){return Math.max(0,Math.min(100,Math.round(Number(value)||0)))}
+function resetMoraleState(){moraleState={aurelian:MORALE_START,earth:MORALE_START};moraleLastKnown={aurelian:MORALE_START,earth:MORALE_START};opponentMoraleIntel=MORALE_START;refreshMoraleHud()}
+function applyMoraleView(view,reason='sync'){
+  if(!view)return;const own=clampMorale(view.own),enemy=clampMorale(view.opponentLastKnown),side=multiplayer?localSide:'aurelian';moraleState[side]=own;opponentMoraleIntel=enemy;refreshMoraleHud();diag('MORALE SYNC',`${reason} own=${own} enemyLastKnown=${enemy}`)
+}
+function refreshMoraleHud(){
+  if(!moraleHud)return;const show=!!(battleStarted&&!matchEnded),side=multiplayer?localSide:'aurelian',enemy=multiplayer?opponentMoraleIntel:moraleLastKnown.earth,own=clampMorale(moraleState[side]);moraleHud.classList.toggle('show',show);moraleHud.setAttribute('aria-hidden',show?'false':'true');ownMoraleValue.textContent=`${own}%`;ownMoraleFill.style.width=`${own}%`;enemyMoraleValue.textContent=`${clampMorale(enemy)}%`;enemyMoraleFill.style.width=`${clampMorale(enemy)}%`;if(xrayOpen)refreshCutawayActionTray()
+}
 function makeVesselHealthShell(side,kind){
   const skin=side==='aurelian'?factionSkinA:factionSkinE;if(!skin)return new THREE.Group();
   const faction=factionForWorldSide(side),color=kind==='shield'?0x9fb3bb:vesselHealthColor(side),shape={earth:[18,10.4,9,5],gray:[20.5,4.5,9.8,0],aurelian:[21.5,10.0,9.8,0],lizard:[19,8.2,9.2,0]}[faction]||[20,7,10,side==='earth'?5:0];
@@ -1716,7 +1730,7 @@ function setMpTurn(side=currentTurn){
   const fm=FACTION_META[factionForSide(side)]||FACTION_META.earth;
   mpTurn.textContent=`TURN ${Math.min(TURN_LIMIT,turnsTaken+1)}/${TURN_LIMIT} • ${mine?'YOUR TURN':`${fm.short} TURN`}`;
   if(mine){if(previousTurn!==side)moveRemaining=5;if(battleStarted&&!matchEnded){ensureLocalBattleWarriorActive('turn ownership');scheduleXrayForTurn('multiplayer turn')}}
-  movePending=false;if(previousTurn!==side)rearmMultiplayerInput('turn change',120);refreshMovePad();
+  movePending=false;if(previousTurn!==side)rearmMultiplayerInput('turn change',120);refreshMovePad();refreshMoraleHud();
   if(battleStarted&&!matchEnded)statusEl.textContent=mine?'YOUR TURN • MOVE OR FIRE':'OPPONENT TURN • WATCH THEIR MOVE/SHOT'
 }
 function sendMp(msg){
@@ -1895,7 +1909,7 @@ async function recoverMpAuthoritativeState(reason='recovery'){
     diag('MP RECOVERY',`${reason} status=${st.status||'?'} turn=${st.turn||'?'} round=${st.round||'?'} players=${st.players||0}`);
     if(st.status==='battle'&&st.deployments?.aurelian&&st.deployments?.earth){
       mpPlayStarted=true;mpPlayReady=true;mpHandshakePhase='battle_recovered';
-      startNetworkBattle({type:'start',deployments:st.deployments,factions:st.factions,turn:st.turn||'aurelian',round:st.round||1,positions:st.positions,moveUsed:st.moveUsed,recovered:true});
+      startNetworkBattle({type:'start',deployments:st.deployments,factions:st.factions,turn:st.turn||'aurelian',round:st.round||1,positions:st.positions,moveUsed:st.moveUsed,moraleView:st.moraleView,recovered:true});
       if(battleStarted){
         mpRound=st.round||mpRound;setMpTurn(st.turn||currentTurn);applyAuthoritativeMovementState(st,'recovery');ensureLocalBattleWarriorActive('authoritative recovery');rearmMultiplayerInput(`recovery:${reason}`,320);
       }
@@ -1967,8 +1981,10 @@ function connectMp(isRetry=false){
   });
 }
 function handleMp(m){
+  if(m?.moraleView&&m.type!=='hello')applyMoraleView(m.moraleView,m.type||'network');
   if(m.type==='hello'){
     localSide=m.side;mpRound=m.round||1;mpBothConnected=(Number(m.players)||0)>=2;if(m.factions)mpFactionState=m.factions;
+    if(m.moraleView)applyMoraleView(m.moraleView,'hello');
     configureSideUI();diag('HELLO',`transport=${localSide} players=${m.players||0} status=${m.status||'lobby'}`);
     if(m.status==='battle'&&m.deployments?.aurelian&&m.deployments?.earth){
       mpPlayStarted=true;mpPlayReady=true;mpHandshakePhase='battle_recovering';
@@ -3796,7 +3812,7 @@ function setSoloTurn(side){
   if(multiplayer)return;
   const previous=soloTurn;
   soloTurn=side;
-  if(previous!==side&&battleStarted)advanceSupportTurn(side);
+  if(previous!==side&&battleStarted){moraleLastKnown[previous]=moraleState[previous];advanceSupportTurn(side)}
   if(side==='aurelian'){
     moveRemaining=5;movePending=false;
     const survivor=aWarriors.find(w=>w.active&&w.hp>0);if(survivor){if(!selected||selected.hp<=0||!selected.active)selectWarrior(survivor);statusEl.textContent=`ROUND ${soloRound} • YOUR TURN • SELECT CREW, MOVE OR FIRE`;scheduleXrayForTurn('solo turn')}
@@ -3805,7 +3821,7 @@ function setSoloTurn(side){
     movePending=false;
     statusEl.textContent=`ROUND ${soloRound} • EARTH AI TARGETING…`;
   }
-  refreshMovePad();
+  refreshMovePad();refreshMoraleHud();
 }
 function chooseSoloAiTargetRoom(){
   const rooms=aRooms.userData.rooms;
@@ -3883,12 +3899,12 @@ function startBattle(e){if(!multiplayer){diagLines.length=0;diag('MATCH START','
   configureFactionTeam('aurelian',selectedFaction);
   soloRound=1;turnsTaken=0;clearSoloAiTimer();soloTurn='aurelian';moveRemaining=5;movePending=false;
   aure.position.y=selectedFaction==='earth'?EARTH_GROUND_Y:18;earth.position.y=EARTH_GROUND_Y;enforceFactionWorldConstraints('solo start');
-  structureHp={aurelian:STRUCTURE_MAX,earth:STRUCTURE_MAX};resetShieldState();resetCaptainDamageBonuses();updateStructureHud();updateFactionBattleHud();applyFactionVesselPresentation();syncCrewIdentityColors();updateBattleCamera(true);restoreMainRenderer('solo prelaunch');ensureBattleSceneVisible('solo launch');primeSoloBattleSelection();updateUnitVisuals();setSoloTurn('aurelian');refreshMovePad();requestAnimationFrame(()=>ensureBattleSceneVisible('solo raf1'));setTimeout(()=>ensureBattleSceneVisible('solo 120ms'),120);setTimeout(()=>ensureBattleSceneVisible('solo 450ms'),450);
+  structureHp={aurelian:STRUCTURE_MAX,earth:STRUCTURE_MAX};resetShieldState();resetMoraleState();resetCaptainDamageBonuses();updateStructureHud();updateFactionBattleHud();applyFactionVesselPresentation();syncCrewIdentityColors();updateBattleCamera(true);restoreMainRenderer('solo prelaunch');ensureBattleSceneVisible('solo launch');primeSoloBattleSelection();updateUnitVisuals();setSoloTurn('aurelian');refreshMovePad();requestAnimationFrame(()=>ensureBattleSceneVisible('solo raf1'));setTimeout(()=>ensureBattleSceneVisible('solo 120ms'),120);setTimeout(()=>ensureBattleSceneVisible('solo 450ms'),450);
   statusEl.textContent=`ROUND 1 • YOUR TURN • ${STARTER_PROFILES[selectedWarriorType]?.name||'WARRIOR'} READY`;
   setTimeout(()=>{battleLaunchGuard=false},350);
 }
 function startNetworkBattle(m){
-  clearTimeout(mpStartFallbackTimer);mpStartFallbackTimer=null;const startKey=multiplayerStartKey(m);
+  clearTimeout(mpStartFallbackTimer);mpStartFallbackTimer=null;if(m?.moraleView)applyMoraleView(m.moraleView,m.recovered?'recovery snapshot':'start snapshot');const startKey=multiplayerStartKey(m);
   if(mpBattleStartKey===startKey&&battleStarted){diag('START SNAPSHOT IGNORED',`key=${startKey}`);applyAuthoritativeMovementState(m,'duplicate snapshot');return}
   mpBattleStartKey=startKey;
   if(!battleStarted){diagLines.length=0;diag('MATCH START',`MULTIPLAYER room=${mpCode||'-'} key=${startKey}`);}
@@ -3905,7 +3921,7 @@ function startNetworkBattle(m){
   if(m.positions){applyFortressPosition('aurelian',m.positions.aurelian);applyFortressPosition('earth',m.positions.earth)}
   currentTurn=m.turn||'aurelian';mpRound=m.round||1;turnsTaken=Number.isInteger(m.turnCount)?m.turnCount:0;selected=null;
   moveRemaining=currentTurn===localSide?Math.max(0,5-(m.moveUsed?.[localSide]||0)):5;movePending=false;
-  structureHp={aurelian:STRUCTURE_MAX,earth:STRUCTURE_MAX};resetShieldState();resetCaptainDamageBonuses();updateStructureHud();updateFactionBattleHud();applyFactionVesselPresentation();syncCrewIdentityColors();updateBattleCamera(true);ensureBattleSceneVisible('network launch');updateUnitVisuals();ensureLocalBattleWarriorActive(m.recovered?'battle recovery':'battle start');setMpTurn(currentTurn);applyAuthoritativeMovementState(m,m.recovered?'battle recovery':'battle start');rearmMultiplayerInput(m.recovered?'battle recovery':'battle start',m.recovered?320:180);refreshMovePad();statusEl.textContent=currentTurn===localSide?'YOUR TURN • MOVE OR FIRE':'OPPONENT TURN';requestAnimationFrame(()=>ensureBattleSceneVisible('network raf'));
+  structureHp={aurelian:STRUCTURE_MAX,earth:STRUCTURE_MAX};resetShieldState();resetMoraleState();applyMoraleView(m.moraleView,m.recovered?'battle recovery':'battle start');resetCaptainDamageBonuses();updateStructureHud();updateFactionBattleHud();applyFactionVesselPresentation();syncCrewIdentityColors();updateBattleCamera(true);ensureBattleSceneVisible('network launch');updateUnitVisuals();ensureLocalBattleWarriorActive(m.recovered?'battle recovery':'battle start');setMpTurn(currentTurn);applyAuthoritativeMovementState(m,m.recovered?'battle recovery':'battle start');rearmMultiplayerInput(m.recovered?'battle recovery':'battle start',m.recovered?320:180);refreshMovePad();statusEl.textContent=currentTurn===localSide?'YOUR TURN • MOVE OR FIRE':'OPPONENT TURN';requestAnimationFrame(()=>ensureBattleSceneVisible('network raf'));
 }
 battleBtn.addEventListener('click',startBattle,{passive:false});
 let deployReadyActivation=false;
@@ -4488,7 +4504,8 @@ function refreshCutawayActionTray(){
   const faction=factionForWorldSide(localXraySide()),defense=FORTRESS_DEFENSE_UI[faction]||FORTRESS_DEFENSE_UI.earth,crew=localXrayWarriors().filter(w=>!w.passive).slice(0,3);
   cutawayCrewActions.replaceChildren();
   crew.forEach((w,index)=>{const profile=STARTER_PROFILES[w.weaponKey],name=profile?.name||`WARRIOR ${index+1}`,button=document.createElement('button'),art=starterArt(w.weaponKey);button.type='button';button.className=`cutawayCrewBtn${w===xraySelectedCrew?' selected':''}${w===xrayConfirmedShooter?' confirmed':''}${w.hp<=0?' dead':''}${art?'':' noArt'}`;button.dataset.crewIndex=String(index);button.setAttribute('aria-label',`${name}, room ${w.roomIndex+1}${w.hp<=0?', dead':''}`);if(art){const img=document.createElement('img');img.src=art;img.alt='';button.appendChild(img)}const nameEl=document.createElement('span'),roomEl=document.createElement('span');nameEl.className='crewName';nameEl.textContent=name;roomEl.className='crewRoom';roomEl.textContent=w.hp<=0?'DEAD':`ROOM ${w.roomIndex+1} • HP ${Math.max(0,Math.round(w.hp))}`;button.append(nameEl,roomEl);cutawayCrewActions.appendChild(button)});
-  fortressDefenseBtn.classList.toggle('earth',faction==='earth');fortressDefenseName.textContent=defense.name;fortressDefenseState.textContent='ABILITY PENDING';fortressDefenseBtn.setAttribute('aria-label',`${defense.name}, combat implementation pending`);fortressDefenseBtn.dataset.state='pending';
+  const side=localXraySide(),morale=clampMorale(moraleState[side]),ready=morale>=MORALE_DEFENSE_THRESHOLD;
+  fortressDefenseBtn.classList.toggle('earth',faction==='earth');fortressDefenseName.textContent=defense.name;fortressDefenseState.textContent=ready?'READY • EFFECT PENDING':`LOCKED • MORALE ${morale}/${MORALE_DEFENSE_THRESHOLD}`;fortressDefenseBtn.setAttribute('aria-label',ready?`${defense.name}, ready, combat effect pending`:`${defense.name}, locked, ${morale} of ${MORALE_DEFENSE_THRESHOLD} morale`);fortressDefenseBtn.dataset.state=ready?'ready-pending':'morale-locked';
 }
 function refreshXrayCrewCard(){
   refreshCutawayActionTray();if(!xrayCrewCard)return;xrayCrewCard.classList.toggle('show',xrayOpen);xrayCrewCard.setAttribute('aria-hidden',xrayOpen?'false':'true');if(!xrayOpen)return;
@@ -4767,7 +4784,7 @@ function resetBattleWorld(nextPhase=null){
   selected=null;shots=0;shotMetric.textContent='SHOTS 0';matchEnded=false;battleStarted=false;battleLaunchGuard=false;
   resultOverlay.classList.remove('show');targetRoomEl.textContent='—';targetArmorEl.textContent='—';targetBreachEl.textContent='—';targetUnitEl.textContent='HIDDEN';
   statusEl.textContent=nextPhase==='deployment'?'DEPLOYMENT READY • PRESS BATTLE':'MATCH STATE RESET';
-  damageFlash.style.opacity='0';shakeTime=0;shakeStrength=0;shakeDuration=0;structureHp={aurelian:STRUCTURE_MAX,earth:STRUCTURE_MAX};resetShieldState();resetCaptainDamageBonuses();updateStructureHud();syncProgressiveVesselDestruction('aurelian');syncProgressiveVesselDestruction('earth');enforceFactionWorldConstraints('battle reset');updateBattleCamera(true);updateUnitVisuals();
+  damageFlash.style.opacity='0';shakeTime=0;shakeStrength=0;shakeDuration=0;structureHp={aurelian:STRUCTURE_MAX,earth:STRUCTURE_MAX};resetShieldState();resetMoraleState();resetCaptainDamageBonuses();updateStructureHud();syncProgressiveVesselDestruction('aurelian');syncProgressiveVesselDestruction('earth');enforceFactionWorldConstraints('battle reset');updateBattleCamera(true);updateUnitVisuals();
 }
 function rematchSameDeployment(e){if(e)stopNative(e);if(multiplayer){sendMp({type:'reset',mode:'rematch'});return}resetBattleWorld('deployment');characterOverlay.classList.add('hidden');deployOverlay.classList.add('hidden');updateDeployUI();diag('REMATCH RESET','flow=deployment -> relaunch');requestAnimationFrame(()=>startBattle(null))}
 function returnToDeployment(e){if(e)stopNative(e);if(multiplayer){sendMp({type:'reset',mode:'redeploy'});return}resetBattleWorld('deployment');characterOverlay.classList.add('hidden');deployOverlay.classList.remove('hidden');updateAfterContactOrientationLock();deployOverlay.setAttribute('aria-hidden','false');updateDeployUI()}
@@ -5618,7 +5635,7 @@ function selectXrayCrew(w){
   diag('SHOOTER LOCK',`${w.weaponKey} room=${w.roomIndex+1} confirmed=Y otherRoomsClosed=Y`)
 }
 cutawayCrewActions?.addEventListener('pointerup',e=>{stopNative(e);e.stopPropagation();const button=e.target.closest('.cutawayCrewBtn');if(!button||!xrayOpen)return;const crew=localXrayWarriors().filter(w=>!w.passive).slice(0,3),w=crew[Number(button.dataset.crewIndex)];if(w){selectXrayCrew(w);refreshCutawayActionTray()}},{passive:false});
-fortressDefenseBtn?.addEventListener('pointerup',e=>{stopNative(e);e.stopPropagation();if(!xrayOpen)return;const faction=factionForWorldSide(localXraySide()),name=(FORTRESS_DEFENSE_UI[faction]||FORTRESS_DEFENSE_UI.earth).name;statusEl.textContent=`${name} • COMBAT IMPLEMENTATION PENDING`;diag('FORTRESS DEFENSE UI',`${faction} ${name} state=PENDING useConsumed=N`)},{passive:false});
+fortressDefenseBtn?.addEventListener('pointerup',e=>{stopNative(e);e.stopPropagation();if(!xrayOpen)return;const side=localXraySide(),faction=factionForWorldSide(side),name=(FORTRESS_DEFENSE_UI[faction]||FORTRESS_DEFENSE_UI.earth).name,morale=clampMorale(moraleState[side]);if(morale<MORALE_DEFENSE_THRESHOLD){statusEl.textContent=`${name} LOCKED • ${MORALE_DEFENSE_THRESHOLD-morale}% MORE MORALE REQUIRED`;diag('FORTRESS DEFENSE UI',`${faction} ${name} state=MORALE_LOCKED morale=${morale}/${MORALE_DEFENSE_THRESHOLD} useConsumed=N`);return}statusEl.textContent=`${name} READY • COMBAT EFFECT IMPLEMENTATION PENDING`;diag('FORTRESS DEFENSE UI',`${faction} ${name} state=READY_EFFECT_PENDING morale=${morale} useConsumed=N`)},{passive:false});
 bindMobileAction(xrayExitBtn,e=>{stopNative(e);closePrivateXray('exit button')});
 canvas.addEventListener('pointerdown',e=>{
   stopNative(e);if(!battleStarted||matchEnded)return;if(solarActionLock||barrageActionLock||acidActionLock){const why=solarActionLock?'solar action in progress':barrageActionLock?'HE-9 barrage resolving':'acid hose resolving';diag('AIM BLOCK',why);statusEl.textContent=solarActionLock?'SOLAR LANCER • BURN IN PROGRESS':barrageActionLock?'HE-9 BARRAGE • IMPACTS RESOLVING':'CORROSIVE FLOOD • IMPACT RESOLVING';return;}
