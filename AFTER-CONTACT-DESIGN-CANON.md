@@ -99,14 +99,20 @@ Morale controls access to both offensive and defensive faction abilities.
 - Fortress defensive abilities require at least **50% Morale** when armed.
 - Cannon offensive specials require a **full Morale bar** when activated.
 - Once a defense has been legally armed, a later Morale decrease does not cancel it.
-- Heavy battle damage lowers Morale. Successful combat, defense, repair, and other recovery rules for rebuilding Morale remain to be tuned.
+- Heavy battle damage lowers Morale. Successful combat, defense, and repair rebuild it.
 - Morale loss must be tuned to avoid an unrecoverable snowball in which the losing player permanently loses access to all defensive play.
 - Individual abilities retain their own once-per-battle, use-count, or cooldown restrictions in addition to Morale requirements.
 
 ### Implementation staging
 
 - The first implementation stage establishes the 25% starting state, server-owned multiplayer values, the 50% and 100% readiness gates, and the one-turn-delayed opponent display.
-- Morale gain and loss are intentionally not awarded yet. Their exact values must be tuned as a separate combat-balance pass so multi-projectile attacks cannot farm Morale per projectile.
+- Morale settles once per completed attack, never once per projectile. A damaging attack earns **+10%**; breaching a compartment or eliminating a warrior during that action adds **+5%**, with a hard **+15% maximum gain per attack**.
+- Shield damage qualifies an attack for the +10% success award, but shield-only damage does not lower the defender's Morale.
+- Defender Morale loss is based on total structure damage from the completed attack: **-5%** for 1–59, **-10%** for 60–119, and **-15%** for 120 or more. Losing a warrior during the action also sets the loss to **-15%**.
+- A miss or zero-damage attack changes neither side's Morale.
+- Abilities do **not** spend Morale. Morale is battle condition/readiness, while cooldowns and per-battle use limits are the costs. This preserves the possible Earth EMP-to-A-Bomb sequence while allowing the intervening counterattack to break Earth's 100% readiness.
+- A successful repair and a successfully triggered fortress defense are each intended to award **+10%** when those systems become playable.
+- Multiplayer clients submit one bounded result for the completed attack; the Durable Object validates the pending shot, caps both gain and loss at 15%, stores the values, and distributes only each player's private Morale view.
 - A defense button below 50% must explain that it is Morale-locked and must not consume a use. Reaching a threshold does not activate an unfinished effect.
 
 ### Information-warfare intent
