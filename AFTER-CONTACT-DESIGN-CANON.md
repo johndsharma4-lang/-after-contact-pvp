@@ -113,7 +113,8 @@ Morale controls access to both offensive and defensive faction abilities.
 - Abilities do **not** spend Morale. Morale is battle condition/readiness, while cooldowns and per-battle use limits are the costs. This preserves the possible Earth EMP-to-A-Bomb sequence while allowing the intervening counterattack to break Earth's 100% readiness.
 - A successful repair and a successfully triggered fortress defense are each intended to award **+10%** when those systems become playable.
 - Multiplayer clients submit one bounded result for the completed attack; the Durable Object validates the pending shot, caps both gain and loss at 15%, stores the values, and distributes only each player's private Morale view.
-- A defense button below 50% must explain that it is Morale-locked and must not consume a use. Reaching a threshold does not activate an unfinished effect.
+- A defense button below 50% explains that it is Morale-locked and does not consume a use. Reaching 50% only makes the control available; the player must tap it to arm the hidden defense.
+- Fortress-defense arming and use counts are server-authoritative in multiplayer. Each player receives only their own armed state and remaining uses; the opponent learns about the defense only when it triggers.
 
 ### Information-warfare intent
 
@@ -190,7 +191,7 @@ Disorientation affects aiming for the first two chained turns only.
 - The wall expires at the end of that triggered enemy turn.
 - Attacks that travel around the wall do not trigger it and do not get blocked by it.
 - Solar Wall does not cleanse chains, mines, fire, radiation, acid, or other effects that were already attached or active before deployment.
-- Exact facing controls, coverage, upgrade path, and number of uses per battle remain TBD.
+- The current base implementation places the wall between the two fortresses, blocks the complete next direct attack, and provides **one use per battle**. Manual facing controls and an upgrade path remain future work.
 
 ## Earth Cannon Abilities
 
@@ -248,6 +249,7 @@ General spatial friendly-fire behavior for the C-130 remains a future design opt
   - **Level 2:** blocks 3 projectiles.
   - **Level 3:** blocks 4 projectiles.
   - **Level 4:** blocks a maximum of 5 projectiles.
+- The current fortress uses the Level 1 implementation: one armed use intercepts the first **two** HE-9 missiles individually, while the remaining missiles continue through the barrage normally.
 - Flares do not disable Earth's regular shield; qualifying surviving projectiles proceed to normal shield/hull resolution.
 - The exact armed duration and definitive list of qualifying projectile types remain TBD.
 

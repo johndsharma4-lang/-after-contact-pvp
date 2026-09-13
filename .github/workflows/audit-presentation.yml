@@ -16,6 +16,9 @@ jobs:
       - name: JavaScript syntax
         run: |
           node --check combat-presentation-director-runtime.js
+          node --check after-contact-worker.js
           node --check router-worker.js
+      - name: Fortress defense authority
+        run: node scripts/test-fortress-defense.mjs
       - name: Presentation architecture invariants
         run: python scripts/audit-presentation.py
