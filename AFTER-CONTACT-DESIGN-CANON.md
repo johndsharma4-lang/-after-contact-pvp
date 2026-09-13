@@ -58,6 +58,8 @@ This mechanic is causal and physical. A warrior does not move simply because a r
 
 - **One compartment may contain at most one warrior.** Warriors must never stack in the same compartment.
 - A warrior falls only when the structural support beneath their current compartment actually fails.
+- Removing a compartment's exterior armor does not teleport its surviving warrior into another room. The warrior remains visibly exposed in that wreck opening and can be targeted directly until actual support failure causes a physical fall.
+- A direct attack aimed at the visible exposed warrior damages the warrior, not an invisible replacement wall or only the rear hull.
 - A warrior does **not** automatically fall to the bottom of a column. Fall distance is determined by the amount of support/floor structure actually destroyed.
 - If only one supporting floor fails, the warrior falls **one compartment level** and takes normal fall damage for that distance.
 - If multiple consecutive supports fail from the same damaging event or structural collapse, the warrior may fall multiple levels. Fall damage scales with the actual distance fallen.

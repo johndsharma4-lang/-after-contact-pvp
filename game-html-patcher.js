@@ -34,7 +34,7 @@ export function patchIndexHtml(html) {
   );
 
   const sniperFn = `function sniperRoomHit(attacker,pt){
-  const rooms=opposingRooms(attacker).userData.rooms,warriors=opposing(attacker);let chosen=null;
+  const rooms=opposingRooms(attacker).userData.rooms,warriors=opposing(attacker),exposed=directVisibleAimHit(attacker,pt);if(exposed?.warrior)return{...exposed,quality:1,placement:'EXPOSED CREW'};let chosen=null;
   for(let i=0;i<rooms.length;i++){
     const room=rooms[i];if(room.erased)continue;const r=objectScreenRect(room.hitPlane,0);if(pt.x<r.x1||pt.x>r.x2||pt.y<r.y1||pt.y>r.y2)continue;
     const cx=(r.x1+r.x2)/2,cy=(r.y1+r.y2)/2,nx=Math.abs(pt.x-cx)/Math.max(1,(r.x2-r.x1)/2),ny=Math.abs(pt.y-cy)/Math.max(1,(r.y2-r.y1)/2),rad=Math.max(nx,ny);
