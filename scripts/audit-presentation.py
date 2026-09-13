@@ -10,6 +10,7 @@ weapon_origin = (root / 'warrior-weapon-origin-runtime.js').read_text(encoding='
 rebuilt_models = (root / 'aurelian-rebuilt-models-runtime.js').read_text(encoding='utf-8')
 cutaway_composition = (root / 'aurelian-cutaway-composition-runtime.js').read_text(encoding='utf-8')
 solar_lancer = (root / 'solar-lancer-runtime.js').read_text(encoding='utf-8')
+reference_polish = (root / 'aurelian-reference-polish-runtime.js').read_text(encoding='utf-8')
 base = (root / 'index.html').read_text(encoding='utf-8')
 worker = (root / 'after-contact-worker.js').read_text(encoding='utf-8')
 compact_router = ''.join(router.split())
@@ -103,6 +104,10 @@ checks = {
     'release resamples posed muzzle': 'aimOriginWorld=flashPos.clone()' in weapon_origin and 'aimOriginStage=worldToStage(aimOriginWorld)' in weapon_origin,
     'aim pose recorder proof': "diag('WARRIOR AIM BODY'" in weapon_origin and 'muzzle=LIVE rawTarget=UNCHANGED' in weapon_origin,
     'aurelian model artwork upgraded': 'ac-aurelian-rebuilt-models-v0419' in rebuilt_models and 'curvedBreastplate' in rebuilt_models and 'helmetSolarCrest' in rebuilt_models and 'chestSunRay' in rebuilt_models and 'solarBackWing' in rebuilt_models and 'diskScale=sx>0?1.20:.84' in rebuilt_models and 'SphereGeometry(.64,22,16)' in rebuilt_models,
+    'reference ship art uses layered bronze and gold': 'ac-aurelian-reference-polish-v0480' in reference_polish and 'AURELIAN_DOOR_STEPPED_BEZEL_' in reference_polish and 'AURELIAN_REFERENCE_DORSAL_ARMOR' in reference_polish and 'referenceMatch:BRONZE_GOLD_LAYERED' in reference_polish,
+    'reference cockpit is elongated and glazed': 'AURELIAN_COCKPIT_ARMORED_SLED' in reference_polish and 'AURELIAN_COCKPIT_GLAZING' in reference_polish and 'AURELIAN_COCKPIT_AFT_SPEAR' in reference_polish,
+    'reference cannon and prow are integrated': 'AURELIAN_CANNON_ARMORED_CRADLE' in reference_polish and 'AURELIAN_CANNON_CONTAINED_ENERGY' in reference_polish and 'AURELIAN_PROW_LENS_CORE' in reference_polish,
+    'reference engine silhouette is triple cowled': "for(const y of[-4.8,0,4.8])" in reference_polish and 'AURELIAN_REFERENCE_ENGINE_FAIRING' in reference_polish and 'engines:TRIPLE_COWLED' in reference_polish,
     'aurelian rigs composed, enlarged and relit': 'ac-aurelian-cutaway-composition-v0419' in cutaway_composition and 'multiplyScalar(.92)' in cutaway_composition and 'multiplyScalar(aurelianBay?1.16:1.04)' in base and 'SIX_BAY_ARTICULATED_HIGH_DETAIL_SILHOUETTES' in cutaway_composition and 'restPose:CAPTURED' in cutaway_composition,
     'natural idle animation is connected': 'function acAnimateAurelianWarriorIdle' in rebuilt_models and "typeof acAnimateAurelianWarriorIdle==='function'" in base and 'acAimActiveUntil' in weapon_origin,
     'v0421 build marker': 'MATCH RECORDER v0.42.1' in director and '2026-09-07_SEGMENTED_MODULE_HULL_DEEP_BAYS' in director,
