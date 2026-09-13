@@ -8,7 +8,7 @@ export function patchCombatPresentationDirectorRuntime(html) {
   if (html.includes('ac-presentation-director-v0421')) return html;
 
   let patched = html;
-  const status = {director:false,singlePress:false,pressDrag:false,camera:false,turnSolo:false,turnMp:false,impactExterior:false,scatterCamera:false,sunadierTrack:false,diskTrack:false,beamTrack:false,clearAim:false,turnVfxGate:false,preAimClosed:false,aimSeal:false,releaseSeal:false};
+  const status = {director:false,sourceAimFlow:false,camera:false,turnSolo:false,turnMp:false,impactExterior:false,scatterCamera:false,sunadierTrack:false,diskTrack:false,beamTrack:false,clearAim:false,turnVfxGate:false,preAimClosed:false,aimSeal:false,releaseSeal:false};
 
   const helpers = String.raw`
 let acDirector={mode:'exterior',projectile:null,target:null,origin:null,hit:null,attacker:null,label:'',settleUntil:0,travelTotal:1,aimTargetProgress:0,aimVisualProgress:0,aimLastTs:0,aimInputOrigin:null,sealedRooms:0,cameraStage:-1};
@@ -68,9 +68,7 @@ function acDirectorPreImpact(){if(acDirector.mode!=='travel'||!acDirector.hit?.r
 
   if (!patched.includes('let acDirector=')) {const next=patched.replace('let cameraLastUpdate=performance.now();',helpers+'\nlet cameraLastUpdate=performance.now();');status.director=next!==patched;patched=next}else status.director=true;
 
-  const selectBody="function selectXrayCrew(w){\n  if(!xrayOpen||!w||!w.active||w.hp<=0||w.passive)return;\n  xraySelectedCrew=w;xrayConfirmedShooter=w;restoreFullCutawayStage();selectWarrior(w);refreshPrivateXrayVisuals();\n  const p=STARTER_PROFILES[w.weaponKey],name=p?.name||'WARRIOR';statusEl.textContent=name+' • HOLD + DRAG TO AIM • RELEASE TO FIRE';diag('SHOOTER LOCK',w.weaponKey+' room='+(w.roomIndex+1)+' confirmed=Y fullStagePreserved=Y')\n}\n";
-  const selectNext=patched.replace(/function selectXrayCrew\(w\)\{[\s\S]*?\n\}\nbindMobileAction\(xrayExitBtn/,selectBody+'bindMobileAction(xrayExitBtn');status.singlePress=selectNext!==patched;patched=selectNext;
-  patched=replaceOnce(patched,"const crew=xrayWarriorAtStagePoint(pt);if(crew){selectXrayCrew(crew);return}","const crew=xrayWarriorAtStagePoint(pt);if(crew){selectXrayCrew(crew);vesselGesture={pointerId:e.pointerId,start:pt,current:pt,lockedShooter:true};try{canvas.setPointerCapture(e.pointerId)}catch{}diag('SHOOTER PRESS ARMED',crew.weaponKey+' room='+(crew.roomIndex+1)+' holdDrag=Y singlePress=Y');return}",status,'pressDrag');patched=patched.replace("if(Math.hypot(pt.x-vesselGesture.start.x,pt.y-vesselGesture.start.y)>=28){","if(Math.hypot(pt.x-vesselGesture.start.x,pt.y-vesselGesture.start.y)>=10){");
+  status.sourceAimFlow=patched.includes('singleTap=Y aimSurface=FULL_BATTLEFIELD')&&patched.includes('surface=FULL_BATTLEFIELD')&&patched.includes('>=10){');
 
   const beforePreview=patched;
   patched=patched.replace(/function acDirectorBuild3DWindow\([\s\S]*?function acDirectorBeginAim\(attacker\)\{/,'function acDirectorBeginAim(attacker){');
@@ -86,14 +84,18 @@ function acDirectorPreImpact(){if(acDirector.mode!=='travel'||!acDirector.hit?.r
   const cameraReplacement=`function updateBattleCamera(snap=false,frameDt=null){
   if(!battleStarted||typeof camera==='undefined')return;
   acDirectorBusy();
+  if(xrayOpen&&xrayConfirmedShooter&&!aiming){
+    const sep=currentCombatRange(),maxY=Math.max(aure.position.y,earth.position.y),minY=Math.min(aure.position.y,earth.position.y),midX=(aure.position.x+earth.position.x)/2,midY=(maxY+minY)/2,rangeExtra=Math.max(0,Math.min(82,(sep-55)*.92)),altExtra=Math.max(0,(maxY-18)*.72),vHalf=THREE.MathUtils.degToRad(camera.fov*.5),hHalf=Math.atan(Math.tan(vHalf)*camera.aspect),horizontalNeed=(sep*.5+29)/Math.max(.18,Math.tan(hHalf)),verticalNeed=((maxY-minY)*.5+17)/Math.max(.18,Math.tan(vHalf)),battleZ=Math.max(92+rangeExtra+altExtra*.72,horizontalNeed,verticalNeed),battlePos=new THREE.Vector3(midX,27.5+midY*.11+altExtra*.22,battleZ),battleLook=new THREE.Vector3(midX,Math.max(10,midY*.48)+Math.min(8,sep*.045),0),alpha=snap?1:.22;
+    camera.position.lerp(battlePos,alpha);cameraLookTarget.lerp(battleLook,alpha);camera.zoom=THREE.MathUtils.lerp(camera.zoom,1,alpha);camera.aspect=16/9;camera.near=.1;camera.far=900;camera.updateProjectionMatrix();camera.lookAt(cameraLookTarget);return
+  }
   if(xrayOpen&&aiming&&selected){
     const progress=acDirectorStepAimPresentation(performance.now()),visual=xrayRoomVisuals?.find?.(v=>v.warrior===selected),shooter=visual?.standAnchor?.getWorldPosition?.(new THREE.Vector3())||visual?.rig3D?.getWorldPosition?.(new THREE.Vector3())||warriorWorld(selected),closeLook=shooter.clone();
     closeLook.y+=.85;
-    const closePos=new THREE.Vector3(closeLook.x,closeLook.y+1.9,closeLook.z+38),sep=currentCombatRange(),maxY=Math.max(aure.position.y,earth.position.y),minY=Math.min(aure.position.y,earth.position.y),midX=(aure.position.x+earth.position.x)/2,midY=(maxY+minY)/2,rangeExtra=Math.max(0,Math.min(82,(sep-55)*.92)),altExtra=Math.max(0,(maxY-18)*.72),vHalf=THREE.MathUtils.degToRad(camera.fov*.5),hHalf=Math.atan(Math.tan(vHalf)*camera.aspect),horizontalNeed=(sep*.5+29)/Math.max(.18,Math.tan(hHalf)),verticalNeed=((maxY-minY)*.5+17)/Math.max(.18,Math.tan(vHalf)),battleZ=Math.max(92+rangeExtra+altExtra*.72,horizontalNeed,verticalNeed),battlePos=new THREE.Vector3(midX,27.5+midY*.11+altExtra*.22,battleZ),battleLook=new THREE.Vector3(midX,Math.max(10,midY*.48)+Math.min(8,sep*.045),0),pullback=THREE.MathUtils.smoothstep(progress,.08,.96),targetPos=closePos.clone().lerp(battlePos,pullback),targetLook=closeLook.clone().lerp(battleLook,pullback),stage=Math.min(4,Math.floor(progress*4+.001));
+    const closePos=new THREE.Vector3(closeLook.x,closeLook.y+1.9,closeLook.z+38),sep=currentCombatRange(),maxY=Math.max(aure.position.y,earth.position.y),minY=Math.min(aure.position.y,earth.position.y),midX=(aure.position.x+earth.position.x)/2,midY=(maxY+minY)/2,rangeExtra=Math.max(0,Math.min(82,(sep-55)*.92)),altExtra=Math.max(0,(maxY-18)*.72),vHalf=THREE.MathUtils.degToRad(camera.fov*.5),hHalf=Math.atan(Math.tan(vHalf)*camera.aspect),horizontalNeed=(sep*.5+29)/Math.max(.18,Math.tan(hHalf)),verticalNeed=((maxY-minY)*.5+17)/Math.max(.18,Math.tan(vHalf)),battleZ=Math.max(92+rangeExtra+altExtra*.72,horizontalNeed,verticalNeed),battlePos=new THREE.Vector3(midX,27.5+midY*.11+altExtra*.22,battleZ),battleLook=new THREE.Vector3(midX,Math.max(10,midY*.48)+Math.min(8,sep*.045),0),pullback=THREE.MathUtils.smoothstep(progress,.02,.30),targetPos=closePos.clone().lerp(battlePos,pullback),targetLook=closeLook.clone().lerp(battleLook,pullback),stage=Math.min(4,Math.floor(progress*4+.001));
     // Raw drag remains the input authority. This branch only interpolates presentation
     // from the physical shooter to the safe two-vessel frame as that same drag grows.
     camera.position.copy(targetPos);cameraLookTarget.copy(targetLook);camera.zoom=THREE.MathUtils.lerp(1.16,1,pullback);camera.aspect=16/9;camera.near=.1;camera.far=900;camera.updateProjectionMatrix();camera.lookAt(cameraLookTarget);
-    if(acDirector.cameraStage!==stage){acDirector.cameraStage=stage;diag('AIM CAMERA STAGE','progress='+Math.round(progress*100)+'% pullback='+Math.round(pullback*100)+'% shooterVisible=Y enemyVisible='+(progress>=.96?'Y':'N')+' framing=SHOOTER_TO_BATTLEFIELD')}
+    if(acDirector.cameraStage!==stage){acDirector.cameraStage=stage;diag('AIM CAMERA STAGE','progress='+Math.round(progress*100)+'% pullback='+Math.round(pullback*100)+'% shooterVisible=Y enemyVisible='+(progress>=.30?'Y':'N')+' framing=SHOOTER_TO_BATTLEFIELD')}
     return
   }
   if(acDirector.mode==='travel'&&acDirector.projectile?.parent){
