@@ -13,6 +13,6 @@ export function patchSolarLancerRuntime(html) {
     "(selected?.weaponKey==='sniper'||selected?.weaponKey==='solar_lancer')&&aimOriginStage"
   );
 
-  patched = patched.replace('</head>', '<meta name="ac-solar-lancer-runtime" content="projected-aim immediate-staged-penetration damage-48 armor-72 stage-580ms">\n</head>');
+  patched = patched.replace('</head>', '<meta name="ac-solar-lancer-runtime" content="projected-sniper-aim separate-penetration-traces damage-52 armor-80 stage-880ms">\n</head>');
   return patched;
 }

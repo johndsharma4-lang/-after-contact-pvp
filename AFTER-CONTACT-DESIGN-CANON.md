@@ -49,10 +49,17 @@ The Sun Disk Gunner and Sunadier must not look like near-identical armor variant
 - Manual precision aim only. No auto-lock or endpoint snapping.
 - On release, the Lancer fires an **immediate, needle-thin golden solar lance** along the chosen line rather than holding a prolonged burn beam.
 - The shot can penetrate along its line through up to three compartments, with damage diminishing through successive compartments.
-- Each reached compartment must resolve as a separately readable penetration beat, approximately 0.58 seconds apart; the interface may never claim three cabin hits while collapsing all three flashes into one frame.
+- Each reached compartment must resolve as a separately readable penetration beat, approximately 0.88 seconds apart. Each beat leaves its own white-hot beam segment, expanding solar drill-ring, molten hole, and armor-fragment response; the interface may never claim three cabin hits while collapsing all three flashes into one frame.
+- The Solar Lancer's current sniper-lance presentation is canon: projected mobile crosshair, immediate precision release, and a staged line punching visibly through as many as three cabins. It is not a sustained aim-and-hold beam.
+- First-pass damage is 80 armor and 52 warrior damage before the existing 72% and 50% successive-cabin falloff. These values remain subject to match balancing, but the weapon must read as a serious precision penetrator.
 - An intact shield envelope can stop the lance at its first contact. Once the entry section is breached, later penetration beats are inside the envelope and strike the successive cabins directly.
 - It remains visually Aurelian: white-hot core, radiant gold sheath, solar impact flashes and penetration effects.
 - It must remain mechanically and visually distinct from the Sun Disk Gunner's traveling physical disk and the Sunadier's arcing chained grenade.
+
+### Combat character visibility
+
+- Exposed and cutaway warriors must display their actual faction character artwork at phone-readable scale, bound to the authoritative 3-D room, hitbox, weapon muzzle, health, and animation rig.
+- Low-detail procedural bodies may support collision or animation internally, but may never be the primary visible combat character when official character artwork exists.
 
 ## Structural Collapse and Warrior Fall Physics
 

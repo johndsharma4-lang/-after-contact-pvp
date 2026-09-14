@@ -3202,8 +3202,20 @@ function ensureBattleSceneVisible(reason='watchdog'){
 
 
 const textureLoader=new THREE.TextureLoader();const [lancerTex,bombTex,earthFortressCutawayTex]=await Promise.all([textureLoader.loadAsync("/solar-lancer.webp"),textureLoader.loadAsync("/bombardier.webp"),textureLoader.loadAsync("/earth-fortress-cutaway.webp")]);lancerTex.colorSpace=THREE.SRGBColorSpace;bombTex.colorSpace=THREE.SRGBColorSpace;earthFortressCutawayTex.colorSpace=THREE.SRGBColorSpace;
+const COMBAT_CHARACTER_ART=Object.freeze({solar_lancer:'/solar-lancer.webp',sun_disk_gunner:'/sun-disk-gunner-hq.webp',sunadier:'/sunadier-hq.webp',bombardier:'/bombardier.webp',sniper:'/earth-sniper.webp',combat_controller:'/combat-controller.webp'}),combatCharacterTextureCache=new Map([['/solar-lancer.webp',lancerTex],['/bombardier.webp',bombTex]]);
+function combatCharacterTexture(path){if(combatCharacterTextureCache.has(path))return combatCharacterTextureCache.get(path);const texture=textureLoader.load(path,t=>{t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true});texture.colorSpace=THREE.SRGBColorSpace;combatCharacterTextureCache.set(path,texture);return texture}
+function attachCombatCharacterArt(rig,type){
+  const path=COMBAT_CHARACTER_ART[type];if(!rig||!path||rig.userData?.combatCharacterSprite)return rig;
+  const texture=combatCharacterTexture(path),material=new THREE.SpriteMaterial({map:texture,color:0xffffff,transparent:true,alphaTest:.035,opacity:1,depthTest:false,depthWrite:false,toneMapped:false}),sprite=new THREE.Sprite(material),targetHeight=type==='sun_disk_gunner'||type==='sunadier'?5.25:4.75;
+  sprite.name=`ACTUAL_CHARACTER_ART_${String(type).toUpperCase()}`;sprite.position.set(0,1.05,.82);sprite.renderOrder=116;sprite.frustumCulled=false;
+  const fit=()=>{const image=texture.image;if(!image?.width||!image?.height)return;const aspect=image.width/image.height;sprite.scale.set(targetHeight*aspect,targetHeight,1);sprite.userData.fixedDamageScale=sprite.scale.clone()};
+  if(texture.image?.width)fit();else{const prior=texture.onUpdate;texture.onUpdate=()=>{try{prior?.()}catch{}fit()}};
+  // Keep the procedural rig as the authoritative hitbox, animation root, and muzzle origin, but do
+  // not let its primitive body compete with the actual character illustration on a phone screen.
+  rig.traverse(o=>{if(o.isMesh)o.visible=false});rig.add(sprite);rig.userData.combatCharacterSprite=sprite;rig.userData.combatCharacterArt=path;rig.userData.combatCharacterPresentation='ACTUAL_ART_OVER_AUTHORITATIVE_3D_RIG';return rig
+}
 const WEAPONS={
-  solar_lancer:{name:'SOLAR LANCER',kind:'laser',aim:'straight',damage:48,armorDamage:72,penetration:.72,exposureScale:.32,color:0xffd65a,duration:2.45,stageInterval:.58,maxCompartments:3,description:'Immediate needle-thin solar lance • three staged cabin penetrations • diminishing damage'},
+  solar_lancer:{name:'SOLAR LANCER',kind:'laser',aim:'straight',damage:52,armorDamage:80,penetration:.76,exposureScale:.36,color:0xffd65a,duration:3.60,stageInterval:.88,maxCompartments:3,description:'Precision solar sniper-lance • three visibly separated cabin penetrations • heavy diminishing damage'},
   bombardier:{name:'EARTH BOMBARDIER',kind:'explosive',aim:'arc',damage:36,armorDamage:36,splash:34,penetration:0,exposureScale:.24,color:0xff7a32,description:'HE-9 ten-missile barrage • heavy blast • strong AOE splash'},
   sniper:{name:'EARTH SNIPER',kind:'sniper',aim:'straight',damage:26,armorDamage:48,penetration:.72,exposureScale:.52,color:0xffd18a,description:'Long-range manual scope • precise compartment breaching round • no auto-lock'},
   combat_controller:{name:'COMBAT CONTROLLER',kind:'locator',aim:'arc',damage:0,armorDamage:0,penetration:0,exposureScale:0,color:0x62cfff,description:'TAC-LINK locator • delayed adaptive support • two-turn cooldown'},
@@ -3216,7 +3228,8 @@ function makeWarriors(side,roomGroup,roomIndices,texture,weaponKey,options={}){
   const out=[];
   for(let i=0;i<roomIndices.length;i++){
     const roomIndex=roomIndices[i],room=roomGroup.userData.rooms[roomIndex],role=options.role||'captain',isCaptain=role==='captain',assignedColor=options.assignedColors?.[i]??(side==='aurelian'?0xf0c65a:0x74d9ff);
-    // Authoritative non-rendering combat anchor. Legacy 2-D Sprite/CanvasTexture warrior art is removed.
+    // Authoritative combat anchor. The detailed character illustration is mounted on the 3-D rig
+    // later, preserving the real room, hitbox, muzzle, health and animation authority underneath it.
     const anchor=new THREE.Object3D();anchor.name=`WARRIOR_ANCHOR_${side}_${i}`;anchor.position.copy(room.local).add(new THREE.Vector3(0,-.1,-.75));roomGroup.add(anchor);
     const marker=new THREE.Object3D();marker.name=`WARRIOR_SELECTION_ANCHOR_${side}_${i}`;marker.position.copy(room.local).add(new THREE.Vector3(0,-.05,-.95));roomGroup.add(marker);
     const captainBeaconMat=isCaptain?new THREE.MeshBasicMaterial({color:assignedColor,transparent:true,opacity:.74,depthTest:false,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}):null;
@@ -3231,7 +3244,7 @@ function makeWarriors(side,roomGroup,roomIndices,texture,weaponKey,options={}){
     exposureBeacon.name=`EXPOSED_WARRIOR_BRACKETS_${side}_${i}`;exposureBeacon.position.copy(room.local).add(new THREE.Vector3(0,.02,1.82));exposureBeacon.renderOrder=82;exposureBeacon.visible=false;roomGroup.add(exposureBeacon);
     const hpBack=box(2.75,.22,.16,0x08111b,.05,.9);hpBack.position.copy(room.local).add(new THREE.Vector3(0,1.78,-.64));roomGroup.add(hpBack);
     const hpFill=box(2.55,.12,.18,0x74dfff,.05,.65);hpFill.position.copy(room.local).add(new THREE.Vector3(0,1.78,-.53));roomGroup.add(hpFill);
-    const w={side,index:i,anchor,marker,markerMat:null,xrayGlow:null,captainBeacon,exposureBeacon,hpBack,hpFill,healthBase:null,healthFill:null,healthHeight:2.14,roomIndex,hp:100,maxHp:100,aa:60,maxAa:60,aaLevel:1,weaponKey,roomGroup,role,isCaptain,passive:role==='shadow',canAttack:isCaptain,active:true,assignedColor,displayName:role==='shadow'?`SHADOW ${i+1}`:null,captainBonusAwarded:false,model3D:null};
+    const w={side,index:i,anchor,marker,markerMat:null,xrayGlow:null,captainBeacon,exposureBeacon,hpBack,hpFill,healthBase:null,healthFill:null,healthHeight:2.14,roomIndex,hp:100,maxHp:100,aa:60,maxAa:60,aaLevel:1,weaponKey,roomGroup,role,isCaptain,passive:role==='shadow',canAttack:isCaptain,active:true,assignedColor,displayName:role==='shadow'?`SHADOW ${i+1}`:null,captainBonusAwarded:false,model3D:null,sprite:null};
     marker.userData.warrior=w;out.push(w)
   }
   return out
@@ -3271,9 +3284,9 @@ function syncWarrior3DIdentity(w,force=false){
   if(!w||!w.anchor)return null;const type=w.weaponKey;
   if(!force&&w.model3D&&w.modelIdentity===type)return w.model3D;
   if(w.model3D){w.model3D.parent?.remove(w.model3D);w.model3D=null}
-  const model=buildCutawayOnlyWarrior3D(type);if(!model){diag('WARRIOR RIG ERROR',`${w.side} slot=${w.index} type=${type} builder=null`);return null}
-  model.name=`BATTLE_${String(type).toUpperCase()}_${w.side}_${w.index}`;model.scale.setScalar(.52);model.position.copy(w.anchor.position);model.position.z+=1.35;model.traverse(o=>{if(o.isMesh){o.frustumCulled=false;o.renderOrder=Math.max(o.renderOrder||0,24)}});if(w.side==='aurelian')model.rotation.y=Math.PI;w.roomGroup.add(model);w.model3D=model;w.modelIdentity=type;
-  diag('WARRIOR RIG SYNC',`${w.side} slot=${w.index} type=${type} model=${model.name}`);return model
+  const model=attachCombatCharacterArt(buildCutawayOnlyWarrior3D(type),type);if(!model){diag('WARRIOR RIG ERROR',`${w.side} slot=${w.index} type=${type} builder=null`);return null}
+  model.name=`BATTLE_${String(type).toUpperCase()}_${w.side}_${w.index}`;model.scale.setScalar(.58);model.position.copy(w.anchor.position);model.position.z+=1.65;model.traverse(o=>{if(o.isMesh||o.isSprite){o.frustumCulled=false;o.renderOrder=Math.max(o.renderOrder||0,24)}});if(w.side==='aurelian')model.rotation.y=Math.PI;w.roomGroup.add(model);w.model3D=model;w.sprite=model.userData.combatCharacterSprite||null;w.modelIdentity=type;
+  diag('WARRIOR RIG SYNC',`${w.side} slot=${w.index} type=${type} model=${model.name} actualArt=${w.sprite?'Y':'N'}`);return model
 }
 function configureFactionTeam(side,faction,requestedTypes=null){
   const heroes=side==='aurelian'?aWarriors:eWarriors,defaults=factionTeam(faction).map(u=>u.id),types=(Array.isArray(requestedTypes)?requestedTypes:defaults).filter(t=>validateFactionStarter(faction,t)).slice(0,MAX_TEAM_SIZE);
@@ -4423,19 +4436,25 @@ function solarBeamPathFromStage(attacker,pt,maxCompartments=3){
   return{start,end,path,exactHit:path[0]||null};
 }
 function ensureSolarBurnHole(room,point,intensity=0){
-  if(room.solarHoleFx){room.solarHole=true;const fx=room.solarHoleFx,grow=1+Math.min(9,intensity)*.075;fx.group.scale.setScalar(grow);fx.dark.material.opacity=Math.min(.99,.80+intensity*.02);fx.rim.material.opacity=Math.min(.96,.68+intensity*.035);fx.hot.material.opacity=Math.min(.72,.28+intensity*.045);return fx}
+  if(room.solarHoleFx){room.solarHole=true;const fx=room.solarHoleFx,grow=1+Math.min(9,intensity)*.095;fx.group.scale.setScalar(grow);fx.dark.material.opacity=Math.min(.99,.84+intensity*.02);fx.rim.material.opacity=Math.min(.98,.74+intensity*.035);fx.hot.material.opacity=Math.min(.82,.36+intensity*.045);return fx}
   const group=new THREE.Group();
-  const dark=new THREE.Mesh(new THREE.CircleGeometry(.38,32),new THREE.MeshBasicMaterial({color:0x030405,transparent:true,opacity:.82,depthWrite:false,side:THREE.DoubleSide}));
-  const rim=new THREE.Mesh(new THREE.RingGeometry(.37,.58,36),new THREE.MeshBasicMaterial({color:0xff7a1c,transparent:true,opacity:.68,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
-  const hot=new THREE.Mesh(new THREE.RingGeometry(.50,.72,36),new THREE.MeshBasicMaterial({color:0xffe69a,transparent:true,opacity:.28,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
-  group.add(dark,rim,hot);room.hitPlane.updateWorldMatrix(true,false);const local=room.hitPlane.worldToLocal(point.clone());group.position.set(local.x,local.y,.08);room.hitPlane.add(group);
-  room.solarHole=true;room.solarHoleFx={objects:[group],group,dark,rim,hot};
+  const dark=new THREE.Mesh(new THREE.CircleGeometry(.48,40),new THREE.MeshBasicMaterial({color:0x020303,transparent:true,opacity:.86,depthWrite:false,side:THREE.DoubleSide}));
+  const rim=new THREE.Mesh(new THREE.RingGeometry(.46,.74,44),new THREE.MeshBasicMaterial({color:0xff6717,transparent:true,opacity:.76,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+  const hot=new THREE.Mesh(new THREE.RingGeometry(.66,.98,44),new THREE.MeshBasicMaterial({color:0xffe7a3,transparent:true,opacity:.38,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+  const scorch=new THREE.Mesh(new THREE.RingGeometry(.92,1.24,18),new THREE.MeshBasicMaterial({color:0x160905,transparent:true,opacity:.64,depthWrite:false,side:THREE.DoubleSide}));
+  group.add(scorch,dark,rim,hot);room.hitPlane.updateWorldMatrix(true,false);const local=room.hitPlane.worldToLocal(point.clone());group.position.set(local.x,local.y,.08);room.hitPlane.add(group);
+  room.solarHole=true;room.solarHoleFx={objects:[group],group,dark,rim,hot,scorch};
   return ensureSolarBurnHole(room,point,intensity);
+}
+function makeSolarPenetrationTrace(start,end,stageIndex,createdAt){
+  const delta=end.clone().sub(start),length=Math.max(.001,delta.length()),unit=delta.clone().normalize(),outer=new THREE.Mesh(new THREE.CylinderGeometry(.62,.62,1,24,1,true),new THREE.MeshBasicMaterial({color:stageIndex?0xff7b20:0xffbd38,transparent:true,opacity:.82,blending:THREE.AdditiveBlending,depthTest:false,depthWrite:false,side:THREE.DoubleSide})),core=new THREE.Mesh(new THREE.CylinderGeometry(.15,.15,1,18,1,true),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthTest:false,depthWrite:false,side:THREE.DoubleSide})),tip=glowSphere(.38,stageIndex?0xff8a25:0xffffff,12),ring=new THREE.Mesh(new THREE.RingGeometry(.38,.88,36),new THREE.MeshBasicMaterial({color:0xffe58d,transparent:true,opacity:.96,blending:THREE.AdditiveBlending,depthTest:false,depthWrite:false,side:THREE.DoubleSide}));
+  tip.material.transparent=true;tip.material.opacity=.98;ring.position.copy(end);ring.lookAt(camera.position);for(const object of[outer,core,tip,ring]){object.renderOrder=108;scene.add(object)}
+  return{start:start.clone(),end:end.clone(),unit,length,outer,core,tip,ring,objects:[outer,core,tip,ring],createdAt,stageIndex}
 }
 function resolveSolarBurnTick(attacker,path,weapon,stageIndex,beam=null){
   if(!battleStarted||matchEnded)return{resolved:false,blocked:false};const hit=path[stageIndex];if(!hit)return{resolved:false,blocked:false};
   if(stageIndex===0)weaponImpactSfx('laser',true);const falloff=[1,.72,.50][stageIndex]??Math.pow(.72,stageIndex),armorPower=Math.max(1,Math.round((weapon.armorDamage||72)*falloff)),crewPower=Math.max(1,Math.round((weapon.damage||48)*falloff));
-  hit.reached=true;hit.reachedAt=beam?.hold||0;if(beam){beam.visualFrom.copy(beam.visualEnd);beam.end.copy(hit.end);beam.extensionProgress=0;beam.activeStage=stageIndex;beam.activeHit=hit}spawnExplosionVisual(hit.end,0xffc43d,.76+.13*(path.length-stageIndex));spawnImpactBurst(hit.end,0xffffff);spawnDebris(hit.end,stageIndex?0x5b5147:0xffb43d,12+stageIndex*5,.08,.32+stageIndex*.06);kickCamera(.30-stageIndex*.05,.20);diag('SOLAR PENETRATION ADVANCE',`stage=${stageIndex+1}/${path.length} room=${hit.roomIndex+1} falloff=${falloff.toFixed(2)} visiblePause=Y`);
+  hit.reached=true;hit.reachedAt=beam?.hold||0;if(beam){const traceStart=stageIndex>0?path[stageIndex-1].end:beam.start;beam.segments.push(makeSolarPenetrationTrace(traceStart,hit.end,stageIndex,beam.hold));beam.visualFrom.copy(beam.visualEnd);beam.end.copy(hit.end);beam.extensionProgress=0;beam.activeStage=stageIndex;beam.activeHit=hit}spawnExplosionVisual(hit.end,0xffc43d,1.02+.17*(path.length-stageIndex));spawnImpactBurst(hit.end,0xffffff);spawnDebris(hit.end,stageIndex?0x5b5147:0xffb43d,18+stageIndex*7,.10,.42+stageIndex*.08);kickCamera(.34-stageIndex*.05,.23);diag('SOLAR PENETRATION ADVANCE',`stage=${stageIndex+1}/${path.length} room=${hit.roomIndex+1} falloff=${falloff.toFixed(2)} visiblePause=Y trace=SEPARATE_SEGMENT`);
   const room=hit.room,index=hit.roomIndex,occ=opposing(attacker).find(w=>w.roomIndex===index&&w.hp>0)||null;
   if(room.erased||room.armor<=0){let unitDamage=0,structureDamage=0;if(occ){occ.exposedByBreach=true;syncWarriorConcealment(occ);unitDamage=applyWarriorDamage(occ,crewPower,'SOLAR LANCER • OPEN CABIN',attacker);if(unitDamage)spawnSolarCrewReaction(occ,hit.end,occ.hp<=0)}else structureDamage=applyStructureDamage(attacker,Math.max(4,Math.round(armorPower*.45)),'SOLAR LANCER • OPEN CHANNEL');updateDamageMonitor(room,index,unitDamage,attacker);statusEl.textContent=`SOLAR LANCER • CABIN ${stageIndex+1}/${path.length} • ${occ?`EXPOSED UNIT -${unitDamage}`:`REAR HULL -${structureDamage}`}`;diag('SOLAR OPEN CHANNEL',`stage=${stageIndex+1} room=${index+1} unit=${unitDamage} rearHull=${structureDamage}`);checkMatchEnd();return{resolved:true,blocked:false,armorDamage:0,unitDamage,structureDamage}}
   // A ship's shield envelope is crossed once at the first contact. After that contact is breached,
@@ -4458,8 +4477,8 @@ function spawnSolarLancerBeam(attacker,start,beamPath,weapon){
   const muzzleOuter=glowSphere(.34,weapon.color,8);muzzleOuter.material.transparent=true;muzzleOuter.material.opacity=.78;muzzleOuter.position.copy(start);scene.add(muzzleOuter);
   const muzzleCore=glowSphere(.12,0xffffff,10);muzzleCore.material.transparent=true;muzzleCore.material.opacity=1;muzzleCore.position.copy(start);scene.add(muzzleCore);
   const burns=beamPath.path.map(h=>({hit:h,rig:makeSolarContactDrillRig(h.end,unit)}));
-  const duration=weapon.duration||2.45;effects.push({solarBeam:{outer,core,muzzleOuter,muzzleCore,burns,start:start.clone(),end:end.clone(),visualEnd:end.clone(),visualFrom:end.clone(),extensionProgress:1,dir,len,progress:0,hold:0,path:beamPath.path,weapon,attacker,aimStage:worldToStage(end),nextStageAt:.10,stage:0,activeStage:-1,activeHit:null,blocked:false,impactShown:false},life:duration,max:duration});
-  statusEl.textContent=beamPath.path.length?`SOLAR LANCER • LOCKED LINE • ${beamPath.path.length} CABIN${beamPath.path.length===1?'':'S'} IN PATH`:'SOLAR LANCER • FIRED • CLEAR MISS';diag('SOLAR LANCER',`vfx=IMMEDIATE_NEEDLE_LANCE stagedCabins=${beamPath.path.map(x=>x.roomIndex+1).join('>')||'MISS'} interval=${weapon.stageInterval||.58}s`);
+  const duration=weapon.duration||3.60;effects.push({solarBeam:{outer,core,muzzleOuter,muzzleCore,burns,segments:[],start:start.clone(),end:end.clone(),visualEnd:end.clone(),visualFrom:end.clone(),extensionProgress:1,dir,len,progress:0,hold:0,path:beamPath.path,weapon,attacker,aimStage:worldToStage(end),nextStageAt:.15,stage:0,activeStage:-1,activeHit:null,blocked:false,impactShown:false},life:duration,max:duration});
+  statusEl.textContent=beamPath.path.length?`SOLAR LANCER • SNIPER LOCK • ${beamPath.path.length} CABIN${beamPath.path.length===1?'':'S'} IN LINE`:'SOLAR LANCER • FIRED • CLEAR MISS';diag('SOLAR LANCER',`vfx=SNIPER_LANCE_SEPARATE_PENETRATION_TRACES stagedCabins=${beamPath.path.map(x=>x.roomIndex+1).join('>')||'MISS'} interval=${weapon.stageInterval||.88}s`);
 }
 
 function explosiveHitFromEnd(attacker,end){
@@ -5794,15 +5813,16 @@ let battleSceneWatch=0;const clock=new THREE.Clock();function animate(){requestA
   // The release muzzle and resolved contact line are the beam authority. Re-sampling
   // muzzleWorld here can switch from the cutaway weapon to the exterior proxy and
   // visibly bend or jump a correctly aimed shot.
-  if(b.extensionProgress<1){b.extensionProgress=Math.min(1,b.extensionProgress+dt/.14);const e=b.extensionProgress*b.extensionProgress*(3-2*b.extensionProgress);b.visualEnd.copy(b.visualFrom).lerp(b.end,e)}else b.visualEnd.copy(b.end);const beamStart=b.start.clone(),beamEnd=b.visualEnd.clone(),beamDir=beamEnd.clone().sub(beamStart),beamLen=Math.max(.001,beamDir.length()),beamUnit=beamDir.clone().normalize();
+  if(b.extensionProgress<1){b.extensionProgress=Math.min(1,b.extensionProgress+dt/.30);const e=b.extensionProgress*b.extensionProgress*(3-2*b.extensionProgress);b.visualEnd.copy(b.visualFrom).lerp(b.end,e)}else b.visualEnd.copy(b.end);const beamStart=b.start.clone(),beamEnd=b.visualEnd.clone(),beamDir=beamEnd.clone().sub(beamStart),beamLen=Math.max(.001,beamDir.length()),beamUnit=beamDir.clone().normalize();
   b.dir.copy(beamDir);b.len=beamLen;b.muzzleOuter.position.copy(beamStart);b.muzzleCore.position.copy(beamStart);
   b.progress=Math.min(1,b.progress+dt/.10);const visibleLen=beamLen*b.progress;
   for(const beam of [b.outer,b.core]){beam.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),beamUnit);beam.scale.y=Math.max(.001,visibleLen);beam.position.copy(beamStart).add(beamUnit.clone().multiplyScalar(visibleLen*.5))}
   if(b.progress>=1){
     b.hold+=dt;if(!b.path.length&&!b.impactShown){b.impactShown=true;statusEl.textContent='SOLAR LANCER • CLEAR MISS';flashDamage('SOLAR LANCE • MISS');diag('SOLAR LANCER MISS','beam crossed no cabin')}
-    if(!matchEnded&&!b.blocked&&b.stage<b.path.length&&b.hold+1e-6>=b.nextStageAt){const result=resolveSolarBurnTick(b.attacker,b.path,b.weapon,b.stage,b);b.stage++;b.nextStageAt+=b.weapon.stageInterval||.58;if(result?.blocked)b.stage=b.path.length}
+    if(!matchEnded&&!b.blocked&&b.stage<b.path.length&&b.hold+1e-6>=b.nextStageAt){const result=resolveSolarBurnTick(b.attacker,b.path,b.weapon,b.stage,b);b.stage++;b.nextStageAt+=b.weapon.stageInterval||.88;if(result?.blocked)b.stage=b.path.length}
     const fade=Math.max(0,Math.min(1,q.life/.34));b.outer.material.opacity=(.52+.20*Math.abs(Math.sin(b.hold*34)))*fade;b.core.material.opacity=(.90+.10*Math.abs(Math.sin(b.hold*46)))*fade;
     b.muzzleOuter.material.opacity=(.68+.22*Math.abs(Math.sin(b.hold*30)))*fade;b.muzzleCore.material.opacity=(.86+.14*Math.abs(Math.sin(b.hold*38)))*fade;
+    for(const trace of b.segments||[]){const age=Math.max(0,b.hold-trace.createdAt),draw=Math.min(1,age/.30),ease=draw*draw*(3-2*draw),visibleLength=Math.max(.001,trace.length*ease),pulse=.72+.28*Math.abs(Math.sin(age*24+trace.stageIndex));for(const beam of[trace.outer,trace.core]){beam.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),trace.unit);beam.scale.y=visibleLength;beam.position.copy(trace.start).add(trace.unit.clone().multiplyScalar(visibleLength*.5))}trace.outer.material.opacity=(.48+.34*pulse)*fade;trace.core.material.opacity=(.86+.14*pulse)*fade;trace.tip.position.copy(trace.start).lerp(trace.end,ease);trace.tip.scale.setScalar(.76+.34*pulse);trace.tip.material.opacity=(.72+.25*pulse)*fade;trace.ring.scale.setScalar(.72+draw*.72+.12*Math.sin(age*18));trace.ring.material.opacity=Math.max(.28,(1-Math.max(0,age-1.18)/.48))*.96*fade}
     for(const item of b.burns){
       if(!item.hit.reached){for(const o of item.rig.objects)o.material.opacity=0;for(const e of item.rig.embers)e.mesh.material.opacity=0;for(const d of item.rig.molten||[])d.mesh.material.opacity=0;continue}
       const rig=item.rig,age=Math.max(0,b.hold-(item.hit.reachedAt||0)),contactFade=Math.max(0,Math.min(1,(1.10-age)/.28)),pulse=.58+.42*Math.abs(Math.sin(age*28+item.hit.roomIndex)),cycle=(age*2.15)%1;
@@ -5815,7 +5835,7 @@ let battleSceneWatch=0;const clock=new THREE.Clock();function animate(){requestA
     }
     if(matchEnded)q.life=0
   }
-  if(q.life<=0){scene.remove(b.outer,b.core,b.muzzleOuter,b.muzzleCore);for(const item of b.burns){for(const o of item.rig.objects)scene.remove(o);for(const e of item.rig.embers)scene.remove(e.mesh);for(const d of item.rig.molten||[])scene.remove(d.mesh)}const localAction=(!multiplayer&&b.attacker.side==='aurelian')||(multiplayer&&b.attacker.side===localSide);solarActionLock=false;diag('ACTION UNLOCK',`${localAction?'LOCAL':'REMOTE'} SOLAR_LANCER_STAGED COMPLETE stages=${b.activeStage+1}/${b.path.length} blocked=${b.blocked?'Y':'N'}`);refreshMovePad();if(localAction&&!multiplayer&&battleStarted&&!matchEnded&&soloTurn==='aurelian')endSoloPlayerTurnAfterShot();effects.splice(i,1)}
+  if(q.life<=0){scene.remove(b.outer,b.core,b.muzzleOuter,b.muzzleCore);for(const trace of b.segments||[])for(const object of trace.objects)scene.remove(object);for(const item of b.burns){for(const o of item.rig.objects)scene.remove(o);for(const e of item.rig.embers)scene.remove(e.mesh);for(const d of item.rig.molten||[])scene.remove(d.mesh)}const localAction=(!multiplayer&&b.attacker.side==='aurelian')||(multiplayer&&b.attacker.side===localSide);solarActionLock=false;diag('ACTION UNLOCK',`${localAction?'LOCAL':'REMOTE'} SOLAR_LANCER_STAGED COMPLETE stages=${b.activeStage+1}/${b.path.length} blocked=${b.blocked?'Y':'N'}`);refreshMovePad();if(localAction&&!multiplayer&&battleStarted&&!matchEnded&&soloTurn==='aurelian')endSoloPlayerTurnAfterShot();effects.splice(i,1)}
 }else if(q.laser){
   q.life-=dt;
   q.laser.progress=Math.min(1,q.laser.progress+dt/.11);
