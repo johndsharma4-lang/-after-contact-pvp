@@ -10,14 +10,25 @@ weapon_origin = (root / 'warrior-weapon-origin-runtime.js').read_text(encoding='
 rebuilt_models = (root / 'aurelian-rebuilt-models-runtime.js').read_text(encoding='utf-8')
 cutaway_composition = (root / 'aurelian-cutaway-composition-runtime.js').read_text(encoding='utf-8')
 solar_lancer = (root / 'solar-lancer-runtime.js').read_text(encoding='utf-8')
+game_patcher = (root / 'game-html-patcher.js').read_text(encoding='utf-8')
 reference_polish = (root / 'aurelian-reference-polish-runtime.js').read_text(encoding='utf-8')
 base = (root / 'index.html').read_text(encoding='utf-8')
 worker = (root / 'after-contact-worker.js').read_text(encoding='utf-8')
+deployment = (root / 'deployment-controller-v03313.js').read_text(encoding='utf-8')
 compact_router = ''.join(router.split())
 
 aim_start = director.find('if(xrayOpen&&aiming&&selected){')
 aim_end = director.find("if(acDirector.mode==='travel'", aim_start)
 aim_block = director[aim_start:aim_end] if aim_start >= 0 and aim_end > aim_start else ''
+solar_resolve_start = base.find('function resolveSolarBurnTick(')
+solar_resolve_end = base.find('\nfunction spawnSolarLancerBeam(', solar_resolve_start)
+solar_resolve_block = base[solar_resolve_start:solar_resolve_end] if solar_resolve_start >= 0 and solar_resolve_end > solar_resolve_start else ''
+solar_animate_start = base.find("}else if(q.solarBeam){", base.find('function animate()'))
+solar_animate_end = base.find("}else if(q.laser){", solar_animate_start)
+solar_animate_block = base[solar_animate_start:solar_animate_end] if solar_animate_start >= 0 and solar_animate_end > solar_animate_start else ''
+solar_aim_start = base.find('function projectedPrecisionAimPoint(')
+solar_aim_end = base.find('\nfunction clearAim(', solar_aim_start)
+solar_aim_block = base[solar_aim_start:solar_aim_end] if solar_aim_start >= 0 and solar_aim_end > solar_aim_start else ''
 
 checks = {
     'director imported once': router.count('patchCombatPresentationDirectorRuntime') == 2,
@@ -70,8 +81,20 @@ checks = {
     'exposed survivor wins direct aim before erased room filtering': 'const exposedWarrior=warriors.filter' in base and 'exposedCrew:true' in base and 'exposedWarriorScreenRect' in base,
     'direct attacks damage crew in erased bays': 'EXPOSED CREW DIRECT HIT' in base and 'hit.room.erased&&hit.warrior' in base and 'DIRECT CREW HIT' in base,
     'earth sniper can target exposed crew': "placement:'EXPOSED CREW'" in (root / 'game-html-patcher.js').read_text(encoding='utf-8'),
-    'solar lancer is a heavy sustained penetrator': 'damage:14,armorDamage:18' in solar_lancer and 'heavy-sustained-penetration' in solar_lancer,
-    'solar lancer preserves release muzzle for beam life': 'const beamStart=b.start.clone(),beamEnd=b.end.clone()' in base and 'muzzleWorld(b.attacker' not in base,
+    'solar lancer uses canonical immediate staged damage': "damage:48,armorDamage:72" in base and 'duration:2.45,stageInterval:.58,maxCompartments:3' in base and 'immediate-staged-penetration' in solar_lancer and 'heavy-sustained-penetration' not in solar_lancer,
+    'solar lancer preview and release share one projection solver': 'function projectedPrecisionAimPoint(origin,pointer)' in solar_aim_block and "precisionPoint=wp.kind==='laser'?projectedPrecisionAimPoint(a,b):b" in solar_aim_block and 'renderEnemyAimOutlines(precisionPoint)' in solar_aim_block and 'projectedPrecisionAimPoint(aimOriginStage,pt)' in game_patcher and "selected?.weaponKey==='solar_lancer'" in solar_lancer,
+    'solar lancer obsolete cyan fan is removed': 'solarFanAimGuide' not in base and 'replace its preview' in solar_lancer,
+    'solar lancer shows projected cabin targeting': "solar=selected.weaponKey==='solar_lancer',precision=sniper||solar" in solar_aim_block and "hotStroke=solar?'#fff0a6'" in solar_aim_block and "precisionCrosshair=document.getElementById('sniperCrosshair')" in solar_aim_block,
+    'solar lancer resolves exactly one cabin per stage': 'const hit=path[stageIndex]' in solar_resolve_block and 'for(const hit of path)' not in solar_resolve_block and 'b.stage<b.path.length' in solar_animate_block and 'if(!matchEnded&&!b.blocked' in solar_animate_block and 'while(!matchEnded&&b.tick<10' not in base,
+    'solar lance visibly extends between cabin contacts': 'beam.visualFrom.copy(beam.visualEnd)' in solar_resolve_block and 'beam.extensionProgress=0' in solar_resolve_block and 'b.visualEnd.copy(b.visualFrom).lerp(b.end,e)' in solar_animate_block,
+    'solar lancer damage diminishes across three cabins': 'const falloff=[1,.72,.50][stageIndex]' in solar_resolve_block and 'stageIndex===0?absorbShieldHit' in solar_resolve_block and 'later stages are already inside the envelope' in solar_resolve_block,
+    'solar lancer mobile description matches immediate attack': 'immediate lance that visibly stages through up to three cabins' in deployment and 'sustained penetrating solar laser' not in deployment,
+    'solar lancer multiplayer lock matches presentation': "allowedWeapon==='solar_lancer'?3000" in worker and 'settleUntil=performance.now()+2450' in director,
+    'solar lancer camera safely frames both vessels': "center=a.clone().lerp(b,.50)" in director and "Math.abs(b.x-a.x)+58" in director and 'camera.lookAt(center)' in director,
+    'solar lancer preserves release muzzle for beam life': 'const beamStart=b.start.clone(),beamEnd=b.visualEnd.clone()' in base and 'muzzleWorld(b.attacker' not in base,
+    'targetable cabin removes opaque scar': 'room.erased||breach>=EXPOSURE_THRESHOLDS.targetable' in base and 'if(room.exteriorScar)room.exteriorScar.visible=false' in base and 'room.erasureVoid=makeCompartmentVoid(room,room.local.y)' in base,
+    'exposed survivor renders above wreck cavity': 'acNativeTransparent' in base and 'material.transparent=exposed?true' in base and 'o.renderOrder=exposed?78' in base and 'EXPOSED_WARRIOR_BRACKETS_' in base,
+    'exposed survivor cue follows room and visibility': 'if(w.exposureBeacon)w.exposureBeacon.position.copy(room.local)' in base and 'w.exposureBeacon.visible=!!(combatExposed&&show&&w.active&&w.hp>0)' in base and 'animateExposedWarriorBeacons();' in base,
     'multiplayer morale view is private and authoritative': 'moraleView(side)' in worker and 'broadcastWithMorale' in worker and 'moraleView:this.moraleView(side)' in worker,
     'morale resets on solo and network battle lifecycle': base.count('resetMoraleState()') >= 3 and 'applyMoraleView(m.moraleView' in base,
     'morale settles once per completed action': "finalizeMoraleAction('turn complete')" in base and 'gain=action.totalDamage>0?Math.min(15,10+' in base and 'action.structureDamage>=120?15:action.structureDamage>=60?10' in base,

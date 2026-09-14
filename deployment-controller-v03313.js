@@ -6,7 +6,7 @@ const ROSTERS=Object.freeze({
   {key:'sniper',name:'SNIPER',role:'PRECISION BREACH',hp:60,aa:60,img:'/earth-sniper.webp',desc:'Long-range precision specialist using explosive breach rounds and projected manual aiming.'},
   {key:'combat_controller',name:'COMBAT CONTROLLER',role:'TACTICAL SUPPORT',hp:75,aa:60,img:'/combat-controller.webp',desc:'Designates enemy compartments for delayed adaptive battlefield support.'}]},
  aurelian:{label:'AURELIAN',accent:'#ffd76a',team:[
-  {key:'solar_lancer',name:'SOLAR LANCER',role:'PENETRATING LASER',hp:85,aa:60,img:'/solar-lancer.webp',desc:'Precision solar marksman. Projected manual aim with a sustained penetrating solar laser.'},
+  {key:'solar_lancer',name:'SOLAR LANCER',role:'PENETRATING LASER',hp:85,aa:60,img:'/solar-lancer.webp',desc:'Precision solar marksman. Projected manual aim with an immediate lance that visibly stages through up to three cabins.'},
   {key:'sun_disk_gunner',name:'SUN DISK GUNNER',role:'SOLAR CUTTER',hp:70,aa:60,img:'/sun-disk-gunner-hq.webp',desc:'Weapon-shaped launcher arm fires a large physical spinning solar disk that slices the fortress and spreads solar fire.'},
   {key:'sunadier',name:'SUNADIER',role:'ABYSS-CHAIN ARTILLERY',hp:80,aa:60,img:'/sunadier-hq.webp',desc:'Abyss Chains stay attached during the solar grenade climb, release at the apex, then snap home before the primary blast and bouncing grenade scatter.'}]},
  lizard:{label:'REPTILIAN',accent:'#79ef9a',team:[{key:'acid_brute',name:'ACID BRUTE',role:'CORROSIVE SIEGE',hp:100,aa:60,img:'/acid-brute.webp',desc:'Corrosive flood specialist with stacking acid and armor melt.'}]},

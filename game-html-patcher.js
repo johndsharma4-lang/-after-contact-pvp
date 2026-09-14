@@ -100,7 +100,7 @@ export function patchIndexHtml(html) {
     }`;
   patched = replaceOne(patched,new RegExp(oldStraight.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')),newStraight,'sniperAim',patchStatus);
   patched = patched.replace("function clearAim(){aimHud.classList.remove('live');aimPath.style.opacity='0';","function clearAim(){aimHud.classList.remove('live');if(sniperCrosshair)sniperCrosshair.setAttribute('opacity','0');aimPath.style.opacity='0';");
-  patched = patched.replace("diag('AIM RELEASE',`distance=${Math.round(dist)} power=${Math.round(power)} control=${control}`);fireSelectedFromStage(pt,power)","const releasePt=selected?.weaponKey==='sniper'&&aimOriginStage?(()=>{const dx=pt.x-aimOriginStage.x,dy=pt.y-aimOriginStage.y,d=Math.hypot(dx,dy)||1,len=Math.max(430,Math.min(690,d*2.9));return{x:aimOriginStage.x+dx/d*len,y:aimOriginStage.y+dy/d*len}})():pt;diag('AIM RELEASE',`distance=${Math.round(dist)} power=${Math.round(power)} control=${control}`);fireSelectedFromStage(releasePt,power)");
+  patched = patched.replace("diag('AIM RELEASE',`distance=${Math.round(dist)} power=${Math.round(power)} control=${control}`);fireSelectedFromStage(pt,power)","const releasePt=selected?.weaponKey==='sniper'&&aimOriginStage?projectedPrecisionAimPoint(aimOriginStage,pt):pt;diag('AIM RELEASE',`distance=${Math.round(dist)} power=${Math.round(power)} control=${control}`);fireSelectedFromStage(releasePt,power)");
 
   // HE-9 preview now uses the exact same ballistic simulator as the actual barrage.
   const he9GuideFn = `function bombardierAimGuide(a,b){

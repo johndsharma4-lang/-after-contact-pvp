@@ -49,6 +49,8 @@ The Sun Disk Gunner and Sunadier must not look like near-identical armor variant
 - Manual precision aim only. No auto-lock or endpoint snapping.
 - On release, the Lancer fires an **immediate, needle-thin golden solar lance** along the chosen line rather than holding a prolonged burn beam.
 - The shot can penetrate along its line through up to three compartments, with damage diminishing through successive compartments.
+- Each reached compartment must resolve as a separately readable penetration beat, approximately 0.58 seconds apart; the interface may never claim three cabin hits while collapsing all three flashes into one frame.
+- An intact shield envelope can stop the lance at its first contact. Once the entry section is breached, later penetration beats are inside the envelope and strike the successive cabins directly.
 - It remains visually Aurelian: white-hot core, radiant gold sheath, solar impact flashes and penetration effects.
 - It must remain mechanically and visually distinct from the Sun Disk Gunner's traveling physical disk and the Sunadier's arcing chained grenade.
 
@@ -59,6 +61,7 @@ This mechanic is causal and physical. A warrior does not move simply because a r
 - **One compartment may contain at most one warrior.** Warriors must never stack in the same compartment.
 - A warrior falls only when the structural support beneath their current compartment actually fails.
 - Removing a compartment's exterior armor does not teleport its surviving warrior into another room. The warrior remains visibly exposed in that wreck opening and can be targeted directly until actual support failure causes a physical fall.
+- A targetable or destroyed cabin is a true opening, never an opaque black damage decal. The surviving warrior renders in front of the recessed wreck cavity with a subtle red-orange targeting bracket and no large floating HP bar.
 - A direct attack aimed at the visible exposed warrior damages the warrior, not an invisible replacement wall or only the rear hull.
 - A warrior does **not** automatically fall to the bottom of a column. Fall distance is determined by the amount of support/floor structure actually destroyed.
 - If only one supporting floor fails, the warrior falls **one compartment level** and takes normal fall damage for that distance.

@@ -64,7 +64,7 @@ export function patchCombatPresentationLockRuntime(html) {
     'weaponCard'
   );
   patched = patched.replace(
-    "if(wd)wd.textContent=w.weaponKey==='acid_brute'?'CORROSIVE FLOOD • hydro-pack acid hose • stacking AOE':w.weaponKey==='spatial_disintegrator'?'MATTER COLLAPSE • Singularity Core • unstable array':w.weaponKey==='bombardier'?'HE-9 ten-missile barrage • explosive siege fire':w.weaponKey==='sniper'?'EXPLOSIVE BREACH ROUND • precise compartment shot • small AOE':w.weaponKey==='combat_controller'?'TAC-LINK LOCATOR • delayed adaptive support • 2-turn cooldown':'5s burn-through • 2 compartments • exposes survivors';",
+    "if(wd)wd.textContent=w.weaponKey==='acid_brute'?'CORROSIVE FLOOD • hydro-pack acid hose • stacking AOE':w.weaponKey==='spatial_disintegrator'?'MATTER COLLAPSE • Singularity Core • unstable array':w.weaponKey==='bombardier'?'HE-9 ten-missile barrage • explosive siege fire':w.weaponKey==='sniper'?'EXPLOSIVE BREACH ROUND • precise compartment shot • small AOE':w.weaponKey==='combat_controller'?'TAC-LINK LOCATOR • delayed adaptive support • 2-turn cooldown':'IMMEDIATE SOLAR LANCE • staged penetration through up to 3 cabins • diminishing damage';",
     "if(wd)wd.textContent=WEAPONS[w.weaponKey]?.description||p.weapon||'COMBAT READY';"
   );
 
@@ -89,9 +89,8 @@ export function patchCombatPresentationLockRuntime(html) {
     'actionTurn'
   );
   if(!status.actionTurn){const next=patched.replace("if(firedKind!=='laser'&&firedKind!=='explosive'&&firedKind!=='acid'&&firedKind!=='locator')endSoloPlayerTurnAfterShot();", "if(!['laser','explosive','acid','locator','solar_disk','sunadier'].includes(firedKind))endSoloPlayerTurnAfterShot();");status.actionTurn=next!==patched;patched=next}
-  patched = patched.replaceAll("statusEl.textContent='SOLAR LANCER • BURN IN PROGRESS'", "statusEl.textContent='AURELIAN WEAPON • ATTACK IN PROGRESS'");
-  patched = patched.replace("solarActionLock?'SOLAR LANCER • BURN IN PROGRESS'", "solarActionLock?'AURELIAN WEAPON • ATTACK IN PROGRESS'");
-  patched = patched.replace("solarActionLock=false;diag('ACTION UNLOCK',`${localAction?'LOCAL':'REMOTE'} SOLAR_LANCER_BURN COMPLETE`);refreshMovePad();", "const wasSolarLocked=solarActionLock;solarActionLock=false;if(wasSolarLocked)diag('ACTION UNLOCK',`${localAction?'LOCAL':'REMOTE'} SOLAR_LANCER_BURN COMPLETE`);refreshMovePad();");
+  patched = patched.replaceAll("statusEl.textContent='SOLAR LANCER • PENETRATION RESOLVING'", "statusEl.textContent='AURELIAN WEAPON • ATTACK IN PROGRESS'");
+  patched = patched.replace("solarActionLock?'SOLAR LANCER • PENETRATION RESOLVING'", "solarActionLock?'AURELIAN WEAPON • ATTACK IN PROGRESS'");
 
   const oldFireHandler = "if(m.type==='fire'){networkApplying=true;const team=m.side==='earth'?eWarriors:aWarriors,w=team.find(x=>x.active&&x.weaponKey===m.warrior)||team.find(x=>x.active&&x.hp>0)||team[0],routed=m.warrior||w?.weaponKey;diag('REMOTE ATTACK ROUTE',`${m.side} faction=${m.faction||mpFactionState?.[m.side]?.faction||'-'} warrior=${routed||'-'}`);fireWarriorFromStage(w,m.point,m.power,true,routed);networkApplying=false;mpRound=m.round||mpRound;if(Number.isInteger(m.turnCount))turnsTaken=m.turnCount;setMpTurn(m.nextTurn);return}";
   const newFireHandler = "if(m.type==='fire'){networkApplying=true;const team=m.side==='earth'?eWarriors:aWarriors,routed=m.warrior||m.weapon,w=team.find(x=>x.active&&x.weaponKey===routed)||team.find(x=>x.active&&x.hp>0)||team[0],point=m.point||m.aim;diag('REMOTE ATTACK ROUTE',`${m.side} faction=${m.faction||mpFactionState?.[m.side]?.faction||'-'} warrior=${routed||'-'}`);if(w&&point)fireWarriorFromStage(w,point,m.power,true,routed||w.weaponKey);else diag('REMOTE ATTACK ERROR',`warrior=${routed||'-'} point=${point?'Y':'N'}`);networkApplying=false;mpRound=m.round||mpRound;if(Number.isInteger(m.turnCount))turnsTaken=m.turnCount;return}";
@@ -188,7 +187,7 @@ function spawnImpactCompartmentReveal(attacker,hit,duration=1450){
   if(!patched.includes('function spawnCrewDamageCallout(')){const next=patched.replace('function spawnCrewDamageReaction(w,amount,killed=false){',damageCalloutHelper+'function spawnCrewDamageReaction(w,amount,killed=false){');status.damageCallout=next!==patched;patched=next}
   status.impactReveal = patched.includes('function spawnImpactCompartmentReveal(') && patched.includes('IMPACT CUTAWAY');
   patched = patched.replace("if(hpDamage>0)spawnCrewDamageReaction(w,hpDamage,w.hp===0);","if(aaDamage||hpDamage)spawnCrewDamageCallout(w,aaDamage,hpDamage);if(hpDamage>0)spawnCrewDamageReaction(w,hpDamage,w.hp===0);");
-  patched = replaceExact(patched,"if(room.exteriorScar){room.exteriorScar.visible=true;room.exteriorScar.material.color.setHex(0x020104);room.exteriorScar.material.opacity=.96}","if(room.exteriorScar)room.exteriorScar.visible=false",status,'tornWreck');
+  status.tornWreck=patched.includes('room.erasureVoid=makeCompartmentVoid(room,room.local.y)')&&patched.includes('if(room.exteriorScar)room.exteriorScar.visible=false');
   patched = replaceExact(patched,"Math.min(24,Math.round(10+scale*3))","Math.min(11,Math.round(6+scale*1.6))",status,'particleBudget');
   patched = patched.replace("opacity:.95,blending:THREE.AdditiveBlending","opacity:.52,blending:THREE.AdditiveBlending");
   patched = patched.replace("opacity:.82,blending:THREE.AdditiveBlending","opacity:.62,blending:THREE.AdditiveBlending");
