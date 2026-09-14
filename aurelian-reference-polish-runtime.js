@@ -6,7 +6,7 @@ function replaceFunction(source,startToken,endToken,replacement){
 
 export function patchAurelianReferencePolishRuntime(html){
   if(typeof html!=='string')throw new TypeError('Expected game HTML');
-  if(html.includes('ac-aurelian-reference-polish-v0480'))return html;
+  if(html.includes('ac-aurelian-reference-polish-v0490'))return html;
   if(!html.includes('ac-aurelian-canon-exterior-v0428'))return html;
   let patched=html;
 
@@ -30,6 +30,16 @@ export function patchAurelianReferencePolishRuntime(html){
   acHullMesh(panel,acHullExtrude(acHullShape(upper),.20,.075),[m.gold,m.edge],'AURELIAN_HULL_UPPER_SWEEP_'+index,0,0,3.00);
   acHullMesh(panel,acHullExtrude(acHullShape(lower),.18,.07),[m.goldDark,m.gold],'AURELIAN_HULL_LOWER_SWEEP_'+index,0,0,3.01);
   acHullMesh(panel,acHullExtrude(acHullShape(spine),.18,.065),[m.bronze,m.edge],'AURELIAN_HULL_CENTER_SPINE_'+index,0,0,3.13);
+  // Five separate armor leaves give each bay a manufactured, layered face. They
+  // remain door-owned, so opening or destroying a room exposes the real interior.
+  const leaves=[
+    [[-w*.31,h*.02],[-w*.08,h*.15],[w*.17,h*.15],[w*.05,h*.055],[-w*.20,-h*.01]],
+    [[w*.08,h*.15],[w*.31,h*.16],[w*.26,h*.055],[w*.04,h*.05]],
+    [[-w*.27,-h*.04],[-w*.04,h*.035],[w*.18,h*.015],[w*.06,-h*.10],[-w*.18,-h*.14]],
+    [[w*.16,h*.015],[w*.31,h*.055],[w*.29,-h*.15],[w*.06,-h*.10]],
+    [[-w*.12,-h*.18],[w*.13,-h*.15],[w*.04,-h*.25],[-w*.20,-h*.26]]
+  ];
+  leaves.forEach((p,j)=>{const leaf=acHullMesh(panel,acHullExtrude(acHullShape(p),.11,.045),[j%2?m.goldDark:m.gold,m.edge],'AURELIAN_BREAKAWAY_ARMOR_LEAF_'+index+'_'+j,0,0,3.22+j*.012);leaf.userData.acBreakawayLeaf=j});
   for(const sx of[-1,1]){
     const cheek=sx<0?[[-w*.40,-h*.18],[-w*.33,-h*.13],[-w*.32,h*.18],[-w*.39,h*.22]]:[[w*.31,-h*.17],[w*.40,-h*.12],[w*.38,h*.20],[w*.30,h*.15]];
     acHullMesh(panel,acHullExtrude(acHullShape(cheek),.16,.06),sx<0?m.bronze:m.gold,'AURELIAN_HULL_SIDE_CHEEK_'+index+'_'+sx,0,0,3.04);
@@ -107,6 +117,36 @@ export function patchAurelianReferencePolishRuntime(html){
     acHullMesh(kit,new THREE.TorusGeometry(1.38,.075,8,32),m.edge,'AURELIAN_REFERENCE_ENGINE_GOLD_HOOP',-20.05,y,8.10);
     for(const sy of[-1,1]){const rail=acHullDetail(kit,new THREE.BoxGeometry(4.8,.11,.17),m.goldDark,'AURELIAN_REFERENCE_ENGINE_RAIL',-21.85,y+sy*1.28,8.08);rail.rotation.z=sy*.035}
   }
+  // Hero silhouette pass: broad interlocking masses surround, but never cross,
+  // the six protected bay apertures.
+  const heroPlates=[
+    {n:'AURELIAN_HERO_DORSAL_CROWN_A',mat:m.gold,z:8.30,d:.46,p:[[-12.9,10.02],[-8.4,12.35],[-1.4,12.72],[3.2,11.72],[-1.8,10.58],[-8.2,10.68]]},
+    {n:'AURELIAN_HERO_DORSAL_CROWN_B',mat:m.goldDark,z:8.38,d:.38,p:[[3.0,11.67],[8.7,10.18],[13.5,7.94],[10.5,8.17],[6.2,9.50]]},
+    {n:'AURELIAN_HERO_AFT_SHOULDER',mat:m.bronze,z:8.18,d:.54,p:[[-24.8,8.28],[-20.2,10.82],[-14.2,9.32],[-16.1,7.78],[-21.2,6.72]]},
+    {n:'AURELIAN_HERO_VENTRAL_KEEL_A',mat:m.goldDark,z:8.22,d:.48,p:[[-13.8,-8.32],[-7.8,-11.65],[-.8,-12.02],[2.9,-10.18],[-3.5,-9.42],[-9.2,-9.72]]},
+    {n:'AURELIAN_HERO_VENTRAL_KEEL_B',mat:m.gold,z:8.29,d:.42,p:[[2.5,-10.16],[8.5,-11.14],[14.9,-9.62],[18.8,-6.56],[14.5,-7.24],[11.8,-9.20],[6.8,-9.48]]},
+    {n:'AURELIAN_HERO_PROW_CAP',mat:m.gold,z:8.34,d:.50,p:[[14.4,6.10],[20.0,4.62],[26.4,.56],[21.0,1.10],[16.2,3.08]]},
+    {n:'AURELIAN_HERO_PROW_CHIN',mat:m.bronze,z:8.32,d:.46,p:[[16.0,-3.15],[21.0,-1.48],[26.3,.43],[20.0,-3.15],[15.1,-6.42],[18.6,-5.32]]}
+  ];
+  for(const a of heroPlates){const plate=acHullMesh(kit,acHullExtrude(acHullShape(a.p),a.d,.105),[a.mat,m.edge],a.n,0,0,a.z);plate.userData.wreckPersistent=true}
+  // Raised spars lock the upper and lower armor decks together visually.
+  for(const [x,y,w,h,rz,mat] of [[-.8,6.92,5.4,.28,-.035,m.edge],[-.7,-6.78,5.2,.27,.03,m.gold],[13.9,6.52,4.3,.24,-.19,m.edge],[14.2,-6.55,4.7,.24,.18,m.goldDark],[-16.5,7.05,4.0,.25,-.20,m.gold],[-16.7,-6.92,4.2,.25,.19,m.bronze]]){
+    const spar=acHullDetail(kit,new THREE.BoxGeometry(w,h,.34),mat,'AURELIAN_HERO_ARMOR_SPAR',x,y,8.82);spar.rotation.z=rz;
+  }
+  // Deep cowl cheeks make each rear engine read as a protected housing.
+  for(const y of[-4.8,0,4.8]){
+    const upper=[[-24.9,y+1.56],[-20.0,y+1.76],[-17.9,y+1.16],[-19.8,y+.78],[-24.5,y+.92]],lower=[[-24.9,y-1.56],[-20.0,y-1.76],[-17.9,y-1.16],[-19.8,y-.78],[-24.5,y-.92]];
+    acHullMesh(kit,acHullExtrude(acHullShape(upper),.38,.08),[m.goldDark,m.edge],'AURELIAN_HERO_ENGINE_COWL_UPPER',0,0,8.22);
+    acHullMesh(kit,acHullExtrude(acHullShape(lower),.36,.08),[m.bronze,m.gold],'AURELIAN_HERO_ENGINE_COWL_LOWER',0,0,8.20);
+    for(let i=0;i<6;i++){const a=i*Math.PI/3,vane=acHullDetail(kit,new THREE.BoxGeometry(.74,.10,.14),i%2?m.gold:m.edge,'AURELIAN_HERO_ENGINE_VANE',-24.94+Math.cos(a)*.38,y+Math.sin(a)*.60,8.28);vane.rotation.z=a}
+    acHullMesh(kit,new THREE.CircleGeometry(.48,24),m.hot,'AURELIAN_HERO_ENGINE_CORE',-24.98,y,8.31);
+  }
+  const seams=[
+    [[-12.1,11.18,8.86],[-5.8,11.58,8.86],[.4,11.18,8.86]],
+    [[3.8,-10.54,8.78],[9.4,-10.32,8.78],[14.7,-8.62,8.78]],
+    [[15.7,5.30,8.88],[20.1,3.76,8.88],[24.5,.70,8.88]]
+  ];
+  seams.forEach((p,i)=>acHullLine(kit,p,i===2?m.glassLine:m.trimLine,'AURELIAN_HERO_MACHINED_SEAM'));
 }`;
   if(!patched.includes('function acHullReferenceAccents(kit,m){')){
     patched=patched.replace('function acHullMachinery(kit,m){',accentFunction+'\nfunction acHullMachinery(kit,m){');
@@ -116,8 +156,8 @@ export function patchAurelianReferencePolishRuntime(html){
   }
   if(!patched.includes('function acHullReferenceAccents(kit,m){')||!patched.includes('acHullReferenceAccents(kit,m);'))return html;
 
-  patched=patched.replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.48.0');
-  patched=patched.replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-13_REFERENCE_SHIP_ART_PASS');
-  patched=patched.replace(/build=v0\.\d+\.\d+ panels=6 apertures=6/g,'build=v0.48.0 panels=6 apertures=6');
-  return patched.replace('</head>','<meta id="ac-aurelian-reference-polish-v0480" name="ac-aurelian-reference-polish" content="referenceMatch:BRONZE_GOLD_LAYERED cockpit:LONG_GLAZED cannon:INTEGRATED_HEAVY prow:SOLAR_LENS engines:TRIPLE_COWLED sixApertures:PRESERVED combat:UNCHANGED">\n</head>');
+  patched=patched.replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.49.0');
+  patched=patched.replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-14_AURELIAN_HERO_SHIP_PASS');
+  patched=patched.replace(/build=v0\.\d+\.\d+ panels=6 apertures=6/g,'build=v0.49.0 panels=6 apertures=6');
+  return patched.replace('</head>','<meta id="ac-aurelian-reference-polish-v0490" name="ac-aurelian-reference-polish" content="referenceMatch:HERO_BRONZE_GOLD_LAYERED cockpit:LONG_GLAZED cannon:INTEGRATED_HEAVY prow:EXTENDED_SOLAR_LENS engines:TRIPLE_DEEP_COWLED armor:BREAKAWAY_LEAVES sixApertures:PRESERVED combat:UNCHANGED">\n</head>');
 }
