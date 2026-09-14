@@ -141,6 +141,38 @@ export function patchAurelianReferencePolishRuntime(html){
     for(let i=0;i<6;i++){const a=i*Math.PI/3,vane=acHullDetail(kit,new THREE.BoxGeometry(.74,.10,.14),i%2?m.gold:m.edge,'AURELIAN_HERO_ENGINE_VANE',-24.94+Math.cos(a)*.38,y+Math.sin(a)*.60,8.28);vane.rotation.z=a}
     acHullMesh(kit,new THREE.CircleGeometry(.48,24),m.hot,'AURELIAN_HERO_ENGINE_CORE',-24.98,y,8.31);
   }
+  // v0.50 depth overhaul. These are genuine layered 3-D armor masses, separated
+  // by black shadow gaps, rather than another painted plate over the old hull.
+  const shadowShells=[
+    {n:'AURELIAN_DEPTH_DORSAL_SHADOW',z:8.45,d:.58,p:[[-15.6,10.25],[-10.2,13.38],[-1.8,13.62],[6.8,11.25],[12.5,8.02],[8.1,8.55],[1.8,10.72],[-8.4,11.02]]},
+    {n:'AURELIAN_DEPTH_VENTRAL_SHADOW',z:8.43,d:.56,p:[[-14.8,-8.40],[-9.0,-12.95],[-.6,-13.28],[8.6,-12.10],[16.4,-8.22],[11.8,-8.76],[3.2,-10.62],[-8.0,-10.48]]},
+    {n:'AURELIAN_DEPTH_PROW_SHADOW',z:8.48,d:.62,p:[[15.4,6.15],[21.8,4.50],[28.8,.42],[21.2,-4.62],[15.2,-6.45],[18.2,-3.02],[25.6,.44],[18.0,3.10]]}
+  ];
+  for(const a of shadowShells)acHullMesh(kit,acHullExtrude(acHullShape(a.p),a.d,.12),m.dark,a.n,0,0,a.z);
+  const volumePlates=[
+    {n:'AURELIAN_VOLUME_DORSAL_SPINE',mat:m.gold,z:9.14,d:.78,p:[[-13.8,10.62],[-8.6,12.92],[-1.6,13.16],[5.1,11.48],[1.1,11.20],[-7.8,11.62]]},
+    {n:'AURELIAN_VOLUME_DORSAL_IVORY',mat:m.ivory,z:9.65,d:.24,p:[[-7.1,12.20],[-1.3,12.62],[3.3,11.48],[.6,11.42],[-5.8,11.82]]},
+    {n:'AURELIAN_VOLUME_VENTRAL_KEEL',mat:m.goldDark,z:9.10,d:.74,p:[[-12.8,-9.82],[-7.7,-12.42],[-.8,-12.78],[6.8,-11.72],[2.0,-10.72],[-7.2,-11.02]]},
+    {n:'AURELIAN_VOLUME_PROW_SPEAR',mat:m.gold,z:9.12,d:.84,p:[[16.4,5.34],[22.0,3.90],[28.4,.43],[22.0,1.02],[17.4,2.92]]},
+    {n:'AURELIAN_VOLUME_PROW_CHIN',mat:m.bronze,z:9.08,d:.76,p:[[17.0,-2.88],[22.0,-1.02],[28.3,.40],[22.0,-3.58],[16.0,-5.75]]}
+  ];
+  for(const a of volumePlates){const o=acHullMesh(kit,acHullExtrude(acHullShape(a.p),a.d,.14),[a.mat,m.edge],a.n,0,0,a.z);o.userData.wreckPersistent=true}
+  // High glazed command blister reads above the hull silhouette at battle scale.
+  const command=new THREE.Group();command.name='AURELIAN_VOLUME_COMMAND_BLISTER';command.position.set(-5.8,10.62,9.56);kit.add(command);
+  const commandBase=acHullDetail(command,new THREE.BoxGeometry(9.4,.64,1.08),m.bronze,'AURELIAN_COMMAND_BLISTER_BASE');commandBase.rotation.z=-.025;
+  const canopy=acHullDetail(command,new THREE.SphereGeometry(2.20,24,14,0,Math.PI*2,0,Math.PI*.52),m.glass,'AURELIAN_COMMAND_BLISTER_GLASS',-.18,.56,.18);canopy.scale.set(2.05,.72,.58);canopy.rotation.z=-.035;
+  for(const x of[-3.5,-1.7,0,1.7,3.5]){const rib=acHullDetail(command,new THREE.BoxGeometry(.11,1.20,1.22),x===0?m.edge:m.goldDark,'AURELIAN_COMMAND_BLISTER_RIB',x,.47,.10);rib.rotation.z=-.035}
+  // Deeper triple nacelles with nested barrels, hot cores, and armored bridges.
+  for(const y of[-4.8,0,4.8]){
+    const barrel=acHullMesh(kit,new THREE.CylinderGeometry(1.42,1.72,5.25,24),m.dark,'AURELIAN_VOLUME_ENGINE_BARREL',-22.42,y,7.34);barrel.rotation.z=Math.PI/2;
+    const collar=acHullDetail(kit,new THREE.CylinderGeometry(1.78,1.78,.70,24),m.goldDark,'AURELIAN_VOLUME_ENGINE_COLLAR',-20.02,y,7.45);collar.rotation.z=Math.PI/2;
+    for(const x of[-24.72,-23.72,-22.72]){const ring=acHullMesh(kit,new THREE.TorusGeometry(1.28,.095,10,32),x===-24.72?m.edge:m.gold,'AURELIAN_VOLUME_ENGINE_INNER_RING',x,y,7.58);ring.rotation.y=Math.PI/2}
+    const core=acHullDetail(kit,new THREE.CircleGeometry(.66,28),m.sun,'AURELIAN_VOLUME_ENGINE_PLASMA',-25.10,y,7.66);core.rotation.y=-Math.PI/2;
+  }
+  for(const y of[-2.4,2.4]){const bridge=acHullDetail(kit,new THREE.BoxGeometry(7.2,.42,.72),m.bronze,'AURELIAN_ENGINE_ARMORED_BRIDGE',-20.9,y,7.52);bridge.rotation.z=y>0?.05:-.05}
+  // Long ventral cannon keel visually joins the weapon bay to the prow.
+  const gunKeel=acHullMesh(kit,new THREE.BoxGeometry(12.8,.72,.86),m.goldDark,'AURELIAN_VOLUME_CANNON_KEEL',8.7,-9.48,9.22);gunKeel.rotation.z=.015;
+  for(const x of[3.0,6.0,9.0,12.0,14.9]){const coil=acHullDetail(kit,new THREE.TorusGeometry(.52,.085,10,28),x>12?m.edge:m.sun,'AURELIAN_VOLUME_CANNON_COIL',x,-9.48,9.72);coil.rotation.y=Math.PI/2}
   const seams=[
     [[-12.1,11.18,8.86],[-5.8,11.58,8.86],[.4,11.18,8.86]],
     [[3.8,-10.54,8.78],[9.4,-10.32,8.78],[14.7,-8.62,8.78]],
@@ -156,8 +188,8 @@ export function patchAurelianReferencePolishRuntime(html){
   }
   if(!patched.includes('function acHullReferenceAccents(kit,m){')||!patched.includes('acHullReferenceAccents(kit,m);'))return html;
 
-  patched=patched.replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.49.0');
-  patched=patched.replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-14_AURELIAN_HERO_SHIP_PASS');
-  patched=patched.replace(/build=v0\.\d+\.\d+ panels=6 apertures=6/g,'build=v0.49.0 panels=6 apertures=6');
-  return patched.replace('</head>','<meta id="ac-aurelian-reference-polish-v0490" name="ac-aurelian-reference-polish" content="referenceMatch:HERO_BRONZE_GOLD_LAYERED cockpit:LONG_GLAZED cannon:INTEGRATED_HEAVY prow:EXTENDED_SOLAR_LENS engines:TRIPLE_DEEP_COWLED armor:BREAKAWAY_LEAVES sixApertures:PRESERVED combat:UNCHANGED">\n</head>');
+  patched=patched.replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.50.0');
+  patched=patched.replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-14_AURELIAN_VOLUME_DEPTH_OVERHAUL');
+  patched=patched.replace(/build=v0\.\d+\.\d+ panels=6 apertures=6/g,'build=v0.50.0 panels=6 apertures=6');
+  return patched.replace('</head>','<meta id="ac-aurelian-reference-polish-v0490" name="ac-aurelian-reference-polish" content="referenceMatch:HERO_BRONZE_GOLD_LAYERED_VOLUME cockpit:RAISED_GLAZED_BLISTER cannon:INTEGRATED_LONG_KEEL prow:EXTENDED_VOLUMETRIC_SPEAR engines:TRIPLE_NESTED_DEEP_COWLED armor:BREAKAWAY_LEAVES shadowGaps:DEEP sixApertures:PRESERVED combat:UNCHANGED">\n</head>');
 }

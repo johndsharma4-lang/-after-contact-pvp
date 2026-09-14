@@ -137,7 +137,7 @@ export function patchCombatPresentationLockRuntime(html) {
 
   const impactHelpers = `let impactFocusSide=null,impactFocusPoint=null,impactFocusUntil=0,impactFocusTimer=null;
 function beginImpactFocus(side,roomIndex,label,duration=1750,force=false){
-  if(xrayOpen||(!force&&matchEnded))return;const roomSet=side==='aurelian'?aRooms:eRooms,room=Number.isInteger(roomIndex)?roomSet?.userData?.rooms?.[roomIndex]:null;impactFocusSide=side;impactFocusPoint=room?.hitPlane?.getWorldPosition(new THREE.Vector3())||null;impactFocusUntil=performance.now()+duration;document.body.classList.add('acImpactFocus');clearTimeout(impactFocusTimer);impactFocusTimer=setTimeout(()=>{impactFocusSide=null;impactFocusPoint=null;impactFocusUntil=0;document.body.classList.remove('acImpactFocus');if(battleStarted)updateBattleCamera()},duration+140);diag('IMPACT CAMERA',\`side=\${side} room=\${Number.isInteger(roomIndex)?roomIndex+1:'HULL'} label=\${label||'IMPACT'} hold=\${duration}\`)
+  if(xrayOpen||(!force&&matchEnded))return;const roomSet=side==='aurelian'?aRooms:eRooms,room=Number.isInteger(roomIndex)?roomSet?.userData?.rooms?.[roomIndex]:null;impactFocusSide=side;impactFocusPoint=room?.hitPlane?.getWorldPosition(new THREE.Vector3())||null;impactFocusUntil=performance.now()+duration;document.body.classList.add('acImpactFocus');clearTimeout(impactFocusTimer);impactFocusTimer=setTimeout(()=>{clearImpactFocus();if(battleStarted&&!matchEnded)updateBattleCamera(true)},duration+140);diag('IMPACT CAMERA',\`side=\${side} room=\${Number.isInteger(roomIndex)?roomIndex+1:'HULL'} label=\${label||'IMPACT'} hold=\${duration} framing=SILHOUETTE_SAFE_TWO_VESSEL\`)
 }
 function clearImpactFocus(){clearTimeout(impactFocusTimer);impactFocusTimer=null;impactFocusSide=null;impactFocusPoint=null;impactFocusUntil=0;document.body.classList.remove('acImpactFocus');clearImpactCompartmentReveal()}
 function spawnWarriorDeathConfirmation(w){
@@ -165,7 +165,7 @@ function spawnImpactCompartmentReveal(attacker,hit,duration=1450){
     `  }else{
     desiredPos=new THREE.Vector3(midX,(tactical?27.5:23.5)+midY*.11+altExtra*.22,safeZ);`,
     `  }else if(impactFocusSide&&now<impactFocusUntil){
-    const focusRoot=impactFocusSide==='aurelian'?aure:earth,rootPoint=focusRoot.getWorldPosition(new THREE.Vector3()),focus=impactFocusPoint?rootPoint.clone().lerp(impactFocusPoint,.22):rootPoint;desiredPos=new THREE.Vector3(focus.x,focus.y+6.2,focus.z+84);desiredLook=new THREE.Vector3(focus.x,focus.y+.6,focus.z);desiredZoom=.98;
+    const focusRoot=impactFocusSide==='aurelian'?aure:earth,rootPoint=focusRoot.getWorldPosition(new THREE.Vector3()),focusX=THREE.MathUtils.lerp(midX,rootPoint.x,.10),focusY=THREE.MathUtils.lerp(midY,impactFocusPoint?.y??rootPoint.y,.10);desiredPos=new THREE.Vector3(focusX,23.5+focusY*.11+altExtra*.22,Math.max(108,safeZ));desiredLook=new THREE.Vector3(focusX,Math.max(9,focusY*.42),0);desiredZoom=1;
   }else{
     impactFocusSide=null;desiredPos=new THREE.Vector3(midX,(tactical?27.5:23.5)+midY*.11+altExtra*.22,safeZ);`,
     status,

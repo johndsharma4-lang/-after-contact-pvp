@@ -58,8 +58,10 @@ The Sun Disk Gunner and Sunadier must not look like near-identical armor variant
 
 ### Combat character visibility
 
-- Exposed and cutaway warriors must display their actual faction character artwork at phone-readable scale, bound to the authoritative 3-D room, hitbox, weapon muzzle, health, and animation rig.
-- Low-detail procedural bodies may support collision or animation internally, but may never be the primary visible combat character when official character artwork exists.
+- Official concept artwork defines each warrior's identity, armor, gear, colors, and weapon silhouette.
+- Completed high-detail articulated 3-D warriors are the primary cutaway models and remain bound to the authoritative room, hitbox, weapon muzzle, health, and animation rig.
+- Concept-art sprites remain available as portraits and temporary exterior readability aids; they must never create duplicate warriors or imply more than the three deployed characters.
+- Low-detail stick figures and primitive placeholder bodies may not be the primary visible character once that warrior's articulated model exists.
 
 ## Structural Collapse and Warrior Fall Physics
 
@@ -204,6 +206,15 @@ Disorientation affects aiming for the first two chained turns only.
 - Attacks that travel around the wall do not trigger it and do not get blocked by it.
 - Solar Wall does not cleanse chains, mines, fire, radiation, acid, or other effects that were already attached or active before deployment.
 - The current base implementation places the wall between the two fortresses, blocks the complete next direct attack, and provides **one use per battle**. Manual facing controls and an upgrade path remain future work.
+- While armed, the owning player sees a restrained golden wall-plane preview and **SOLAR WALL ARMED** marker at the protected side of their fortress. This is private readiness feedback only; the opponent still receives no armed-wall visual or notification before interception.
+
+## Earth Physical Cutaway
+
+- The Earth fortress has **exactly six visible physical compartments** and six matching removable exterior armor modules.
+- The six military spaces are Command Center, Missile Armory, Fire Control, Barracks, Engineering, and Fortress Cannon.
+- The existing nine-zone combat array remains an invisible compatibility layer for shield, damage, targeting, and multiplayer state. It may not render three extra compartments; its zones map into the six physical rooms.
+- Opening the Earth cutaway hides only those six exterior modules and preserves the continuous rear pressure hull and structural silhouette.
+- Exactly three deployed Earth warriors occupy the cutaway: Bombardier, Sniper, and Combat Controller. Their articulated 3-D models follow their official concept art and retain distinct armor, equipment, weapons, and live muzzle origins.
 
 ## Earth Cannon Abilities
 

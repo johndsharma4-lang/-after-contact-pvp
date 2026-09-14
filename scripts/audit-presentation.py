@@ -4,6 +4,7 @@ import sys
 root = Path(__file__).resolve().parents[1]
 router = (root / 'router-worker.js').read_text(encoding='utf-8')
 director = (root / 'combat-presentation-director-runtime.js').read_text(encoding='utf-8')
+presentation_lock = (root / 'combat-presentation-lock-runtime.js').read_text(encoding='utf-8')
 bridge = (root / 'aim-lifecycle-bridge-runtime.js').read_text(encoding='utf-8')
 cutaway = (root / 'aurelian-logical-cutaway-runtime.js').read_text(encoding='utf-8')
 weapon_origin = (root / 'warrior-weapon-origin-runtime.js').read_text(encoding='utf-8')
@@ -57,7 +58,7 @@ checks = {
     'full battlefield is the aim surface': 'surface=FULL_BATTLEFIELD' in base and 'radius=150px' not in base and '>=10){' in base,
     'pre-aim target windows removed': 'patched.replace(/function acDirectorBuild3DWindow' in director and 'patched.replace(/acDirectorPreviewSolarWindows' in director and 'status.preAimClosed=' in director,
     'six physical bays preserved for all factions': 'bayLocals=[]' in base and 'for(let row=1;row>=0;row--)for(let col=0;col<3;col++)' in base and 'physicalInterior=6/6 logicalRooms=9' in base,
-    'aurelian uses player sketch layout': 'buildAurelianDirectorHull' in base and "layout=${sketchLayout?.length===6?'PLAYER_SKETCH_STACKED':'2x3'}" in base and 'acCutawayBayLayout=specs.map' in base and 'points:s.points.map' in base,
+    'aurelian uses player sketch layout': 'buildAurelianDirectorHull' in base and "layout=${sketchLayout?.length===6?'FACTION_PHYSICAL_MODULES':'2x3'}" in base and 'acCutawayBayLayout=specs.map' in base and 'points:s.points.map' in base,
     'aurelian pressure hull uses segmented front architecture': 'acAurelianModuleCollarGeometry' in base and 'AURELIAN_PRESSURE_COLLAR_' in base and 'acSegmentedFrontArchitecture=true' in base and 'acAurelianHullFrameGeometry' not in base,
     'rear hull follows angular pressure contour': 'function acAurelianOuterHullShape' in base and 'acAurelianRearHullGeometry()' in base and "new THREE.SphereGeometry(8.1,40,22)" not in base,
     'obsolete exposed brace scaffold removed': "AURELIAN_CENTRAL_WAIST" not in base and "const brace=box(9.0,.64,4.4" not in base,
@@ -68,6 +69,10 @@ checks = {
     'cutaway action tray follows private cutaway': 'id="cutawayActionTray"' in base and "const show=!!(xrayOpen&&battleStarted&&!matchEnded)" in base and 'refreshCutawayActionTray();refreshMoraleHud();if(!xrayCrewCard)return' in base,
     'cutaway tray exposes real three-warrior team': "localXrayWarriors().filter(w=>!w.passive).slice(0,3)" in base and "button.dataset.crewIndex" in base and "selectXrayCrew(w);refreshCutawayActionTray()" in base,
     'fortress defense is contextual and stateful': "key:'solar_wall',name:'SOLAR WALL',uses:1" in base and "key:'countermeasure_flares',name:'COUNTERMEASURE FLARES',uses:2" in base and 'state.armed=true;state.usesRemaining--' in base and 'ARMED • HIDDEN' in base,
+    'armed solar wall has a persistent friendly-only visual': 'FRIENDLY_ARMED_SOLAR_WALL_INDICATOR' in base and 'friendlyOnly=true' in base and 'SOLAR WALL ARMED' in base and 'persistent=UNTIL_TRIGGERED' in base and 'clearArmedDefenseVisual();' in base,
+    'earth has exactly six physical fortress compartments': 'function buildEarthDirectorFortress' in base and 'acEarthFortressCutaway=true' in base and "name:'COMMAND_CENTER'" in base and "name:'MISSILE_ARMORY'" in base and "name:'FIRE_CONTROL'" in base and "name:'BARRACKS'" in base and "name:'ENGINEERING'" in base and "name:'FORTRESS_CANNON'" in base and 'acCutawayBayPanels=panels' in base,
+    'earth cutaway uses six matching exterior modules': 'EARTH_HULL_MODULE_' in base and 'EARTH_PRESSURE_COLLAR_' in base and "['aurelian','earth'].includes(factionForWorldSide(side))" in base and 'exteriorPanel=shapedBay?' in base,
+    'earth cutaway has six military role interiors': 'function acDressEarthBay' in base and 'CUTAWAY_EARTH_COMMAND_DESK' in base and 'CUTAWAY_EARTH_MISSILE_RACK' in base and 'CUTAWAY_EARTH_FIRE_CONTROL_TABLE' in base and 'CUTAWAY_EARTH_BUNK' in base and 'CUTAWAY_EARTH_DIESEL_CORE' in base and 'CUTAWAY_EARTH_CANNON_BREECH' in base,
     'solar wall and flares intercept only canonical attacks': "key==='solar_wall'?{triggered:true,blocked:true,blockCount:0}" in base and "key==='countermeasure_flares'&&weaponKey==='bombardier'?{triggered:true,blocked:false,blockCount:2}" in base and 'ATTACK COMPLETELY BLOCKED' in base and 'spawnFortressDefenseTrigger' in base,
     'multiplayer defense state is private and authoritative': 'defenseView(side)' in worker and "m.type==='arm_defense'" in worker and 'morale<50' in worker and 'defense.usesRemaining-1' in worker and 'defenseTrigger' in worker,
     'network interception suppresses weapon resolution': "if(m.blocked&&m.defenseTrigger)" in base and "else fireWarriorFromStage(w,m.point,m.power,true,routed)" in base,
@@ -111,7 +116,7 @@ checks = {
     'generated replacement hull sectors removed': 'buildAurelianHullSector' not in base and 'CUTAWAY_EXACT_EXTERIOR_HULL_SECTOR_' not in base and 'shellDetailBuckets' not in director,
     'obsolete box closure decoration removed': 'CUTAWAY_FRONT_SHUTTER_SOLAR_RAIL_' not in base and 'CUTAWAY_FRONT_SHUTTER_SOLAR_NODE_' not in base,
     'six bays have faction-specific readable interiors': 'const bayPalette=' in base and 'CUTAWAY_BAY_INTERIOR_' in base and 'CUTAWAY_BAY_CONDUIT_' in base and 'CUTAWAY_BAY_CONSOLE_' in base and 'CUTAWAY_BAY_BACKLIGHT_' in base,
-    'aurelian interiors follow exterior shapes': 'acAurelianBayBackGeometry(layoutSpec.points' in base and 'aurelianBay?Math.max(5.3,layoutSpec.w*.84)' in base and 'cell.userData.acModuleRole' in base,
+    'aurelian interiors follow exterior shapes': 'acAurelianBayBackGeometry(layoutSpec.points' in base and 'shapedBay?Math.max(5.3,layoutSpec.w*.84)' in base and 'cell.userData.acModuleRole' in base,
     'aurelian interior walls follow aperture polygons': 'CUTAWAY_BAY_SHAPED_WALL_' in base and 'edgePoints=layoutSpec.points.map' in base and 'edge.rotation.z=Math.atan2(dy,dx)' in base and 'SIX_SEGMENTED_DEEP_PRESSURE_BAYS' in director,
     'six aurelian interiors have distinct roles': 'acDressAurelianBay(interiorRoot,layoutSpec.role' in base and all(name in base for name in ['CUTAWAY_PILOT_COMMAND_CONSOLE','CUTAWAY_SOLAR_REACTOR','CUTAWAY_ARMORY_RACK','CUTAWAY_TARGETING_TABLE','CUTAWAY_SOLAR_CANNON_CORE']),
     'cabinet door back panels removed': 'CUTAWAY_BAY_RECESSED_WALL_' not in base,
@@ -145,8 +150,14 @@ checks = {
     'breach stages shed angular armor chunks': 'function spawnArmorBreakaway(room,stage=3)' in destruction and 'THREE.ExtrudeGeometry(shape' in destruction and 'spawnArmorBreakaway(room,5)' in destruction,
     'reference cockpit is elongated and glazed': 'AURELIAN_COCKPIT_ARMORED_SLED' in reference_polish and 'AURELIAN_COCKPIT_GLAZING' in reference_polish and 'AURELIAN_COCKPIT_AFT_SPEAR' in reference_polish,
     'reference cannon and prow are integrated': 'AURELIAN_CANNON_ARMORED_CRADLE' in reference_polish and 'AURELIAN_CANNON_CONTAINED_ENERGY' in reference_polish and 'AURELIAN_PROW_LENS_CORE' in reference_polish,
-    'reference engine silhouette is triple cowled': "for(const y of[-4.8,0,4.8])" in reference_polish and 'AURELIAN_REFERENCE_ENGINE_FAIRING' in reference_polish and 'engines:TRIPLE_DEEP_COWLED' in reference_polish,
-    'aurelian rigs composed, enlarged and relit': 'ac-aurelian-cutaway-composition-v0419' in cutaway_composition and 'multiplyScalar(.92)' in cutaway_composition and 'multiplyScalar(aurelianBay?1.16:1.04)' in base and 'SIX_BAY_ARTICULATED_HIGH_DETAIL_SILHOUETTES' in cutaway_composition and 'restPose:CAPTURED' in cutaway_composition,
+    'reference engine silhouette is triple cowled': "for(const y of[-4.8,0,4.8])" in reference_polish and 'AURELIAN_REFERENCE_ENGINE_FAIRING' in reference_polish and 'engines:TRIPLE_NESTED_DEEP_COWLED' in reference_polish,
+    'impact camera preserves both vessel silhouettes': 'framing=SILHOUETTE_SAFE_TWO_VESSEL' in presentation_lock and 'Math.max(108,safeZ)' in presentation_lock and 'updateBattleCamera(true)' in presentation_lock,
+    'director reset clears legacy impact focus': "typeof clearImpactFocus==='function'" in director and 'camera=TWO_VESSEL_SNAP' in director,
+    'aurelian volume pass has real depth and shadow gaps': 'AURELIAN_DEPTH_DORSAL_SHADOW' in reference_polish and 'AURELIAN_VOLUME_PROW_SPEAR' in reference_polish and 'AURELIAN_VOLUME_COMMAND_BLISTER' in reference_polish and 'AURELIAN_VOLUME_ENGINE_BARREL' in reference_polish and 'shadowGaps:DEEP' in reference_polish,
+    'exactly three earth rebuilt warrior factories': 'function buildEarthBombardierBattle3D()' in base and 'function buildEarthSniperBattle3D()' in base and 'function buildEarthControllerBattle3D()' in base and 'EARTH_REBUILT_CANON_HIGH' in base,
+    'earth rebuilt rigs expose articulated combat joints': 'armRoots:arms' in base and 'legRoots:legs' in base and 'elbowL:elbows[0]' in base and 'kneeR:knees[1]' in base,
+    'earth rebuilt roles have distinct equipment': 'HE9_HEAVY_LAUNCHER' in base and 'M96_LONG_RIFLE' in base and 'TAC_LINK_COMMAND_PACK' in base,
+    'aurelian rigs composed, enlarged and relit': 'ac-aurelian-cutaway-composition-v0419' in cutaway_composition and 'multiplyScalar(.92)' in cutaway_composition and 'multiplyScalar(shapedBay?1.16:1.04)' in base and 'SIX_BAY_ARTICULATED_HIGH_DETAIL_SILHOUETTES' in cutaway_composition and 'restPose:CAPTURED' in cutaway_composition,
     'natural idle animation is connected': 'function acAnimateAurelianWarriorIdle' in rebuilt_models and "typeof acAnimateAurelianWarriorIdle==='function'" in base and 'acAimActiveUntil' in weapon_origin,
     'v0421 build marker': 'MATCH RECORDER v0.42.1' in director and '2026-09-07_SEGMENTED_MODULE_HULL_DEEP_BAYS' in director,
 }

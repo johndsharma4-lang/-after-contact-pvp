@@ -8,7 +8,7 @@ export function patchAurelianCanonExteriorRuntime(html){
   const endToken='function addUnifiedExteriorShell(skin,faction,side){';
   const start=html.indexOf(startToken),end=html.indexOf(endToken,start);
   if(start<0||end<0||html.indexOf(startToken,start+1)!==-1)return html;
-  const previous=html.slice(start,end),layout=previous.match(/  const specs=\[[\s\S]*?\n  \];/);
+  const previous=html.slice(start,end),layout=previous.match(/  const specs=\[[\s\S]*?\n  \];/),earthStart=previous.indexOf('function buildEarthDirectorFortress(skin,cy,mat){'),earthSource=earthStart>=0?previous.slice(earthStart):'';
   if(!layout||layout[0]!==EXPECTED_LAYOUT)return html;
   const runtime=String.raw`// Art-only geometry. No selection, aim, projectile, damage, or turn state is written here.
 function acHullShape(points,holes=[]){
@@ -230,7 +230,7 @@ __SPECS__
 }
 `;
   const source=runtime.replace('__SPECS__',layout[0]);
-  let patched=html.slice(0,start)+source+'\n'+html.slice(end);
+  let patched=html.slice(0,start)+source+'\n'+earthSource+'\n'+html.slice(end);
   patched=patched.replace(/MATCH RECORDER v0\.\d+\.\d+/g,'MATCH RECORDER v0.42.8');
   patched=patched.replace(/build=2026-\d{2}-\d{2}_[A-Z0-9_-]+/g,'build=2026-09-07_AURELIAN_REFERENCE_METALWORK');
   return patched.replace('</head>','<meta id="ac-aurelian-canon-exterior-v0428" name="ac-aurelian-canon-exterior" content="builder:REPLACED fittedArmor:33 sixBays:PRESERVED exhausts:3 cockpitAndCannon:DOOR_OWNED">\n</head>');

@@ -5,6 +5,8 @@ import vm from 'node:vm';
 import {fileURLToPath} from 'node:url';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const presentation=fs.readFileSync(path.join(root,'index.html'),'utf8');
+assert.ok(presentation.includes('FRIENDLY_ARMED_SOLAR_WALL_INDICATOR'));assert.ok(presentation.includes('friendlyOnly=true'));assert.ok(presentation.includes('persistent=UNTIL_TRIGGERED'));
 let source=fs.readFileSync(path.join(root,'after-contact-worker.js'),'utf8');
 source=source.replace("import { DurableObject } from 'cloudflare:workers';","const DurableObject=class{constructor(ctx,env){this.ctx=ctx;this.env=env}};")
   .replace('export default {','const defaultWorker={')
@@ -36,4 +38,4 @@ const last=(ws,type)=>ws.messages.filter(m=>m.type===type).at(-1);
   const fire=last(sockets[1],'fire');assert.equal(fire.blocked,false);assert.equal(fire.defenseTrigger.key,'countermeasure_flares');assert.equal(fire.defenseTrigger.blockCount,2);assert.equal(game.defenses.earth.armed,false);
 }
 
-console.log('PASS fortress defenses enforce Morale, hidden use state, Solar Wall blocking, and two-missile flare interception');
+console.log('PASS fortress defenses enforce Morale, friendly-only armed Solar Wall visualization, Solar Wall blocking, and two-missile flare interception');
